@@ -58,6 +58,8 @@
     <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'search-form.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'standard-actions-override.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'lenis.min.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'smooth-scroll.js' | asset_url }}" defer="defer"></script>
 
     {%- if settings.animations_reveal_on_scroll -%}
       <script src="{{ 'animations.js' | asset_url }}" defer="defer"></script>
@@ -69,6 +71,8 @@
       assign body_font_bold = settings.type_body_font | font_modify: 'weight', 'bold'
       assign body_font_italic = settings.type_body_font | font_modify: 'style', 'italic'
       assign body_font_bold_italic = body_font_bold | font_modify: 'style', 'italic'
+      assign body_font_medium = settings.type_body_font | font_modify: 'weight', '500'
+      assign body_font_semibold = settings.type_body_font | font_modify: 'weight', '600'
     %}
 
     {% style %}
@@ -76,6 +80,12 @@
       {{ body_font_bold | font_face: font_display: 'swap' }}
       {{ body_font_italic | font_face: font_display: 'swap' }}
       {{ body_font_bold_italic | font_face: font_display: 'swap' }}
+      {% if body_font_medium %}
+        {{ body_font_medium | font_face: font_display: 'swap' }}
+      {% endif %}
+      {% if body_font_semibold %}
+        {{ body_font_semibold | font_face: font_display: 'swap' }}
+      {% endif %}
       {{ settings.type_header_font | font_face: font_display: 'swap' }}
 
       {% for scheme in settings.color_schemes -%}
@@ -278,6 +288,7 @@
       }
     {% endstyle %}
 
+    {{ 'lenis.css' | asset_url | stylesheet_tag }}
     {{ 'base.css' | asset_url | stylesheet_tag }}
     <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
 
