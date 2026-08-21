@@ -1,0 +1,78 @@
+{% comment %}
+  Renders the promotional marquee bar at the top of the footer.
+
+  The track holds two identical groups. Each group is at least as wide as the
+  viewport, so both groups always have the same width and translating the track
+  by exactly -50% lands on a pixel-identical frame: the loop is seamless with no
+  JavaScript and no measuring.
+
+  The second group is decorative: it is hidden from assistive technology and
+  contains no interactive elements, so it never appears in the tab order.
+
+  Accepts:
+  - section: {Object} the footer section (required). Announcement blocks
+             are read from section.blocks.
+
+  Usage:
+  {% render 'footer-marquee', section: section %}
+{% endcomment %}
+
+{%- liquid
+  assign announcements = section.blocks | where: 'type', 'announcement'
+  assign separator = section.settings.marquee_separator
+
+  comment
+    Blocks whose text was cleared are skipped below, so check for real content
+    rather than block count — otherwise an empty coloured bar would render.
+  endcomment
+  assign has_announcement = false
+  for block in announcements
+    if block.settings.text != blank
+      assign has_announcement = true
+      break
+    endif
+  endfor
+-%}
+
+{%- if has_announcement -%}
+  <div
+    class="footer__marquee{% if section.settings.marquee_animate %} footer__marquee--animated{% endif %}{% if section.settings.marquee_uppercase %} footer__marquee--uppercase{% endif %}"
+    role="region"
+    aria-label="{{ 'sections.footer.promotions' | t }}"
+  >
+    <div class="footer__marquee-track">
+      {%- for copy in (1..2) -%}
+        <ul
+          class="footer__marquee-group"
+          role="list"
+          {% unless forloop.first %}
+            aria-hidden="true"
+          {% endunless %}
+        >
+          {%- for block in announcements -%}
+            {%- if block.settings.text == blank -%}
+              {%- continue -%}
+            {%- endif -%}
+            <li
+              class="footer__marquee-item footer__marquee-item--{{ block.id }}"
+              {% if forloop.parentloop.first %}
+                {{ block.shopify_attributes }}
+              {% endif %}
+            >
+              {%- if block.settings.link != blank and forloop.parentloop.first -%}
+                <a class="footer__marquee-text" href="{{ block.settings.link }}">
+                  {{- block.settings.text | escape -}}
+                </a>
+              {%- else -%}
+                <span class="footer__marquee-text">{{ block.settings.text | escape }}</span>
+              {%- endif -%}
+              {%- if separator != blank -%}
+                <span class="footer__marquee-separator" aria-hidden="true">{{ separator | escape }}</span>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}

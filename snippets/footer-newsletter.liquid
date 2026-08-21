@@ -1,0 +1,115 @@
+{% comment %}
+  Renders the newsletter column of the footer.
+
+  Uses Shopify's native `customer` form, tagged `newsletter`, exactly like the
+  stock Dawn footer — so subscribers land in the store's customer list and the
+  success/error states are the ones Shopify returns after the POST.
+
+  Accepts:
+  - section: {Object} the footer section (required).
+
+  Usage:
+  {% render 'footer-newsletter', section: section %}
+{% endcomment %}
+
+{%- liquid
+  assign input_id = 'FooterNewsletter-' | append: section.id
+  assign form_id = 'FooterNewsletterForm-' | append: section.id
+  assign error_id = form_id | append: '-error'
+  assign success_id = form_id | append: '-success'
+  assign placeholder = section.settings.newsletter_placeholder
+  if placeholder == blank
+    assign placeholder = 'newsletter.label' | t
+  endif
+
+  assign button_label = section.settings.newsletter_button_label
+  if button_label == blank
+    assign button_label = 'newsletter.button_label' | t
+  endif
+
+  assign success_message = section.settings.newsletter_success_message
+  if success_message == blank
+    assign success_message = 'newsletter.success' | t
+  endif
+-%}
+
+<div class="footer__column footer__column--newsletter">
+  <div class="footer__newsletter">
+    {%- if section.settings.newsletter_heading != blank -%}
+      <h2 class="footer__heading">{{ section.settings.newsletter_heading }}</h2>
+    {%- endif -%}
+
+    {%- if section.settings.newsletter_description != blank -%}
+      <div class="footer__newsletter-text rte">{{ section.settings.newsletter_description }}</div>
+    {%- endif -%}
+
+    {%- form 'customer', id: form_id, class: 'footer__newsletter-form' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <div class="footer__newsletter-field">
+        <label class="visually-hidden" for="{{ input_id }}">{{ placeholder }}</label>
+        <input
+          id="{{ input_id }}"
+          class="footer__newsletter-input"
+          type="email"
+          name="contact[email]"
+          value="{{ form.email }}"
+          placeholder="{{ placeholder }}"
+          autocorrect="off"
+          autocapitalize="off"
+          autocomplete="email"
+          aria-required="true"
+          required
+          {% if form.errors %}
+            autofocus
+            aria-invalid="true"
+            aria-describedby="{{ error_id }}"
+          {% elsif form.posted_successfully? %}
+            aria-describedby="{{ success_id }}"
+          {% endif %}
+        >
+        <button
+          type="submit"
+          class="footer__newsletter-button"
+          name="commit"
+          aria-label="{{ button_label | escape }}"
+        >
+          <span class="svg-wrapper" aria-hidden="true">
+            {%- if section.settings.newsletter_button_icon == 'arrow_up' -%}
+              {{- 'icon-arrow-up.svg' | inline_asset_content -}}
+            {%- else -%}
+              {{- 'icon-arrow.svg' | inline_asset_content -}}
+            {%- endif -%}
+          </span>
+        </button>
+      </div>
+
+      {%- if form.errors -%}
+        <small class="footer__form-message footer__form-message--error" id="{{ error_id }}">
+          <span class="svg-wrapper" aria-hidden="true">
+            {{- 'icon-error.svg' | inline_asset_content -}}
+          </span>
+          <span>
+            {{- form.errors.translated_fields.email | capitalize }}
+            {{ form.errors.messages.email -}}
+          </span>
+        </small>
+      {%- endif -%}
+
+      {%- if form.posted_successfully? -%}
+        <p
+          class="footer__form-message footer__form-message--success"
+          id="{{ success_id }}"
+          tabindex="-1"
+          autofocus
+        >
+          <span class="svg-wrapper" aria-hidden="true">
+            {{- 'icon-success.svg' | inline_asset_content -}}
+          </span>
+          <span>
+            {{- success_message -}}
+          </span>
+        </p>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</div>

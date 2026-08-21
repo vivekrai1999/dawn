@@ -1,0 +1,54 @@
+{% comment %}
+  Renders one navigation column of the footer from a Shopify menu.
+  Renders nothing when no menu is selected or the menu has no links, so an
+  empty column never leaves an orphaned heading behind.
+
+  Accepts:
+  - heading: {String} column heading (optional).
+  - menu: {Object} a linklist from a `link_list` setting (required).
+  - limit: {Number} maximum number of links to render, 0 or blank for all (optional).
+  - heading_id: {String} unique id used to label the navigation landmark (required).
+
+  Usage:
+  {% render 'footer-menu',
+    heading: section.settings.quick_links_heading,
+    menu: section.settings.quick_links_menu,
+    limit: section.settings.menu_links_limit,
+    heading_id: 'FooterQuickLinks-{{ section.id }}'
+  %}
+{% endcomment %}
+
+{%- if menu != blank and menu.links.size > 0 -%}
+  <nav
+    class="footer__column footer__column--menu"
+    {% if heading != blank %}
+      aria-labelledby="{{ heading_id }}"
+    {% else %}
+      aria-label="{{ menu.title | escape }}"
+    {% endif %}
+  >
+    {%- if heading != blank -%}
+      <h2 class="footer__heading" id="{{ heading_id }}">{{ heading | escape }}</h2>
+    {%- endif -%}
+    <ul class="footer__menu" role="list">
+      {%- for link in menu.links -%}
+        {%- if limit != blank and limit > 0 and forloop.index > limit -%}
+          {%- break -%}
+        {%- endif -%}
+        <li>
+          <a
+            class="footer__menu-link"
+            href="{{ link.url }}"
+            {% if link.current %}
+              aria-current="page"
+            {% elsif link.child_current %}
+              aria-current="true"
+            {% endif %}
+          >
+            {{- link.title | escape -}}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+{%- endif -%}

@@ -1,0 +1,69 @@
+{% comment %}
+  Renders the country/currency and language pickers in the footer bottom bar.
+
+  This is Shopify's native localization form: it reuses the theme's existing
+  `country-localization` / `language-localization` snippets and the
+  `localization-form` custom element, so the option lists, search, keyboard
+  handling and form submission all stay in one place. Nothing is hardcoded —
+  the available countries, currencies and languages come from the store's
+  markets configuration.
+
+  Accepts:
+  - show_country: {Boolean} render the country/currency picker (optional).
+  - show_language: {Boolean} render the language picker (optional).
+  - unique_id: {String} suffix that keeps element ids unique if the section is
+               ever placed more than once (required).
+
+  Usage:
+  {% render 'footer-localization',
+    show_country: true,
+    show_language: true,
+    unique_id: section.id
+  %}
+{% endcomment %}
+
+{%- liquid
+  assign render_country = false
+  assign render_language = false
+
+  if show_country and localization.available_countries.size > 1
+    assign render_country = true
+  endif
+
+  if show_language and localization.available_languages.size > 1
+    assign render_language = true
+  endif
+
+  assign country_position = 'FooterCountry-' | append: unique_id
+  assign language_position = 'FooterLanguage-' | append: unique_id
+-%}
+
+{%- if render_country or render_language -%}
+  <div class="footer__localization isolate">
+    <span class="footer__localization-icon" aria-hidden="true">
+      {{- 'icon-globe.svg' | inline_asset_content -}}
+    </span>
+
+    {%- if render_country -%}
+      <localization-form>
+        {%- form 'localization', id: country_position, class: 'localization-form' -%}
+          <div>
+            <h2 class="visually-hidden" id="{{ country_position }}Label">{{ 'localization.country_label' | t }}</h2>
+            {%- render 'country-localization', localPosition: country_position -%}
+          </div>
+        {%- endform -%}
+      </localization-form>
+    {%- endif -%}
+
+    {%- if render_language -%}
+      <localization-form>
+        {%- form 'localization', id: language_position, class: 'localization-form' -%}
+          <div>
+            <h2 class="visually-hidden" id="{{ language_position }}Label">{{ 'localization.language_label' | t }}</h2>
+            {%- render 'language-localization', localPosition: language_position -%}
+          </div>
+        {%- endform -%}
+      </localization-form>
+    {%- endif -%}
+  </div>
+{%- endif -%}

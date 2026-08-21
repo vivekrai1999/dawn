@@ -4,21 +4,83 @@
   "sections": {
     "footer": {
       "type": "footer",
-      "blocks": {},
-      "block_order": [],
+      "blocks": {
+        "announcement-1": {
+          "type": "announcement",
+          "settings": {
+            "text": "Save more"
+          }
+        },
+        "announcement-2": {
+          "type": "announcement",
+          "settings": {
+            "text": "Buy more, save more"
+          }
+        },
+        "announcement-3": {
+          "type": "announcement",
+          "settings": {
+            "text": "Free shipping over $50"
+          }
+        },
+        "announcement-4": {
+          "type": "announcement",
+          "settings": {
+            "text": "Buy more, save more"
+          }
+        }
+      },
+      "block_order": [
+        "announcement-1",
+        "announcement-2",
+        "announcement-3",
+        "announcement-4"
+      ],
       "settings": {
-        "color_scheme": "scheme-1",
-        "newsletter_enable": true,
-        "newsletter_heading": "Subscribe to our emails",
-        "enable_follow_on_shop": true,
+        "enable_footer": true,
+        "background_color": "#0a0a0a",
+        "text_color": "#ffffff",
+        "secondary_text_color": "#a3a3a3",
+        "accent_color": "#f5b325",
+        "content_max_width": 1600,
+        "padding_top": 80,
+        "padding_bottom": 32,
+        "column_gap": 48,
+        "row_gap_mobile": 40,
+        "marquee_enable": true,
+        "marquee_background": "linear-gradient(90deg, rgba(126, 242, 157, 1) 0%, rgba(232, 247, 76, 1) 100%)",
+        "marquee_text_color": "#000000",
+        "marquee_separator": "●",
+        "marquee_font_size": 44,
+        "marquee_font_weight": "700",
+        "marquee_uppercase": true,
+        "marquee_gap": 40,
+        "marquee_padding": 14,
+        "marquee_animate": true,
+        "marquee_speed": 5,
+        "marquee_direction": "left",
+        "logo_width": 240,
+        "brand_description": "<p>Tell customers what your store is about in a sentence or two.</p>",
+        "description_width": 400,
         "show_social": true,
+        "quick_links_heading": "Quick links",
+        "quick_links_menu": "main-menu",
+        "support_heading": "Support",
+        "support_menu": "footer",
+        "menu_links_limit": 0,
+        "newsletter_enable": true,
+        "newsletter_heading": "Join our fashion family",
+        "newsletter_description": "<p>Enjoy exclusive updates, offers, and insider tips on the latest trends!</p>",
+        "newsletter_placeholder": "Email Address",
+        "newsletter_button_label": "Subscribe",
+        "newsletter_button_icon": "arrow",
+        "newsletter_alignment": "left",
+        "show_bottom_divider": true,
         "enable_country_selector": true,
         "enable_language_selector": true,
-        "payment_enable": true,
-        "show_policy": true,
-        "margin_top": 0,
-        "padding_top": 36,
-        "padding_bottom": 36
+        "show_copyright": true,
+        "show_shopify_attribution": true,
+        "show_back_to_top": true
       }
     }
   },

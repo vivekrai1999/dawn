@@ -1,0 +1,63 @@
+{% comment %}
+  Renders the circular social buttons of the footer.
+
+  URLs come from the theme's own social settings (Theme settings > Social media),
+  so nothing is hardcoded and platforms without a URL are skipped entirely.
+  Icons are the theme's existing icon-*.svg assets.
+
+  Accepts:
+  - class: {String} extra class for the <ul> (optional).
+
+  Usage:
+  {% render 'footer-social' %}
+{% endcomment %}
+
+{%- liquid
+  assign platforms = 'facebook,instagram,youtube,tiktok,twitter,pinterest,snapchat,tumblr,vimeo' | split: ','
+  assign new_window_message = 'accessibility.link_messages.new_window' | t
+-%}
+
+<ul class="footer__socials{% if class != blank %} {{ class }}{% endif %}" role="list">
+  {%- for platform in platforms -%}
+    {%- liquid
+      assign setting_key = 'social_' | append: platform | append: '_link'
+      assign social_url = settings[setting_key]
+      assign translation_key = 'general.social.links.' | append: platform
+      assign platform_name = translation_key | t
+    -%}
+    {%- if social_url != blank -%}
+      <li>
+        <a
+          class="footer__social"
+          href="{{ social_url }}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="svg-wrapper" aria-hidden="true">
+            {%- case platform -%}
+              {%- when 'facebook' -%}
+                {{- 'icon-facebook.svg' | inline_asset_content -}}
+              {%- when 'instagram' -%}
+                {{- 'icon-instagram.svg' | inline_asset_content -}}
+              {%- when 'youtube' -%}
+                {{- 'icon-youtube.svg' | inline_asset_content -}}
+              {%- when 'tiktok' -%}
+                {{- 'icon-tiktok.svg' | inline_asset_content -}}
+              {%- when 'twitter' -%}
+                {{- 'icon-twitter.svg' | inline_asset_content -}}
+              {%- when 'pinterest' -%}
+                {{- 'icon-pinterest.svg' | inline_asset_content -}}
+              {%- when 'snapchat' -%}
+                {{- 'icon-snapchat.svg' | inline_asset_content -}}
+              {%- when 'tumblr' -%}
+                {{- 'icon-tumblr.svg' | inline_asset_content -}}
+              {%- when 'vimeo' -%}
+                {{- 'icon-vimeo.svg' | inline_asset_content -}}
+            {%- endcase -%}
+          </span>
+          <span class="visually-hidden">{{ platform_name }} — {{ new_window_message }}</span>
+        </a>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+</ul>

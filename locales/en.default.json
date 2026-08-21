@@ -274,7 +274,6 @@
       "announcement": "Announcement",
       "announcement_bar": "Announcement bar"
     },
-
     "header": {
       "announcement": "Announcement",
       "menu": "Menu",
@@ -318,7 +317,9 @@
       }
     },
     "footer": {
-      "payment": "Payment methods"
+      "payment": "Payment methods",
+      "back_to_top": "Back to top",
+      "promotions": "Promotions"
     },
     "featured_blog": {
       "view_all": "View all",

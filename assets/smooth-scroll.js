@@ -1,12 +1,7 @@
 (function () {
   if (typeof window.Lenis !== 'function') return;
 
-  var LOCK_CLASSES = [
-    'overflow-hidden',
-    'overflow-hidden-mobile',
-    'overflow-hidden-tablet',
-    'overflow-hidden-desktop'
-  ];
+  var LOCK_CLASSES = ['overflow-hidden', 'overflow-hidden-mobile', 'overflow-hidden-tablet', 'overflow-hidden-desktop'];
 
   var lenis = null;
   var observer = null;
@@ -32,8 +27,10 @@
     lenis = new Lenis({
       autoRaf: true,
       anchors: true,
-      allowNestedScroll: true
+      allowNestedScroll: true,
     });
+
+    window.themeLenis = lenis;
 
     syncLockState();
 
