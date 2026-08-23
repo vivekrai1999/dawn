@@ -289,11 +289,50 @@
         "arrow_color": "#ffffff",
         "arrow_border_color": "#ffffff"
       }
+    },
+    "product_showcase_TDakeE": {
+      "type": "product-showcase",
+      "name": "Product showcase",
+      "settings": {
+        "heading": "Collection",
+        "description": "<p>This guide explores the latest trends in tote bags, helping you choose the perfect one to enhance your everyday wardrobe.</p>",
+        "heading_size": 40,
+        "description_size": 15,
+        "description_width": 760,
+        "product_source": "collection",
+        "collection": "",
+        "products_limit": 8,
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 24,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 64,
+        "enable_carousel": true,
+        "show_navigation": true,
+        "image_ratio": "square",
+        "card_media_radius": 12,
+        "show_secondary_image": false,
+        "show_vendor": false,
+        "show_quick_add": true,
+        "card_title_size": 15,
+        "card_price_size": 15,
+        "button_size": 48,
+        "background_color": "",
+        "heading_color": "#1a1a1a",
+        "text_color": "#5c5c5c",
+        "card_title_color": "#1a1a1a",
+        "card_price_color": "#5c5c5c",
+        "button_background_color": "#000000",
+        "button_icon_color": "#ffffff"
+      }
     }
   },
   "order": [
     "hero_carousel",
     "product_showcase",
-    "editorial_card_slider_7gBFWw"
+    "editorial_card_slider_7gBFWw",
+    "product_showcase_TDakeE"
   ]
 }
