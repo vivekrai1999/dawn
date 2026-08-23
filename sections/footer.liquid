@@ -65,12 +65,12 @@
     Colour settings can be cleared in the editor, so every one of them falls
     back to a concrete value before it reaches the style block.
   endcomment
-  assign color_bg = section.settings.background_color | default: '#0a0a0a'
-  assign color_text = section.settings.text_color | default: '#ffffff'
-  assign color_text_secondary = section.settings.secondary_text_color | default: '#a3a3a3'
-  assign color_accent = section.settings.accent_color | default: '#f5b325'
-  assign color_marquee_bg = section.settings.marquee_background | default: 'linear-gradient(90deg, rgba(126, 242, 157, 1) 0%, rgba(232, 247, 76, 1) 100%)'
-  assign color_marquee_text = section.settings.marquee_text_color | default: '#000000'
+  assign color_bg = section.settings.background_color | default: '#FFF7F1'
+  assign color_text = section.settings.text_color | default: '#4E3B34'
+  assign color_text_secondary = section.settings.secondary_text_color | default: '#786158'
+  assign color_accent = section.settings.accent_color | default: '#9E6168'
+  assign color_marquee_bg = section.settings.marquee_background | default: 'linear-gradient(90deg, #F7DFDA 0%, #E2EDE0 100%)'
+  assign color_marquee_text = section.settings.marquee_text_color | default: '#4E3B34'
 
   assign button_bg = section.settings.newsletter_button_color | default: color_accent
   assign button_text = section.settings.newsletter_button_icon_color | default: color_bg
@@ -246,7 +246,9 @@
 {
   "name": "t:sections.footer.name",
   "enabled_on": {
-    "groups": ["footer"]
+    "groups": [
+      "footer"
+    ]
   },
   "max_blocks": 12,
   "blocks": [
@@ -289,25 +291,25 @@
       "type": "color",
       "id": "background_color",
       "label": "Background",
-      "default": "#0a0a0a"
+      "default": "#FFF7F1"
     },
     {
       "type": "color",
       "id": "text_color",
       "label": "Text and headings",
-      "default": "#ffffff"
+      "default": "#4E3B34"
     },
     {
       "type": "color",
       "id": "secondary_text_color",
       "label": "Secondary text",
-      "default": "#a3a3a3"
+      "default": "#786158"
     },
     {
       "type": "color",
       "id": "accent_color",
       "label": "Accent",
-      "default": "#f5b325"
+      "default": "#9E6168"
     },
     {
       "type": "header",
@@ -379,13 +381,13 @@
       "id": "marquee_background",
       "label": "Background",
       "info": "Accepts a solid color or a gradient.",
-      "default": "linear-gradient(90deg, rgba(126, 242, 157, 1) 0%, rgba(232, 247, 76, 1) 100%)"
+      "default": "linear-gradient(90deg, #F7DFDA 0%, #E2EDE0 100%)"
     },
     {
       "type": "color",
       "id": "marquee_text_color",
       "label": "Text",
-      "default": "#000000"
+      "default": "#4E3B34"
     },
     {
       "type": "text",
@@ -409,12 +411,30 @@
       "id": "marquee_font_weight",
       "label": "Font weight",
       "options": [
-        { "value": "400", "label": "Regular" },
-        { "value": "500", "label": "Medium" },
-        { "value": "600", "label": "Semibold" },
-        { "value": "700", "label": "Bold" },
-        { "value": "800", "label": "Extra bold" },
-        { "value": "900", "label": "Black" }
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        },
+        {
+          "value": "800",
+          "label": "Extra bold"
+        },
+        {
+          "value": "900",
+          "label": "Black"
+        }
       ],
       "default": "700"
     },
@@ -465,8 +485,14 @@
       "id": "marquee_direction",
       "label": "Direction",
       "options": [
-        { "value": "left", "label": "Right to left" },
-        { "value": "right", "label": "Left to right" }
+        {
+          "value": "left",
+          "label": "Right to left"
+        },
+        {
+          "value": "right",
+          "label": "Left to right"
+        }
       ],
       "default": "left"
     },
@@ -571,7 +597,7 @@
       "type": "inline_richtext",
       "id": "newsletter_heading",
       "label": "Heading",
-      "default": "Join our fashion family"
+      "default": "Join our crochet circle"
     },
     {
       "type": "richtext",
@@ -597,8 +623,14 @@
       "id": "newsletter_button_icon",
       "label": "Button icon",
       "options": [
-        { "value": "arrow", "label": "Arrow right" },
-        { "value": "arrow_up", "label": "Arrow up" }
+        {
+          "value": "arrow",
+          "label": "Arrow right"
+        },
+        {
+          "value": "arrow_up",
+          "label": "Arrow up"
+        }
       ],
       "default": "arrow"
     },
@@ -606,34 +638,47 @@
       "type": "color",
       "id": "newsletter_button_color",
       "label": "Button background",
-      "info": "Leave blank to use the accent color."
+      "info": "Leave blank to use the accent color.",
+      "default": "#9E6168"
     },
     {
       "type": "color",
       "id": "newsletter_button_icon_color",
       "label": "Button icon color",
-      "info": "Leave blank to use the footer background color."
+      "info": "Leave blank to use the footer background color.",
+      "default": "#FFF7F1"
     },
     {
       "type": "color",
       "id": "newsletter_input_text_color",
       "label": "Input text",
-      "info": "Leave blank to use the footer text color."
+      "info": "Leave blank to use the footer text color.",
+      "default": "#4E3B34"
     },
     {
       "type": "color",
       "id": "newsletter_input_border_color",
       "label": "Input underline",
-      "info": "Leave blank to use the secondary text color."
+      "info": "Leave blank to use the secondary text color.",
+      "default": "#786158"
     },
     {
       "type": "select",
       "id": "newsletter_alignment",
       "label": "Alignment",
       "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
       ],
       "default": "left"
     },

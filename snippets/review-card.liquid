@@ -1,0 +1,122 @@
+{% comment %}
+  Renders one customer review: the quote, then the reviewer's avatar, name and
+  role at the foot of the card.
+
+  The card is pure presentation — it holds no review content of its own and knows
+  nothing about the marquee it usually sits in, so it is equally at home in a
+  grid, a slider or on its own. Everything it looks like comes from
+  --review-card-* custom properties with defaults, which means a section can
+  restyle every card by emitting tokens on an ancestor without this snippet
+  changing. Requires assets/component-review-card.css.
+
+  Accepts:
+  - quote:       {String} The review text. Escaped, with line breaks preserved.
+    Ignored when quote_html is given. (optional)
+  - quote_html:  {String} Pre-formatted review markup, e.g. from a `richtext`
+    setting or a product-review metafield. Rendered as-is. (optional)
+  - name:        {String} Reviewer's name. (optional)
+  - role:        {String} Reviewer's role, company or location. (optional)
+  - avatar:      {Object} Image. Preferred over avatar_url — it is served
+    responsively. (optional)
+  - avatar_url:  {String} Image url, for review data that arrives as plain
+    strings rather than as Shopify images. (optional)
+  - avatar_alt:  {String} Overrides the avatar's alt text. Defaults to the
+    image's own alt, then to the reviewer's name. (optional)
+  - quote_marks: {Boolean} true wraps the quote in typographic quotation marks.
+    Default false. (optional)
+  - clamp:       {Boolean} true caps the quote at --review-card-quote-clamp
+    lines. Default false. (optional)
+  - lazy_load:   {Boolean} false loads the avatar eagerly. Default true.
+    (optional)
+
+  Usage:
+    render 'review-card', quote: block.settings.quote, name: block.settings.name,
+      role: block.settings.role, avatar: block.settings.avatar
+{% endcomment %}
+
+{%- liquid
+  assign reviewer_name = name | strip
+  assign reviewer_role = role | strip
+
+  assign avatar_alt_text = avatar_alt | default: avatar.alt
+  assign avatar_alt_text = avatar_alt_text | default: reviewer_name | default: ''
+
+  comment
+    An avatar is a portrait of the person named right beside it, so an empty alt
+    would be defensible — but a name in the alt is what makes the picture
+    meaningful when the card is read out of context, e.g. in a search result.
+  endcomment
+
+  assign avatar_loading = 'lazy'
+  if lazy_load == false
+    assign avatar_loading = 'eager'
+  endif
+
+  assign card_classes = 'review-card'
+  if quote_marks
+    assign card_classes = card_classes | append: ' review-card--quoted'
+  endif
+  if clamp
+    assign card_classes = card_classes | append: ' review-card--clamped'
+  endif
+-%}
+
+<figure class="{{ card_classes }}">
+  {%- if quote_html != blank or quote != blank -%}
+    <blockquote class="review-card__quote">
+      {%- if quote_html != blank -%}
+        {{ quote_html }}
+      {%- else -%}
+        <p>{{ quote | escape | newline_to_br }}</p>
+      {%- endif -%}
+    </blockquote>
+  {%- endif -%}
+
+  {%- if reviewer_name != blank or reviewer_role != blank or avatar != blank or avatar_url != blank -%}
+    <figcaption class="review-card__author">
+      {%- if avatar != blank -%}
+        {{
+          avatar
+          | image_url: width: 160
+          | image_tag:
+            loading: avatar_loading,
+            class: 'review-card__avatar',
+            widths: '40, 60, 80, 120, 160',
+            sizes: '80px',
+            alt: avatar_alt_text
+        }}
+      {%- elsif avatar_url != blank -%}
+        <img
+          class="review-card__avatar"
+          src="{{ avatar_url }}"
+          alt="{{ avatar_alt_text | escape }}"
+          loading="{{ avatar_loading }}"
+          width="80"
+          height="80"
+        >
+      {%- elsif reviewer_name != blank -%}
+        {%- comment -%}
+          Initial in place of a missing photo: it holds the avatar's box, so the
+          names and roles stay on the same baseline right across a row whether or
+          not every reviewer supplied a picture. Decorative — the name it stands
+          for is read out immediately after it.
+        {%- endcomment -%}
+        <span class="review-card__avatar-fallback" aria-hidden="true">
+          {{- reviewer_name | slice: 0 | upcase -}}
+        </span>
+      {%- endif -%}
+
+      {%- if reviewer_name != blank or reviewer_role != blank -%}
+        <span class="review-card__identity">
+          {%- if reviewer_name != blank -%}
+            <span class="review-card__name">{{ reviewer_name | escape }}</span>
+          {%- endif -%}
+
+          {%- if reviewer_role != blank -%}
+            <span class="review-card__role">{{ reviewer_role | escape }}</span>
+          {%- endif -%}
+        </span>
+      {%- endif -%}
+    </figcaption>
+  {%- endif -%}
+</figure>

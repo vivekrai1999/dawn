@@ -1,0 +1,115 @@
+{% comment %}
+  Renders one collection card: a full-bleed image with the collection title at
+  the foot and a circular arrow control, and a second image that crossfades in on
+  hover.
+
+  Presentation is driven entirely by CSS custom properties, so a section can
+  restyle its cards by emitting tokens on an ancestor without this snippet
+  changing. Requires assets/component-collection-card.css.
+
+  Accepts:
+  - card_collection: {Object} Collection. Supplies the title, url and image
+    unless overridden below. (optional)
+  - primary_image:   {Object} Image shown at rest. Defaults to the collection's
+    featured image. (optional)
+  - secondary_image: {Object} Image crossfaded in on hover. Omit for a card that
+    does not change on hover. (optional)
+  - title:           {String} Overrides the collection title. (optional)
+  - url:             {String} Overrides the collection url. (optional)
+  - lazy_load:       {Boolean} false loads the primary image eagerly. Default
+    true — pass false only for cards above the fold. (optional)
+  - sizes:           {String} `sizes` attribute for the images. (optional)
+  - placeholder:     {String} Placeholder svg name when there is no image.
+    Default 'collection-apparel-1'. (optional)
+  - card_index:      {Number} Position in the grid, used for the heading id. (optional)
+
+  Usage:
+    render 'collection-card', card_collection: collection
+    render 'collection-card', card_collection: block.settings.collection,
+      secondary_image: block.settings.hover_image, title: block.settings.title
+{% endcomment %}
+
+{%- liquid
+  assign card_title = title | default: card_collection.title
+  assign card_url = url | default: card_collection.url
+  assign image_primary = primary_image | default: card_collection.featured_image
+  assign image_secondary = secondary_image
+
+  comment
+    A hover image identical to the primary one would download a second copy of
+    the same asset for no visible change.
+  endcomment
+  if image_secondary != blank and image_primary != blank and image_secondary.id == image_primary.id
+    assign image_secondary = blank
+  endif
+
+  assign default_sizes = '(min-width: 990px) 25vw, (min-width: 750px) 33vw, calc(100vw - 3rem)'
+  assign image_sizes = sizes | default: default_sizes
+  assign placeholder_name = placeholder | default: 'collection-apparel-1'
+
+  assign loading_attr = 'lazy'
+  if lazy_load == false
+    assign loading_attr = 'eager'
+  endif
+-%}
+
+<a
+  class="collection-card{% if image_secondary != blank %} collection-card--has-hover{% endif %}"
+  href="{{ card_url | default: '#' }}"
+  {% if card_url == blank %}
+    role="link"
+    aria-disabled="true"
+  {% endif %}
+>
+  <div class="collection-card__media">
+    {%- if image_primary != blank -%}
+      {{
+        image_primary
+        | image_url: width: 1200
+        | image_tag:
+          loading: loading_attr,
+          class: 'collection-card__image collection-card__image--primary',
+          widths: '300, 400, 500, 600, 750, 900, 1100, 1200',
+          sizes: image_sizes,
+          alt: image_primary.alt
+      }}
+    {%- else -%}
+      {{ placeholder_name | placeholder_svg_tag: 'collection-card__placeholder placeholder-svg' }}
+    {%- endif -%}
+
+    {%- if image_secondary != blank -%}
+      {%- comment -%}
+        Decorative: an empty alt is what marks it as such — image_tag arguments
+        are Liquid named parameters and cannot carry a hyphen, so aria-hidden is
+        not available here and is not needed. Always lazy: a hover image is never
+        required for first paint.
+      {%- endcomment -%}
+      {{
+        image_secondary
+        | image_url: width: 1200
+        | image_tag:
+          loading: 'lazy',
+          class: 'collection-card__image collection-card__image--secondary',
+          widths: '300, 400, 500, 600, 750, 900, 1100, 1200',
+          sizes: image_sizes,
+          alt: ''
+      }}
+    {%- endif -%}
+
+    <span class="collection-card__scrim" aria-hidden="true"></span>
+  </div>
+
+  <div class="collection-card__content">
+    <span class="collection-card__title">{{ card_title | escape }}</span>
+
+    {%- comment -%}
+      Decorative: the whole card is one link, so the arrow must not add a second
+      stop in the tab order or a second accessible name.
+    {%- endcomment -%}
+    <span class="collection-card__arrow" aria-hidden="true">
+      <span class="svg-wrapper">
+        {{- 'icon-arrow.svg' | inline_asset_content -}}
+      </span>
+    </span>
+  </div>
+</a>

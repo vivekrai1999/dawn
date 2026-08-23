@@ -17,7 +17,7 @@
         "announcement-bar-0": {
           "type": "announcement",
           "settings": {
-            "text": "Winters sale - Receive 20% off on orders over 50$",
+            "text": "Handmade in India — free shipping on orders over ₹1,499",
             "link": ""
           }
         }
@@ -26,9 +26,9 @@
         "announcement-bar-0"
       ],
       "settings": {
-        "bar_background_color": "#16161d",
-        "bar_text_color": "#ffffff",
-        "bar_icon_color": "",
+        "bar_background_color": "#F7DFDA",
+        "bar_text_color": "#4E3B34",
+        "bar_icon_color": "#9E6168",
         "bar_font_size": 13,
         "bar_icon_size": 16,
         "bar_height": 44,
@@ -36,7 +36,7 @@
         "bar_width": 1920,
         "show_social": false,
         "show_phone": false,
-        "phone_number": "0123456780",
+        "phone_number": "+91 98765 43210",
         "phone_link": "",
         "show_store_locator": false,
         "store_locator_label": "",
@@ -58,21 +58,21 @@
         "search-link-2": {
           "type": "search_link",
           "settings": {
-            "text": "Jump Suit",
+            "text": "Amigurumi",
             "link": ""
           }
         },
         "search-link-3": {
           "type": "search_link",
           "settings": {
-            "text": "Activewear set",
+            "text": "Baby blankets",
             "link": ""
           }
         },
         "search-link-4": {
           "type": "search_link",
           "settings": {
-            "text": "One-piece",
+            "text": "Cotton yarn",
             "link": ""
           }
         }
@@ -100,8 +100,8 @@
         "nav_background_color": "#ffffff",
         "nav_opacity": 75,
         "nav_blur": 8,
-        "nav_text_color": "#1a1a1a",
-        "nav_text_hover_color": "#000000",
+        "nav_text_color": "#4E3B34",
+        "nav_text_hover_color": "#9E6168",
         "nav_border_color": "#ffffff",
         "nav_border_opacity": 0,
         "nav_border_width": 0,
@@ -117,14 +117,14 @@
         "search_placeholder": "Suggested searches",
         "search_popular_title": "Popular categories",
         "panel_background_color": "#ffffff",
-        "panel_text_color": "#1a1a1a",
-        "panel_accent_color": "#1a1a1a",
+        "panel_text_color": "#4E3B34",
+        "panel_accent_color": "#4E3B34",
         "panel_accent_text_color": "#ffffff",
         "panel_padding_inline": 40,
         "panel_overlay_opacity": 55,
         "panel_offset": 8,
         "icon_size": 20,
-        "icon_color": "#1a1a1a",
+        "icon_color": "#4E3B34",
         "icon_gap": 4,
         "mobile_logo_width": 90,
         "mobile_header_height": 64,
@@ -132,10 +132,10 @@
         "enable_language_selector": true,
         "mobile_header_position": "normal",
         "mobile_header_background": "#ffffff",
-        "mobile_brand_color": "#1a1a1a",
+        "mobile_brand_color": "#4E3B34",
         "mobile_icon_color": "",
         "mobile_menu_background": "#ffffff",
-        "mobile_menu_text_color": "#1a1a1a",
+        "mobile_menu_text_color": "#4E3B34",
         "mobile_menu_inset": 15,
         "mobile_menu_radius": 16,
         "mobile_menu_font_size": 20,
@@ -144,7 +144,7 @@
         "mobile_social_icon_size": 18,
         "show_login": true,
         "login_label": "",
-        "login_background_color": "#000000",
+        "login_background_color": "#9E6168",
         "login_text_color": "#ffffff",
         "margin_bottom": 0,
         "padding_top": 24,

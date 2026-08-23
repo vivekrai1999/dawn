@@ -1,5 +1,6 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'section-collection-list.css' | asset_url | stylesheet_tag }}
+{{ 'component-collection-card.css' | asset_url | stylesheet_tag }}
 
 <div class="page-width">
   <h1 class="title title--primary inline-richtext{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
@@ -23,9 +24,92 @@
       assign paginate_by = 28
     endif
   -%}
-  {%- paginate collections by paginate_by -%}
+  {%- liquid
+  comment
+    The card needs a numeric ratio so it can reserve its box before the image
+    loads. Dawn's "adapt" cannot be uniform, so it falls back to square.
+  endcomment
+  assign card_ratio = 1
+  if section.settings.image_ratio == 'portrait'
+    assign card_ratio = 0.8
+  endif
+-%}
+
+{%- style -%}
+  #CollectionList-{{ section.id }} {
+    --collection-card-ratio: {{ card_ratio }};
+    --collection-card-radius: {{ section.settings.card_radius }}px;
+    --collection-card-padding: {{ section.settings.card_padding }}px;
+    --collection-card-title-size: {{ section.settings.title_size }}px;
+    --collection-card-title-weight: {{ section.settings.title_weight }};
+    --collection-card-arrow-size: {{ section.settings.arrow_size }}px;
+    --collection-card-arrow-border: {{ section.settings.arrow_border_width }}px;
+    --collection-card-duration: {{ section.settings.transition_duration }}ms;
+    --collection-card-scrim: {{ section.settings.scrim_strength | divided_by: 100.0 }};
+  }
+
+  {%- comment -%}
+    Dawn derives the grid gap AND each item's calc() width from these two
+    properties, so overriding them here retunes both together and the columns
+    stay exact. The theme-wide default is 8px, which is tight for cards this
+    size. Mobile gets a proportionally smaller gap so two columns still fit.
+  {%- endcomment -%}
+  #CollectionList-{{ section.id }} {
+    --grid-desktop-horizontal-spacing: {{ section.settings.card_gap }}px;
+    --grid-desktop-vertical-spacing: {{ section.settings.card_gap }}px;
+    --grid-mobile-horizontal-spacing: {{ section.settings.card_gap | times: 0.6 | round }}px;
+    --grid-mobile-vertical-spacing: {{ section.settings.card_gap | times: 0.6 | round }}px;
+  }
+
+  #shopify-section-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  {%- comment -%}
+    The page title carries a 4rem margin of its own; this keeps the gap under it
+    adjustable without fighting that.
+  {%- endcomment -%}
+  #shopify-section-{{ section.id }} .title--primary {
+    margin-bottom: {{ section.settings.heading_gap }}px;
+  }
+
+  {%- comment -%}
+    Dawn stretches a lone collection to the full page width. That suits its own
+    card, but this one holds a fixed aspect ratio, so a single collection would
+    render as a full-width square. Hold it to one column instead.
+  {%- endcomment -%}
+  {%- assign cols = section.settings.columns_desktop -%}
+  @media screen and (min-width: 990px) {
+    #CollectionList-{{ section.id }} .collection-list__item:only-child {
+      width: calc(
+        100% / {{ cols }} - var(--grid-desktop-horizontal-spacing) * {{ cols | minus: 1 }} / {{ cols }}
+      );
+      max-width: calc(
+        100% / {{ cols }} - var(--grid-desktop-horizontal-spacing) * {{ cols | minus: 1 }} / {{ cols }}
+      );
+    }
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    #CollectionList-{{ section.id }} .collection-list__item:only-child {
+      width: calc(50% - var(--grid-desktop-horizontal-spacing) / 2);
+      max-width: calc(50% - var(--grid-desktop-horizontal-spacing) / 2);
+    }
+  }
+{%- endstyle -%}
+
+{%- paginate collections by paginate_by -%}
     <ul
       class="collection-list grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+      id="CollectionList-{{ section.id }}"
       role="list"
     >
       {%- for collection in collections -%}
@@ -36,10 +120,33 @@
             style="--animation-order: {{ forloop.index }};"
           {% endif %}
         >
-          {% render 'card-collection',
+          {%- liquid
+            comment
+              There are no section blocks here — the collections come from
+              Shopify — so a per-collection hover image has to come from the
+              collection itself. The namespace and key are settings rather than
+              hardcoded, so this fits whatever the store already uses.
+            endcomment
+            assign hover_image = blank
+            if section.settings.hover_image_key != blank
+              assign ns = section.settings.hover_image_namespace
+              assign key = section.settings.hover_image_key
+              assign hover_image = collection.metafields[ns][key].value
+            endif
+
+            comment
+              Only the first row is on screen at first paint.
+            endcomment
+            assign lazy_load_card = true
+            if forloop.index0 < section.settings.columns_desktop
+              assign lazy_load_card = false
+            endif
+          -%}
+          {% render 'collection-card',
             card_collection: collection,
-            media_aspect_ratio: section.settings.image_ratio,
-            columns: 3
+            secondary_image: hover_image,
+            lazy_load: lazy_load_card,
+            card_index: forloop.index0
           %}
         </li>
       {%- endfor -%}
@@ -134,6 +241,169 @@
       ],
       "default": "2",
       "label": "t:sections.main-list-collections.settings.columns_mobile.label"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between cards",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "heading_gap",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below page title",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Card padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "scrim_strength",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Shade behind text",
+      "info": "Keeps the white title and arrow readable over a pale image. Raise it toward 80% for very light photography.",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "transition_duration",
+      "min": 0,
+      "max": 1000,
+      "step": 50,
+      "unit": "ms",
+      "label": "Hover transition duration",
+      "default": 500
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Title size",
+      "default": 20
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "range",
+      "id": "arrow_size",
+      "min": 32,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow size",
+      "default": 52
+    },
+    {
+      "type": "range",
+      "id": "arrow_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Arrow border width",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Hover image"
+    },
+    {
+      "type": "paragraph",
+      "content": "Each collection can show a second image on hover. Create a Collection metafield of type File (image) and enter its namespace and key below. Collections without one simply keep their default image."
+    },
+    {
+      "type": "text",
+      "id": "hover_image_namespace",
+      "label": "Metafield namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "hover_image_key",
+      "label": "Metafield key",
+      "default": "hover_image"
     }
   ]
 }

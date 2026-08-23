@@ -1,0 +1,774 @@
+{% comment %}
+  Reviews marquee — two rows of customer reviews scrolling in opposite
+  directions.
+
+  The section is only a data source and a set of design tokens. Each review is a
+  block, so the merchant adds, reorders and removes them in the Theme Editor; the
+  row logic lives in snippets/reviews-marquee-row.liquid and the card in
+  snippets/review-card.liquid, and both rows are the same snippet called twice,
+  so no markup is duplicated here. Nothing about a review is written into the
+  component — swap the blocks below for a metafield, an app's review objects or a
+  hard-coded array and the same two snippets render it.
+
+  Reused from the theme: the colour-scheme system, the intro-text treatment of
+  sections/product-showcase.liquid, `--font-body-scale`, `--media-radius`, the
+  page-width container and Dawn's responsive image helpers.
+{% endcomment %}
+
+{{ 'component-review-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-review-marquee.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'reviews-marquee.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign review_blocks = section.blocks | where: 'type', 'review'
+  assign two_rows = section.settings.show_second_row
+
+  comment
+    Reviews left on "Auto" are split down the middle, in order, so a merchant who
+    never opens the row setting still gets two balanced rows — and one who does
+    keeps full control over where a particular review lands.
+  endcomment
+  assign auto_total = 0
+  for block in review_blocks
+    assign block_row = block.settings.row | default: 'auto'
+    if block_row == 'auto'
+      assign auto_total = auto_total | plus: 1
+    endif
+  endfor
+
+  comment
+    Integer division truncates, so adding one before halving rounds up: an odd
+    number of reviews puts the extra card on the top row.
+  endcomment
+  assign auto_top_limit = auto_total | plus: 1 | divided_by: 2
+
+  comment
+    One entry per block, in block order — 't' or 'b'. The row snippet reads it by
+    index, which is how two rows can be drawn from a single flat list of blocks
+    without building arrays Liquid has no way to build.
+  endcomment
+  assign row_map_string = ''
+  assign auto_seen = 0
+  for block in review_blocks
+    assign block_row = block.settings.row | default: 'auto'
+    if block_row == 'bottom'
+      assign row_map_string = row_map_string | append: 'b,'
+    elsif block_row == 'top'
+      assign row_map_string = row_map_string | append: 't,'
+    else
+      assign auto_seen = auto_seen | plus: 1
+      if auto_seen > auto_top_limit
+        assign row_map_string = row_map_string | append: 'b,'
+      else
+        assign row_map_string = row_map_string | append: 't,'
+      endif
+    endif
+  endfor
+  assign row_map = row_map_string | split: ','
+
+  comment
+    With the second row switched off there is nothing to split: passing no key
+    tells the row to take every review.
+  endcomment
+  assign top_key = ''
+  if two_rows
+    assign top_key = 't'
+  endif
+
+  comment
+    Assigned rather than filtered inline: `render` takes variables and literals,
+    not filtered expressions.
+  endcomment
+  assign reviews_label = 'sections.reviews_marquee.label' | t
+
+  assign quote_lines = section.settings.quote_lines
+  assign has_clamp = false
+  if quote_lines > 0
+    assign has_clamp = true
+  endif
+-%}
+
+{%- if review_blocks.size > 0 -%}
+  {%- style -%}
+    #ReviewsMarquee-{{ section.id }} {
+      --review-marquee-card-gap: {{ section.settings.card_gap }}px;
+      --review-marquee-row-gap: {{ section.settings.row_gap }}px;
+      --review-marquee-fade: {{ section.settings.edge_fade }}px;
+      --review-marquee-easing: {{ section.settings.easing }};
+
+      {%- comment -%}
+        The optional intro text borrows product-showcase's treatment, so the two
+        sections sit together on a page without disagreeing.
+      {%- endcomment -%}
+      --review-marquee-description-size: {{ section.settings.description_size | divided_by: 10.0 }}rem;
+      --review-marquee-description-width: {{ section.settings.description_width }}px;
+
+      --review-card-width: {{ section.settings.card_width }}px;
+      --review-card-min-height: {{ section.settings.card_min_height }}px;
+      --review-card-radius: {{ section.settings.card_radius }}px;
+      --review-card-padding: {{ section.settings.card_padding }}px;
+      --review-card-row-gap: {{ section.settings.card_content_gap }}px;
+      --review-card-avatar-size: {{ section.settings.avatar_size }}px;
+
+      {%- comment -%}
+        Sizes ride the theme's body scale so the cards grow and shrink with the
+        rest of the storefront's typography rather than drifting away from it.
+      {%- endcomment -%}
+      --review-card-quote-size: calc(var(--font-body-scale) * {{ section.settings.quote_size | divided_by: 10.0 }}rem);
+      --review-card-quote-line-height: {{ section.settings.quote_line_height | divided_by: 100.0 }};
+      --review-card-name-size: calc(var(--font-body-scale) * {{ section.settings.name_size | divided_by: 10.0 }}rem);
+      --review-card-name-weight: {{ section.settings.name_weight }};
+      --review-card-role-size: calc(var(--font-body-scale) * {{ section.settings.role_size | divided_by: 10.0 }}rem);
+      --review-card-quote-clamp: {{ quote_lines }};
+
+      {%- comment -%}
+        Surfaces, borders and muted text are alpha blends of the colour scheme's
+        own foreground rather than fixed colours, so the cards sit one step off
+        the page in whichever scheme the merchant picks — light or dark.
+      {%- endcomment -%}
+      --review-card-surface: rgba(var(--color-foreground), {{ section.settings.card_surface_opacity | divided_by: 100.0 }});
+      --review-card-border: rgba(var(--color-foreground), {{ section.settings.card_border_opacity | divided_by: 100.0 }});
+      --review-card-border-width: {{ section.settings.card_border_width }}px;
+      --review-card-ink: rgba(var(--color-foreground), {{ section.settings.text_opacity | divided_by: 100.0 }});
+      --review-card-muted: rgba(var(--color-foreground), {{ section.settings.muted_text_opacity | divided_by: 100.0 }});
+
+      {%- comment -%}
+        The padding belongs to this element rather than to the section wrapper so
+        that the tint below covers the whole band — and so the bottom row always
+        keeps that much clear space beneath it instead of ending at the edge.
+      {%- endcomment -%}
+      padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    }
+
+    {%- if section.settings.background_tint > 0 -%}
+      {%- comment -%}
+        A wash of the scheme's own foreground, laid over whatever the scheme
+        paints, so the reviews sit on a surface a shade off the rest of the page
+        without introducing a colour the theme does not already use. It is a
+        background image rather than a colour so it composites on top of the
+        scheme background instead of replacing it.
+      {%- endcomment -%}
+      #ReviewsMarquee-{{ section.id }} {
+        background-image: linear-gradient(
+          rgba(var(--color-foreground), {{ section.settings.background_tint | divided_by: 100.0 }}),
+          rgba(var(--color-foreground), {{ section.settings.background_tint | divided_by: 100.0 }})
+        );
+      }
+    {%- endif -%}
+
+    @media screen and (max-width: 749px) {
+      #ReviewsMarquee-{{ section.id }} {
+        --review-card-padding: {{ section.settings.card_padding | times: 0.8 | round }}px;
+
+        padding-block: {{ section.settings.padding_top | times: 0.75 | round }}px {{ section.settings.padding_bottom | times: 0.75 | round }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <reviews-marquee
+    id="ReviewsMarquee-{{ section.id }}"
+    class="review-marquee color-{{ section.settings.color_scheme }} gradient isolate
+      {%- if section.settings.pause_on_hover %} review-marquee--pause-on-hover{% endif %}
+      {%- unless section.settings.autoplay %} review-marquee--static{% endunless %}
+      {%- if section.settings.edge_fade > 0 %} review-marquee--fade{% endif -%}
+    "
+    data-autoplay="{{ section.settings.autoplay }}"
+    data-pause-on-hover="{{ section.settings.pause_on_hover }}"
+    data-speed="{{ section.settings.top_speed }}"
+  >
+    {%- if section.settings.description != blank -%}
+      <div class="review-marquee-section__header review-marquee-section__header--{{ section.settings.text_alignment }} page-width">
+        <div class="review-marquee-section__intro">
+          <div class="review-marquee-section__description rte">{{ section.settings.description }}</div>
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="review-marquee__rows{% unless section.settings.full_width %} page-width{% endunless %}">
+      {%- render 'reviews-marquee-row',
+        reviews: review_blocks,
+        row_map: row_map,
+        row_key: top_key,
+        direction: section.settings.top_direction,
+        speed: section.settings.top_speed,
+        card_width: section.settings.card_width,
+        card_gap: section.settings.card_gap,
+        row_label: reviews_label,
+        quote_marks: section.settings.quote_marks,
+        clamp: has_clamp,
+        eager: true
+      -%}
+
+      {%- if two_rows -%}
+        {%- render 'reviews-marquee-row',
+          reviews: review_blocks,
+          row_map: row_map,
+          row_key: 'b',
+          direction: section.settings.bottom_direction,
+          speed: section.settings.bottom_speed,
+          card_width: section.settings.card_width,
+          card_gap: section.settings.card_gap,
+          row_label: reviews_label,
+          quote_marks: section.settings.quote_marks,
+          clamp: has_clamp
+        -%}
+      {%- endif -%}
+    </div>
+  </reviews-marquee>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Reviews marquee",
+  "tag": "section",
+  "class": "review-marquee-section",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "max_blocks": 24,
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Review",
+          "info": "Line breaks are kept."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Name"
+        },
+        {
+          "type": "text",
+          "id": "role",
+          "label": "Role",
+          "info": "City, or how they know the shop."
+        },
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "Avatar",
+          "info": "Square images work best. Without one the card shows the reviewer's initial."
+        },
+        {
+          "type": "select",
+          "id": "row",
+          "label": "Row",
+          "info": "Auto splits the reviews evenly between the two rows.",
+          "options": [
+            {
+              "value": "auto",
+              "label": "Auto"
+            },
+            {
+              "value": "top",
+              "label": "Top row"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom row"
+            }
+          ],
+          "default": "auto"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Intro text",
+      "info": "Optional. Shown above the rows."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Intro alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Intro text size",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "description_width",
+      "min": 300,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "label": "Intro text width",
+      "default": 760
+    },
+    {
+      "type": "header",
+      "content": "Motion"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Scroll automatically",
+      "info": "Off leaves the reviews as rows visitors can swipe or scroll themselves.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause the row under the pointer",
+      "info": "The other row keeps moving. On touch devices, holding a card pauses its row.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_second_row",
+      "label": "Second row",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "top_direction",
+      "label": "Top row direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Right to left"
+        },
+        {
+          "value": "right",
+          "label": "Left to right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "top_speed",
+      "min": 10,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "label": "Top row speed",
+      "info": "Pixels travelled per second, so the pace stays the same as reviews are added.",
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "bottom_direction",
+      "label": "Bottom row direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Right to left"
+        },
+        {
+          "value": "right",
+          "label": "Left to right"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "bottom_speed",
+      "min": 10,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom row speed",
+      "default": 45
+    },
+    {
+      "type": "select",
+      "id": "easing",
+      "label": "Easing",
+      "info": "Steady is the only one that loops without a visible pulse; the others are for short, deliberate rows.",
+      "options": [
+        {
+          "value": "linear",
+          "label": "Steady"
+        },
+        {
+          "value": "ease-in-out",
+          "label": "Ease in and out"
+        },
+        {
+          "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+          "label": "Soft"
+        }
+      ],
+      "default": "linear"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Edge to edge",
+      "info": "Lets the rows run off both sides of the screen.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "card_width",
+      "min": 200,
+      "max": 480,
+      "step": 10,
+      "unit": "px",
+      "label": "Card width",
+      "info": "Cards never take more than 82% of a narrow screen, whatever this is set to.",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "card_min_height",
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "label": "Minimum card height",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between cards",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "row_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between rows",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "edge_fade",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "label": "Fade at the edges",
+      "info": "Softens where the rows leave the screen. 0 cuts them off squarely.",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 64
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Card padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_content_gap",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Space above the reviewer",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_surface_opacity",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "%",
+      "label": "Card contrast with the background",
+      "default": 4,
+      "info": "A wash of the scheme foreground, so the card sits a shade off the background."
+    },
+    {
+      "type": "range",
+      "id": "card_border_opacity",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "%",
+      "label": "Border strength",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "avatar_size",
+      "min": 24,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Avatar size",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "checkbox",
+      "id": "quote_marks",
+      "label": "Add quotation marks",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "quote_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Review size",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "quote_line_height",
+      "min": 120,
+      "max": 200,
+      "step": 5,
+      "unit": "%",
+      "label": "Review line height",
+      "default": 160
+    },
+    {
+      "type": "range",
+      "id": "quote_lines",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "label": "Maximum review lines",
+      "info": "Trims longer reviews so the cards stay even. 0 shows every review in full.",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "name_size",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "label": "Name size",
+      "default": 15
+    },
+    {
+      "type": "select",
+      "id": "name_weight",
+      "label": "Name weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "range",
+      "id": "role_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Role size",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "text_opacity",
+      "min": 60,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Review text strength",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "muted_text_opacity",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Role text strength",
+      "default": 75,
+      "info": "Role text is small, so it still needs to clear contrast against the card. Below about 75% it stops doing so on a light color scheme."
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "background_tint",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "%",
+      "label": "Background tint",
+      "info": "Lifts the section a shade off the rest of the page. 0 leaves the color scheme's own background untouched, which is what a scheme with a gradient needs.",
+      "default": 3
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews marquee",
+      "blocks": [
+        {
+          "type": "review",
+          "settings": {
+            "quote": "The baby blanket arrived softer than I expected and has survived a dozen washes without pilling. My sister has already asked where I ordered it from.",
+            "name": "Ananya Iyer",
+            "role": "Bengaluru"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "I ordered three amigurumi for my nephew's birthday and they were packed beautifully, each one with a little tag naming the artisan who made it.",
+            "name": "Rohan Mehta",
+            "role": "Mumbai"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "The cotton yarn is genuinely good quality and the colours match the photos, which is rare when buying craft supplies online.",
+            "name": "Priya Nair",
+            "role": "Kochi"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Delivery to a small town in Rajasthan took four days and everything arrived intact. The handwritten note was a lovely touch.",
+            "name": "Vikram Singh",
+            "role": "Udaipur"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "I asked for a custom colour for a table runner and they sent swatch photos before starting. That kind of care is why I keep ordering.",
+            "name": "Meera Krishnan",
+            "role": "Chennai"
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Prices are clear, no surprises at checkout, and the crochet hooks are far better made than the ones I had been using.",
+            "name": "Aditi Sharma",
+            "role": "Jaipur"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

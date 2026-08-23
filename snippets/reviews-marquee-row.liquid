@@ -1,0 +1,147 @@
+{% comment %}
+  Renders one horizontally looping row of review cards.
+
+  This snippet owns the loop and nothing else: it lays the cards out twice, gives
+  the row its direction and speed, and leaves the look of a card entirely to
+  snippets/review-card.liquid. Both rows of a section are this one snippet with
+  different arguments, so there is a single copy of the markup no matter how many
+  rows a page ends up with.
+
+  Two copies of the card list are rendered, which is what makes the loop
+  seamless: the track slides by exactly one copy's width and restarts on an
+  identical frame. assets/reviews-marquee.js appends further copies when the
+  cards do not fill the row and replaces the estimated duration below with one
+  measured from the real card widths — but the row already loops, at close to the
+  right speed, without it.
+
+  Requires assets/component-review-marquee.css.
+
+  Accepts:
+  - reviews:     {Array} Blocks (or any objects exposing the same `settings`)
+    to render. Required.
+  - row_map:     {Array} One entry per review, holding the row each belongs to.
+    Omit to put every review in this row. (optional)
+  - row_key:     {String} The row_map value this row claims. (optional)
+  - direction:   {String} 'left' (default) or 'right'. (optional)
+  - speed:       {Number} Scroll speed in pixels per second. Default 40.
+    (optional)
+  - card_width:  {Number} Card width in px, used only to estimate the duration
+    before JS measures. Default 320. (optional)
+  - card_gap:    {Number} Space between cards in px, same purpose. Default 20.
+    (optional)
+  - row_label:   {String} Accessible name for the list of reviews. (optional)
+  - quote_marks: {Boolean} Passed through to each card. (optional)
+  - clamp:       {Boolean} Passed through to each card. (optional)
+  - eager:       {Boolean} true loads the first few avatars eagerly. Pass it for
+    a row that sits above the fold. (optional)
+
+  Usage:
+    render 'reviews-marquee-row', reviews: review_blocks, row_map: row_map,
+      row_key: 't', direction: 'left', speed: 40
+{% endcomment %}
+
+{%- liquid
+  assign row_direction = direction | default: 'left'
+  assign row_speed = speed | default: 40 | at_least: 1
+  assign estimate_width = card_width | default: 320
+  assign estimate_gap = card_gap | default: 20
+
+  comment
+    Which of the passed reviews belong to this row. Counted up front because the
+    duration estimate needs the total, and because a row that matched nothing
+    must not render an empty, still-animating track.
+  endcomment
+  assign row_count = 0
+  for review in reviews
+    if row_map == blank or row_key == blank
+      assign row_count = row_count | plus: 1
+    elsif row_map[forloop.index0] == row_key
+      assign row_count = row_count | plus: 1
+    endif
+  endfor
+
+  comment
+    Distance one copy of the cards covers, in px, and therefore how long a lap
+    takes at the requested px/s. This only has to be close: the script replaces
+    it with the measured value as soon as it runs.
+  endcomment
+  assign card_span = estimate_width | plus: estimate_gap
+  assign group_span = card_span | times: row_count
+  assign row_duration = group_span | times: 1.0 | divided_by: row_speed | round: 2
+  assign row_duration = row_duration | at_least: 1
+-%}
+
+{%- if row_count > 0 -%}
+  <div
+    class="review-marquee__row{% if row_direction == 'right' %} review-marquee__row--reverse{% endif %}"
+    style="--review-marquee-duration: {{ row_duration }}s;"
+    data-marquee-row
+    data-marquee-speed="{{ row_speed }}"
+  >
+    <div class="review-marquee__track" data-marquee-track>
+      {%- comment -%}
+        One loop for both copies rather than two blocks of near-identical markup.
+        Only the first copy is real content: the second is hidden from assistive
+        tech, and carries no Theme Editor attributes, so a screen reader hears
+        each review once and selecting a block in the editor still resolves to a
+        single element.
+      {%- endcomment -%}
+      {%- for copy in (1..2) -%}
+        <ul
+          class="review-marquee__group"
+          data-marquee-group
+          {% if copy == 1 %}
+            {% if row_label != blank %}
+              aria-label="{{ row_label | escape }}"
+            {% endif %}
+            role="list"
+          {% else %}
+            data-marquee-clone
+            aria-hidden="true"
+          {% endif %}
+        >
+          {%- for review in reviews -%}
+            {%- liquid
+              assign in_row = true
+              if row_map != blank and row_key != blank
+                unless row_map[forloop.index0] == row_key
+                  assign in_row = false
+                endunless
+              endif
+            -%}
+            {%- unless in_row -%}
+              {%- continue -%}
+            {%- endunless -%}
+
+            {%- liquid
+              comment
+                Avatars are small, but the handful that are on screen at first
+                paint should not wait for the lazy pass.
+              endcomment
+              assign lazy_avatar = true
+              if eager and copy == 1 and forloop.index0 < 4
+                assign lazy_avatar = false
+              endif
+            -%}
+
+            <li
+              class="review-marquee__item"
+              {% if copy == 1 %}{{ review.shopify_attributes }}{% endif %}
+            >
+              {%- render 'review-card',
+                quote: review.settings.quote,
+                name: review.settings.name,
+                role: review.settings.role,
+                avatar: review.settings.avatar,
+                avatar_url: review.settings.avatar_url,
+                quote_marks: quote_marks,
+                clamp: clamp,
+                lazy_load: lazy_avatar
+              -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}

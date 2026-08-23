@@ -1,0 +1,171 @@
+/*
+  Review card — snippets/review-card.liquid.
+
+  A quote with the reviewer's avatar, name and role at the foot. The card knows
+  nothing about the marquee it usually sits in: it is a plain block that fills
+  the height it is given, so it works in a grid, a slider or on its own.
+
+  Every value comes from a --review-card-* token with a default, so an ancestor
+  (a section, a row, a page) can retune the cards by emitting tokens without
+  this file changing. Colours are expressed against Dawn's colour-scheme tokens
+  --color-foreground / --color-background rather than fixed hex values, so a card
+  takes the palette of whichever `color-scheme-*` class wraps it.
+*/
+
+.review-card {
+  --review-card-width: 320px;
+  --review-card-min-height: 0px;
+  --review-card-radius: var(--media-radius, 16px);
+  --review-card-padding: 24px;
+  --review-card-row-gap: 24px;
+
+  /* Surface and border are alpha blends of the scheme's own foreground, which is
+     what keeps a card "one step lighter than the page" in every scheme rather
+     than only on the dark one this was designed against. */
+  --review-card-surface: rgba(var(--color-foreground), 0.04);
+  --review-card-border: rgba(var(--color-foreground), 0.1);
+  --review-card-border-width: 1px;
+  --review-card-shadow: none;
+
+  --review-card-ink: rgba(var(--color-foreground), 0.9);
+  --review-card-muted: rgba(var(--color-foreground), 0.55);
+  --review-card-accent: rgb(var(--color-link));
+
+  --review-card-avatar-size: 40px;
+  --review-card-quote-size: 1.5rem;
+  --review-card-quote-line-height: 1.6;
+  --review-card-quote-weight: 400;
+  --review-card-name-size: 1.5rem;
+  --review-card-name-weight: 600;
+  --review-card-role-size: 1.3rem;
+  --review-card-quote-clamp: 6;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--review-card-row-gap);
+  /*
+    The cap keeps a 320px card from filling a phone screen edge to edge; on a
+    desktop the token is far below it and wins, so no media query is needed.
+  */
+  inline-size: min(var(--review-card-width), 82vw);
+  min-block-size: var(--review-card-min-height);
+  padding: var(--review-card-padding);
+  border: var(--review-card-border-width) solid var(--review-card-border);
+  border-radius: var(--review-card-radius);
+  background-color: var(--review-card-surface);
+  box-shadow: var(--review-card-shadow);
+  color: var(--review-card-ink);
+  /* A figure carries browser default margins. */
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------- Quote */
+
+.review-card__quote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: var(--review-card-quote-size);
+  font-weight: var(--review-card-quote-weight);
+  line-height: var(--review-card-quote-line-height);
+  letter-spacing: normal;
+  color: var(--review-card-ink);
+  /* Long unbroken strings (a url in a review) must not widen the card. */
+  overflow-wrap: anywhere;
+}
+
+.review-card__quote p {
+  margin: 0;
+}
+
+.review-card__quote p + p {
+  margin-block-start: 1.2rem;
+}
+
+/*
+  Typographic quotation marks, opt-in. `quotes` is set explicitly so the marks
+  follow the storefront's language rather than the browser default.
+*/
+.review-card--quoted .review-card__quote {
+  quotes: '\201C' '\201D' '\2018' '\2019';
+}
+
+.review-card--quoted .review-card__quote p:first-of-type::before {
+  content: open-quote;
+}
+
+.review-card--quoted .review-card__quote p:last-of-type::after {
+  content: close-quote;
+}
+
+/*
+  Optional line cap. Opt-in through the modifier so the quote keeps normal block
+  layout unless a section actually asks for a cap: -webkit-box is a legacy
+  layout mode and is not something to impose on every card. It only trims
+  length variance between cards; the full text stays in the DOM and is read out
+  in full by assistive tech.
+*/
+.review-card--clamped .review-card__quote {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--review-card-quote-clamp);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ Author */
+
+.review-card__author {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  /* Pins the attribution to the foot when cards in a row stretch to a shared
+     height, which is what lines the avatars up across the row. */
+  margin-block-start: auto;
+  padding: 0;
+}
+
+.review-card__avatar,
+.review-card__avatar-fallback {
+  flex: 0 0 auto;
+  inline-size: var(--review-card-avatar-size);
+  block-size: var(--review-card-avatar-size);
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: rgba(var(--color-foreground), 0.08);
+}
+
+/* Stands in for a missing photo so the row of avatars never breaks alignment. */
+.review-card__avatar-fallback {
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--review-card-avatar-size) * 0.4);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--review-card-accent);
+  background-color: rgba(var(--color-foreground), 0.08);
+}
+
+.review-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  /* Flex children default to min-width:auto; without this a long name would
+     stretch the card past its token width. */
+  min-inline-size: 0;
+}
+
+.review-card__name {
+  font-size: var(--review-card-name-size);
+  font-weight: var(--review-card-name-weight);
+  line-height: 1.3;
+  color: var(--review-card-ink);
+  overflow-wrap: anywhere;
+}
+
+.review-card__role {
+  font-size: var(--review-card-role-size);
+  line-height: 1.3;
+  color: var(--review-card-muted);
+  overflow-wrap: anywhere;
+}

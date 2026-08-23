@@ -1,0 +1,421 @@
+{% comment %}
+  Collection card grid — a responsive grid of image-first collection cards.
+
+  Each card is a block, so the merchant adds, reorders and removes them in the
+  Theme Editor. The card itself lives in snippets/collection-card.liquid and is
+  rendered once per block, so the markup is never duplicated; this section only
+  supplies data and emits the presentation tokens the card reads.
+
+  Reused from the theme: `icon-arrow.svg`, Dawn's image_url/image_tag responsive
+  helpers, the colour-scheme system and the page-width container.
+{% endcomment %}
+
+{{ 'component-collection-card.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign cards = section.blocks | where: 'type', 'collection'
+
+  # A block with no collection and no image would render an empty tile.
+  assign renderable = 0
+  for block in cards
+    # One line on purpose: inside a liquid tag every line is parsed as its own
+    # tag, so a condition continued onto the next line reads as an unknown
+    # `or` tag.
+    if block.settings.collection != blank or block.settings.image != blank or block.settings.title != blank
+      assign renderable = renderable | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if renderable > 0 -%}
+  {%- style -%}
+    #CollectionCardGrid-{{ section.id }} {
+      --collection-card-radius: {{ section.settings.card_radius }}px;
+      --collection-card-ratio: {{ section.settings.card_ratio }};
+      --collection-card-padding: {{ section.settings.card_padding }}px;
+      --collection-card-title-size: {{ section.settings.title_size }}px;
+      --collection-card-title-weight: {{ section.settings.title_weight }};
+      --collection-card-arrow-size: {{ section.settings.arrow_size }}px;
+      --collection-card-arrow-border: {{ section.settings.arrow_border_width }}px;
+      --collection-card-duration: {{ section.settings.transition_duration }}ms;
+      --collection-card-scrim: {{ section.settings.scrim_strength | divided_by: 100.0 }};
+
+      --grid-gap: {{ section.settings.card_gap }}px;
+      --columns-desktop: {{ section.settings.columns_desktop }};
+      --columns-mobile: {{ section.settings.columns_mobile }};
+    }
+
+    #shopify-section-{{ section.id }} {
+      padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    }
+
+    {%- comment -%}
+      The grid is expressed here rather than in the component stylesheet because
+      the column counts are this section's settings, not the card's.
+    {%- endcomment -%}
+    #CollectionCardGrid-{{ section.id }} .collection-card-grid__list {
+      display: grid;
+      grid-template-columns: repeat(var(--columns-mobile), minmax(0, 1fr));
+      gap: var(--grid-gap);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    @media screen and (min-width: 750px) {
+      #CollectionCardGrid-{{ section.id }} .collection-card-grid__list {
+        grid-template-columns: repeat(
+          {%- if section.settings.columns_desktop > 2 -%}2{%- else -%}var(--columns-desktop){%- endif -%},
+          minmax(0, 1fr)
+        );
+      }
+    }
+
+    @media screen and (min-width: 990px) {
+      #CollectionCardGrid-{{ section.id }} .collection-card-grid__list {
+        grid-template-columns: repeat(var(--columns-desktop), minmax(0, 1fr));
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    class="collection-card-grid color-{{ section.settings.color_scheme }} isolate{% unless section.settings.full_width %} page-width{% endunless %}"
+    id="CollectionCardGrid-{{ section.id }}"
+  >
+    {%- if section.settings.heading != blank or section.settings.description != blank -%}
+      <div class="collection-card-grid__header collection-card-grid__header--{{ section.settings.heading_alignment }}">
+        {%- if section.settings.heading != blank -%}
+          {%- comment -%}
+            A fixed element with the level as a class, the way Dawn does it: a
+            dynamic tag name cannot be paired up by the Liquid HTML parser.
+          {%- endcomment -%}
+          <h2 class="collection-card-grid__heading {{ section.settings.heading_size }}">
+            {{- section.settings.heading | escape -}}
+          </h2>
+        {%- endif -%}
+
+        {%- if section.settings.description != blank -%}
+          <div class="collection-card-grid__description rte">{{ section.settings.description }}</div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ul class="collection-card-grid__list" role="list">
+      {%- assign card_index = 0 -%}
+      {%- for block in cards -%}
+        {%- if block.settings.collection == blank
+          and block.settings.image == blank
+          and block.settings.title == blank
+        -%}
+          {%- continue -%}
+        {%- endif -%}
+
+        {%- liquid
+          # Only the first row is worth fetching eagerly; everything below it
+          # is off-screen at first paint.
+          assign lazy_load_card = true
+          if card_index < section.settings.columns_desktop
+            assign lazy_load_card = false
+          endif
+        -%}
+
+        <li class="collection-card-grid__item" {{ block.shopify_attributes }}>
+          {%- render 'collection-card',
+            card_collection: block.settings.collection,
+            primary_image: block.settings.image,
+            secondary_image: block.settings.hover_image,
+            title: block.settings.title,
+            url: block.settings.link,
+            lazy_load: lazy_load_card,
+            card_index: card_index
+          -%}
+        </li>
+
+        {%- assign card_index = card_index | plus: 1 -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Collection cards",
+  "tag": "section",
+  "class": "collection-card-grid-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "max_blocks": 12,
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection card",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Supplies the title, link and default image unless overridden below."
+        },
+        {
+          "type": "header",
+          "content": "Images"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Default image",
+          "info": "Shown at rest. Falls back to the collection's featured image."
+        },
+        {
+          "type": "image_picker",
+          "id": "hover_image",
+          "label": "Hover image",
+          "info": "Crossfades in on hover. Leave empty for a card that does not change."
+        },
+        {
+          "type": "header",
+          "content": "Overrides"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "info": "Overrides the collection title."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Overrides the collection link."
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading level",
+      "info": "Choose the level that keeps this page's headings in order.",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between cards",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
+      "type": "select",
+      "id": "card_ratio",
+      "label": "Image aspect ratio",
+      "options": [
+        { "value": "1.2", "label": "Landscape (6:5)" },
+        { "value": "1", "label": "Square (1:1)" },
+        { "value": "0.85", "label": "Portrait (17:20)" },
+        { "value": "0.75", "label": "Tall (3:4)" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Card padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "scrim_strength",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Shade behind text",
+      "info": "Keeps the white title and arrow readable over a pale image. Raise it toward 80% if a card uses very light photography.",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "transition_duration",
+      "min": 0,
+      "max": 1000,
+      "step": 50,
+      "unit": "ms",
+      "label": "Hover transition duration",
+      "default": 500
+    },
+    {
+      "type": "header",
+      "content": "Title"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Title size",
+      "default": 20
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title weight",
+      "options": [
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "header",
+      "content": "Arrow"
+    },
+    {
+      "type": "range",
+      "id": "arrow_size",
+      "min": 32,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow size",
+      "default": 52
+    },
+    {
+      "type": "range",
+      "id": "arrow_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Arrow border width",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection cards",
+      "blocks": [
+        { "type": "collection" },
+        { "type": "collection" },
+        { "type": "collection" }
+      ]
+    }
+  ]
+}
+{% endschema %}

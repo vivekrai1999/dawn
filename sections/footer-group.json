@@ -8,25 +8,25 @@
         "announcement-1": {
           "type": "announcement",
           "settings": {
-            "text": "Save more"
+            "text": "Handmade in India"
           }
         },
         "announcement-2": {
           "type": "announcement",
           "settings": {
-            "text": "Buy more, save more"
+            "text": "Free shipping over ₹1,499"
           }
         },
         "announcement-3": {
           "type": "announcement",
           "settings": {
-            "text": "Free shipping over $50"
+            "text": "New patterns every week"
           }
         },
         "announcement-4": {
           "type": "announcement",
           "settings": {
-            "text": "Buy more, save more"
+            "text": "Gift wrapping on request"
           }
         }
       },
@@ -38,18 +38,18 @@
       ],
       "settings": {
         "enable_footer": true,
-        "background_color": "#0a0a0a",
-        "text_color": "#ffffff",
-        "secondary_text_color": "#a3a3a3",
-        "accent_color": "#f5b325",
+        "background_color": "#FFF7F1",
+        "text_color": "#4E3B34",
+        "secondary_text_color": "#786158",
+        "accent_color": "#9E6168",
         "content_max_width": 1600,
         "padding_top": 80,
         "padding_bottom": 32,
         "column_gap": 48,
         "row_gap_mobile": 40,
         "marquee_enable": true,
-        "marquee_background": "linear-gradient(90deg, rgba(126, 242, 157, 1) 0%, rgba(232, 247, 76, 1) 100%)",
-        "marquee_text_color": "#000000",
+        "marquee_background": "linear-gradient(90deg, #F7DFDA 0%, #E2EDE0 100%)",
+        "marquee_text_color": "#4E3B34",
         "marquee_separator": "●",
         "marquee_font_size": 44,
         "marquee_font_weight": "700",
@@ -69,7 +69,7 @@
         "support_menu": "footer",
         "menu_links_limit": 0,
         "newsletter_enable": true,
-        "newsletter_heading": "Join our fashion family",
+        "newsletter_heading": "Join our crochet circle",
         "newsletter_description": "<p>Enjoy exclusive updates, offers, and insider tips on the latest trends!</p>",
         "newsletter_placeholder": "Email Address",
         "newsletter_button_label": "Subscribe",

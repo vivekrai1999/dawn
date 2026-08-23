@@ -64,8 +64,8 @@
     Colour settings can be cleared in the editor, so resolve each to a concrete
     value before it reaches the style block.
   endcomment
-  assign bar_bg = section.settings.bar_background_color | default: '#16161d'
-  assign bar_text = section.settings.bar_text_color | default: '#ffffff'
+  assign bar_bg = section.settings.bar_background_color | default: '#F7DFDA'
+  assign bar_text = section.settings.bar_text_color | default: '#4E3B34'
   assign bar_icon = section.settings.bar_icon_color | default: bar_text
 
   assign phone_href = section.settings.phone_link
@@ -195,7 +195,9 @@
   "class": "announcement-bar-section",
   "max_blocks": 5,
   "enabled_on": {
-    "groups": ["header"]
+    "groups": [
+      "header"
+    ]
   },
   "blocks": [
     {
@@ -205,7 +207,7 @@
         {
           "type": "text",
           "id": "text",
-          "default": "t:sections.announcement-bar.blocks.announcement.settings.text.default",
+          "default": "Handmade in India — free shipping on orders over ₹1,499",
           "label": "t:sections.announcement-bar.blocks.announcement.settings.text.label"
         },
         {
@@ -221,19 +223,20 @@
       "type": "color",
       "id": "bar_background_color",
       "label": "Background",
-      "default": "#16161d"
+      "default": "#F7DFDA"
     },
     {
       "type": "color",
       "id": "bar_text_color",
       "label": "Text",
-      "default": "#ffffff"
+      "default": "#4E3B34"
     },
     {
       "type": "color",
       "id": "bar_icon_color",
       "label": "Icons",
-      "info": "Leave blank to use the text color."
+      "info": "Leave blank to use the text color.",
+      "default": "#9E6168"
     },
     {
       "type": "range",
@@ -310,7 +313,7 @@
       "type": "text",
       "id": "phone_number",
       "label": "Phone number",
-      "default": "0123456780"
+      "default": "+91 98765 43210"
     },
     {
       "type": "url",
@@ -362,7 +365,11 @@
   "presets": [
     {
       "name": "t:sections.announcement-bar.presets.name",
-      "blocks": [{ "type": "announcement" }]
+      "blocks": [
+        {
+          "type": "announcement"
+        }
+      ]
     }
   ]
 }

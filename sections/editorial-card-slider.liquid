@@ -114,6 +114,11 @@
       --editorial-watermark-color: {{ section.settings.watermark_color }};
       --editorial-watermark-top: {{ section.settings.watermark_offset }}px;
       --editorial-texture-opacity: {{ section.settings.texture_opacity | divided_by: 100.0 }};
+      {%- comment -%}
+        The dot texture needs a colour as well as an opacity now that the bed can
+        be light; white dots on a cream ground would simply not be there.
+      {%- endcomment -%}
+      --editorial-texture-rgb: {{ section.settings.texture_color.red }}, {{ section.settings.texture_color.green }}, {{ section.settings.texture_color.blue }};
 
       --editorial-arrow-size: {{ section.settings.arrow_size }}px;
       --editorial-arrow-bg: {{ section.settings.arrow_background }};
@@ -386,7 +391,10 @@
   "tag": "div",
   "class": "editorial-card-slider-section",
   "disabled_on": {
-    "groups": ["header", "footer"]
+    "groups": [
+      "header",
+      "footer"
+    ]
   },
   "max_blocks": 16,
   "blocks": [
@@ -411,15 +419,42 @@
           "label": "Image focal point",
           "info": "Which part of the image to keep when it is cropped.",
           "options": [
-            { "value": "top left", "label": "Top left" },
-            { "value": "top", "label": "Top" },
-            { "value": "top right", "label": "Top right" },
-            { "value": "left", "label": "Left" },
-            { "value": "center", "label": "Center" },
-            { "value": "right", "label": "Right" },
-            { "value": "bottom left", "label": "Bottom left" },
-            { "value": "bottom", "label": "Bottom" },
-            { "value": "bottom right", "label": "Bottom right" }
+            {
+              "value": "top left",
+              "label": "Top left"
+            },
+            {
+              "value": "top",
+              "label": "Top"
+            },
+            {
+              "value": "top right",
+              "label": "Top right"
+            },
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            },
+            {
+              "value": "bottom left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom",
+              "label": "Bottom"
+            },
+            {
+              "value": "bottom right",
+              "label": "Bottom right"
+            }
           ],
           "default": "center"
         },
@@ -427,13 +462,13 @@
           "type": "text",
           "id": "eyebrow",
           "label": "Category",
-          "default": "Shoulder bags"
+          "default": "Amigurumi"
         },
         {
           "type": "text",
           "id": "title",
           "label": "Title",
-          "default": "Crafting your unique style"
+          "default": "Soft toys hooked by hand"
         },
         {
           "type": "url",
@@ -498,9 +533,18 @@
       "label": "Heading level",
       "info": "Choose the level that keeps this page's headings in order.",
       "options": [
-        { "value": "h2", "label": "H2" },
-        { "value": "h3", "label": "H3" },
-        { "value": "h4", "label": "H4" }
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        }
       ],
       "default": "h2"
     },
@@ -509,9 +553,18 @@
       "id": "heading_alignment",
       "label": "Heading alignment",
       "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
       ],
       "default": "left"
     },
@@ -525,7 +578,7 @@
       "id": "watermark_text",
       "label": "Backdrop word",
       "info": "Large outlined word drawn behind the cards. Decorative only — it is hidden from screen readers. Leave empty to remove.",
-      "default": "Fashion"
+      "default": "Crochet"
     },
     {
       "type": "header",
@@ -575,13 +628,34 @@
       "label": "Cards on desktop",
       "info": "A half step lets the next card peek in.",
       "options": [
-        { "value": "3", "label": "3" },
-        { "value": "3.5", "label": "3.5" },
-        { "value": "4", "label": "4" },
-        { "value": "4.5", "label": "4.5" },
-        { "value": "5", "label": "5" },
-        { "value": "5.5", "label": "5.5" },
-        { "value": "6", "label": "6" }
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "3.5",
+          "label": "3.5"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "4.5",
+          "label": "4.5"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        },
+        {
+          "value": "5.5",
+          "label": "5.5"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        }
       ],
       "default": "4.5"
     },
@@ -590,10 +664,22 @@
       "id": "slides_tablet",
       "label": "Cards on tablet",
       "options": [
-        { "value": "2", "label": "2" },
-        { "value": "2.5", "label": "2.5" },
-        { "value": "3", "label": "3" },
-        { "value": "3.5", "label": "3.5" }
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "2.5",
+          "label": "2.5"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "3.5",
+          "label": "3.5"
+        }
       ],
       "default": "3"
     },
@@ -602,10 +688,22 @@
       "id": "slides_mobile",
       "label": "Cards on mobile",
       "options": [
-        { "value": "1", "label": "1" },
-        { "value": "1.2", "label": "1.2" },
-        { "value": "1.5", "label": "1.5" },
-        { "value": "2", "label": "2" }
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "1.2",
+          "label": "1.2"
+        },
+        {
+          "value": "1.5",
+          "label": "1.5"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
       ],
       "default": "1.2"
     },
@@ -678,7 +776,7 @@
       "type": "color",
       "id": "background_color",
       "label": "Background",
-      "default": "#101116"
+      "default": "#FFF7F1"
     },
     {
       "type": "image_picker",
@@ -708,21 +806,28 @@
     },
     {
       "type": "color",
+      "id": "texture_color",
+      "label": "Dot texture color",
+      "info": "The dots need to contrast with the background — light dots on a dark bed, dark on a light one.",
+      "default": "#9E6168"
+    },
+    {
+      "type": "color",
       "id": "text_color",
       "label": "Body text",
-      "default": "#f4f4f6"
+      "default": "#786158"
     },
     {
       "type": "color",
       "id": "heading_color",
       "label": "Heading",
-      "default": "#ffffff"
+      "default": "#4E3B34"
     },
     {
       "type": "color",
       "id": "watermark_color",
       "label": "Backdrop word outline",
-      "default": "#3a3f52"
+      "default": "#E7CFC9"
     },
     {
       "type": "range",
@@ -752,22 +857,31 @@
       "type": "color",
       "id": "card_background",
       "label": "Card background",
-      "default": "#1b1d26"
+      "default": "#F7DFDA"
     },
     {
       "type": "color",
       "id": "card_text_color",
       "label": "Card text",
-      "default": "#ffffff"
+      "default": "#FFFFFF"
     },
     {
       "type": "select",
       "id": "card_text_alignment",
       "label": "Card text alignment",
       "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
       ],
       "default": "center"
     },
@@ -874,10 +988,22 @@
       "id": "title_font_weight",
       "label": "Card title weight",
       "options": [
-        { "value": "400", "label": "Regular" },
-        { "value": "500", "label": "Medium" },
-        { "value": "600", "label": "Semibold" },
-        { "value": "700", "label": "Bold" }
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
       ],
       "default": "400"
     },
@@ -896,9 +1022,18 @@
       "id": "title_text_transform",
       "label": "Card title case",
       "options": [
-        { "value": "none", "label": "As typed" },
-        { "value": "uppercase", "label": "Uppercase" },
-        { "value": "capitalize", "label": "Capitalized" }
+        {
+          "value": "none",
+          "label": "As typed"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalized"
+        }
       ],
       "default": "uppercase"
     },
@@ -969,19 +1104,19 @@
       "type": "color",
       "id": "arrow_background",
       "label": "Arrow background",
-      "default": "#101116"
+      "default": "#FFF7F1"
     },
     {
       "type": "color",
       "id": "arrow_color",
       "label": "Arrow icon",
-      "default": "#ffffff"
+      "default": "#9E6168"
     },
     {
       "type": "color",
       "id": "arrow_border_color",
       "label": "Arrow border",
-      "default": "#ffffff"
+      "default": "#9E6168"
     }
   ],
   "presets": [
@@ -991,36 +1126,36 @@
         {
           "type": "card",
           "settings": {
-            "eyebrow": "Shoulder bags",
-            "title": "Crafting your unique style"
+            "eyebrow": "Amigurumi",
+            "title": "Soft toys hooked by hand"
           }
         },
         {
           "type": "card",
           "settings": {
-            "eyebrow": "Trendy bags",
-            "title": "Stories behind iconic designs"
+            "eyebrow": "Baby blankets",
+            "title": "Warmth for the little ones"
           }
         },
         {
           "type": "card",
           "settings": {
-            "eyebrow": "Brown collections",
-            "title": "A guide to the best brands"
+            "eyebrow": "Home decor",
+            "title": "Doilies, runners and coasters"
           }
         },
         {
           "type": "card",
           "settings": {
-            "eyebrow": "Side bags",
-            "title": "Stay organized & stylish"
+            "eyebrow": "Yarn and hooks",
+            "title": "Everything your project needs"
           }
         },
         {
           "type": "card",
           "settings": {
-            "eyebrow": "Sling bags",
-            "title": "Ultimate blend of comfort"
+            "eyebrow": "Festive gifting",
+            "title": "Handmade presents for every occasion"
           }
         }
       ]

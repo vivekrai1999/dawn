@@ -120,15 +120,141 @@
   margin-left: 0;
 }
 
-.header__inline-menu > .list-menu,
-.header__inline-menu > .list-menu--inline {
+.header__inline-menu .list-menu,
+.header__inline-menu .list-menu--inline {
   display: flex;
-  flex-wrap: wrap;
+  /* One line that scrolls, rather than wrapping to a second row inside a pill
+     that cannot grow. */
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--nav-link-gap);
   margin: 0;
   padding: 0;
   list-style: none;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  /* The arrows are the affordance; a scrollbar inside the pill is noise. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+
+.header__inline-menu .list-menu::-webkit-scrollbar {
+  display: none;
+}
+
+.header__inline-menu .list-menu > li {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+/*
+  The menu card lives inside this nav, but its link lists are a normal stacked
+  layout — they must not pick up the scrolling row's nowrap and overflow.
+*/
+.header__inline-menu .header__megamenu-links,
+.header__inline-menu .header__megamenu-products {
+  display: grid;
+  flex-wrap: initial;
+  overflow: visible;
+  scroll-snap-type: none;
+}
+
+.header__inline-menu .header__megamenu-links > li,
+.header__inline-menu .header__megamenu-products > li {
+  flex: initial;
+  scroll-snap-align: none;
+}
+
+/* ------------------------------------------------------------- Menu scroller */
+
+/*
+  Wraps the list so the arrows can sit outside the scrolling box. The element
+  adds `nav-scroller--overflowing` once its own measurement says the list does
+  not fit, so the arrows never appear on a menu that already fits.
+*/
+nav-scroller {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* Keeps the arrows off the first and last menu item rather than butting
+     straight against them. Collapses to nothing when the arrows are hidden,
+     since the gap only applies between rendered flex items. */
+  gap: 1.2rem;
+  min-width: 0;
+}
+
+.nav-scroller__viewport {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/*
+  A circle with a hairline border, the same control shape the collection cards and
+  hero use, so the nav arrows read as part of the set rather than bare glyphs.
+*/
+.nav-scroller__arrow {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.22);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--nav-text);
+  cursor: pointer;
+  transition: color var(--duration-short, 100ms) ease,
+    background-color var(--duration-short, 100ms) ease,
+    border-color var(--duration-short, 100ms) ease,
+    transform var(--duration-short, 100ms) ease, opacity var(--duration-short, 100ms) ease;
+}
+
+nav-scroller.nav-scroller--overflowing .nav-scroller__arrow {
+  display: inline-flex;
+}
+
+.nav-scroller__arrow:hover:not([disabled]) {
+  color: var(--nav-text-hover);
+  border-color: var(--nav-text-hover);
+  background-color: rgba(var(--color-foreground), 0.05);
+}
+
+.nav-scroller__arrow:active:not([disabled]) {
+  transform: scale(0.92);
+}
+
+.nav-scroller__arrow[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.nav-scroller__arrow:focus-visible {
+  outline: 0.2rem solid var(--nav-text-hover);
+  outline-offset: 0.2rem;
+}
+
+.nav-scroller__arrow .svg-wrapper {
+  width: 1rem;
+  height: 1rem;
+}
+
+.nav-scroller__arrow--prev .svg-wrapper {
+  transform: rotate(90deg);
+}
+
+.nav-scroller__arrow--next .svg-wrapper {
+  transform: rotate(-90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__inline-menu .list-menu {
+    scroll-behavior: auto;
+  }
 }
 
 .header__inline-menu .header__menu-item {
@@ -147,10 +273,65 @@
   transition: color var(--duration-short, 100ms) ease;
 }
 
+/*
+  Micro-interaction: an underline grows from the centre and the label lifts a
+  hair. Both are drawn on a pseudo-element and a transform, so nothing around the
+  item reflows as it animates — the row's widths are untouched.
+*/
+.header__inline-menu .header__menu-item > span {
+  position: relative;
+  display: inline-block;
+  transition: transform var(--duration-short, 100ms) ease;
+}
+
+.header__inline-menu .header__menu-item > span::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: -0.4rem;
+  height: 0.1rem;
+  background-color: currentColor;
+  transition: left var(--duration-default, 200ms) ease, right var(--duration-default, 200ms) ease;
+}
+
+.header__inline-menu .header__menu-item:hover > span,
+.header__inline-menu .header__menu-item:focus-visible > span,
+.header__inline-menu details[open] > .header__menu-item > span {
+  transform: translateY(-0.1rem);
+}
+
+.header__inline-menu .header__menu-item:hover > span::after,
+.header__inline-menu .header__menu-item:focus-visible > span::after,
+.header__inline-menu details[open] > .header__menu-item > span::after,
+.header__inline-menu .header__menu-item[aria-current] > span::after {
+  left: 0;
+  right: 0;
+}
+
 .header__menu-item:hover,
 .header__menu-item:focus-visible,
 .header__menu-item[aria-current] {
   color: var(--nav-text-hover);
+}
+
+/* Motion is the flourish; the colour change still marks the state. */
+@media (prefers-reduced-motion: reduce) {
+  .header__inline-menu .header__menu-item > span,
+  .header__inline-menu .header__menu-item > span::after,
+  .nav-scroller__arrow,
+  .header__menu-item .icon-caret {
+    transition: none;
+  }
+
+  .header__inline-menu .header__menu-item:hover > span,
+  .header__inline-menu details[open] > .header__menu-item > span {
+    transform: none;
+  }
+
+  .nav-scroller__arrow:active:not([disabled]) {
+    transform: none;
+  }
 }
 
 /*
@@ -175,9 +356,18 @@
   border-radius: var(--popup-corner-radius);
 }
 
+/*
+  base.css pins `summary .icon-caret` with position:absolute; right:1.5rem, so in
+  a flex menu item it lands on top of the label instead of after it. Returning it
+  to the flow lets the item's own gap space it.
+*/
 .header__menu-item .icon-caret {
+  position: static;
+  flex: 0 0 auto;
+  display: block;
   width: 1rem;
   height: 1rem;
+  transition: transform var(--duration-short, 100ms) ease;
 }
 
 /* ---------------------------------------------------------------- Actions */
@@ -698,12 +888,148 @@ header-drawer {
     z-index: 4;
   }
 
+  .header__megamenu {
+    display: block;
+  }
+
+  .header__megamenu-products {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    margin-block-start: 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
   .header__panel-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.6rem;
     margin-block-end: 2.4rem;
+  }
+
+  /*
+    The nav dropdown is the same card as cart and search: fixed and anchored
+    under the pill rather than nested in the menu list. That is not only for
+    consistency — the list scrolls horizontally, and a panel inside a scrolling
+    box would be clipped by it.
+  */
+  .header__megamenu {
+    display: grid;
+    grid-template-columns: minmax(18rem, 22rem) 1fr;
+    gap: 3.2rem;
+    align-items: start;
+  }
+
+  /* With no products to show, the links take the full width. */
+  .header__megamenu--links-only {
+    grid-template-columns: 1fr;
+  }
+
+  .header__megamenu-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0.4rem 2.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .header__megamenu--links-only .header__megamenu-links {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+
+  .header__megamenu-group + .header__megamenu-group {
+    margin-block-start: 1.6rem;
+  }
+
+  .header__megamenu-heading {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--panel-text);
+    opacity: 0.62;
+  }
+
+  .header__megamenu-link {
+    display: block;
+    padding: 0.6rem 0;
+    color: var(--panel-text);
+    font-size: 1.5rem;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: color var(--duration-short, 100ms) ease;
+  }
+
+  .header__megamenu-link:hover,
+  .header__megamenu-link:focus-visible {
+    color: var(--panel-accent);
+    text-decoration: none;
+  }
+
+  .header__megamenu-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .header__megamenu-product {
+    display: block;
+    color: var(--panel-text);
+    text-decoration: none;
+  }
+
+  .header__megamenu-product:hover .header__megamenu-product-title,
+  .header__megamenu-product:focus-visible .header__megamenu-product-title {
+    color: var(--panel-accent);
+  }
+
+  .header__megamenu-product-media {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 1.2rem;
+    background-color: rgba(0, 0, 0, 0.04);
+    margin-block-end: 0.8rem;
+  }
+
+  .header__megamenu-product-media img,
+  .header__megamenu-product-media .placeholder-svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .header__megamenu-product-title {
+    display: block;
+    font-size: 1.4rem;
+    line-height: 1.3;
+    transition: color var(--duration-short, 100ms) ease;
+    /* Two lines, so a long product name cannot make one card taller. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .header__megamenu-product-price {
+    display: block;
+    margin-block-start: 0.2rem;
+    font-size: 1.3rem;
+    opacity: 0.7;
+  }
+
+  /* Rotates with the disclosure, matching the facet pills. */
+  .header__inline-menu details[open] > .header__menu-item .icon-caret {
+    transform: rotate(180deg);
   }
 
   .header__panel-title {

@@ -1,103 +1,200 @@
 {% comment %}
-  Renders a standard dropdown style menu for the header.
+  Renders the header's inline menu.
+
+  Two things differ from Dawn's original:
+
+  1. The list is wrapped in <nav-scroller>, so a long menu stays on one line and
+     scrolls instead of wrapping inside a pill that cannot grow. The arrows only
+     appear once the element measures that the list actually overflows.
+
+  2. A link with children opens the same card as cart and search — `.header__panel`,
+     fixed and anchored under the pill — rather than a small popup nested in the
+     list. Nesting it would put it inside the scrolling box, which would clip it.
+     Where a top-level link points at a collection, the card also shows a few of
+     that collection's products.
 
   Usage:
-  {% render 'header-dropdown-menu' %}
+    render 'header-dropdown-menu'
 {% endcomment %}
 
 <nav class="header__inline-menu">
-  <ul class="list-menu list-menu--inline" role="list">
-    {%- for link in section.settings.menu.links -%}
-      <li>
-        {%- if link.links != blank -%}
-          <header-menu>
-            <details id="Details-HeaderMenu-{{ forloop.index }}">
-              <summary
+  <nav-scroller class="nav-scroller">
+    <button
+      type="button"
+      class="nav-scroller__arrow nav-scroller__arrow--prev"
+      data-nav-prev
+      aria-label="{{ 'general.slider.previous_slide' | t }}"
+      tabindex="-1"
+    >
+      <span class="svg-wrapper" aria-hidden="true">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+    </button>
+
+    <div class="nav-scroller__viewport" data-nav-viewport>
+      <ul class="list-menu list-menu--inline" role="list">
+        {%- for link in section.settings.menu.links -%}
+          <li>
+            {%- if link.links != blank -%}
+              {%- liquid
+                comment
+                  link.object is the resource a menu item points at. For a
+                  collection link that gives real products to preview — never
+                  invented, and empty for any other link type.
+                endcomment
+                assign menu_products = null
+                if section.settings.megamenu_products > 0 and link.type == 'collection_link'
+                  assign menu_products = link.object.products
+                endif
+              -%}
+              <header-menu>
+                <details id="Details-HeaderMenu-{{ forloop.index }}" class="header__menu-disclosure">
+                  <summary
+                    id="HeaderMenu-{{ link.handle }}"
+                    class="header__menu-item list-menu__item link focus-inset"
+                  >
+                    <span
+                      {%- if link.child_active %}
+                        class="header__active-menu-item"
+                      {% endif %}
+                    >
+                      {{- link.title | escape -}}
+                    </span>
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </summary>
+
+                  <div
+                    id="HeaderMenu-MenuList-{{ forloop.index }}"
+                    class="header__panel header__panel--menu color-{{ section.settings.menu_color_scheme }}"
+                  >
+                    <div class="header__panel-head">
+                      <p class="header__panel-title">{{ link.title | escape }}</p>
+                      <button
+                        type="button"
+                        class="header__panel-close"
+                        data-menu-close
+                        aria-label="{{ 'accessibility.close' | t }}"
+                      >
+                        <span class="svg-wrapper" aria-hidden="true">
+                          {{- 'icon-close.svg' | inline_asset_content -}}
+                        </span>
+                      </button>
+                    </div>
+
+                    <div class="header__megamenu{% if menu_products == blank %} header__megamenu--links-only{% endif %}">
+                      <div class="header__megamenu-nav">
+                        {%- comment -%}
+                          A child with its own children becomes a titled group, so
+                          three menu levels stay readable as one flat card rather
+                          than a disclosure inside a disclosure.
+                        {%- endcomment -%}
+                        <ul class="header__megamenu-links" role="list">
+                          {%- for childlink in link.links -%}
+                            {%- if childlink.links == blank -%}
+                              <li>
+                                <a
+                                  id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                                  href="{{ childlink.url }}"
+                                  class="header__megamenu-link"
+                                  {% if childlink.current %}
+                                    aria-current="page"
+                                  {% endif %}
+                                >
+                                  {{ childlink.title | escape }}
+                                </a>
+                              </li>
+                            {%- else -%}
+                              <li class="header__megamenu-group">
+                                <p class="header__megamenu-heading">{{ childlink.title | escape }}</p>
+                                <ul class="header__megamenu-links" role="list">
+                                  {%- for grandchildlink in childlink.links -%}
+                                    <li>
+                                      <a
+                                        href="{{ grandchildlink.url }}"
+                                        class="header__megamenu-link"
+                                        {% if grandchildlink.current %}
+                                          aria-current="page"
+                                        {% endif %}
+                                      >
+                                        {{ grandchildlink.title | escape }}
+                                      </a>
+                                    </li>
+                                  {%- endfor -%}
+                                </ul>
+                              </li>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </ul>
+                      </div>
+
+                      {%- if menu_products != blank -%}
+                        <ul class="header__megamenu-products" role="list">
+                          {%- for product in menu_products limit: section.settings.megamenu_products -%}
+                            <li>
+                              <a class="header__megamenu-product" href="{{ product.url }}">
+                                <span class="header__megamenu-product-media">
+                                  {%- if product.featured_image -%}
+                                    {{
+                                      product.featured_image
+                                      | image_url: width: 400
+                                      | image_tag:
+                                        loading: 'lazy',
+                                        widths: '150, 200, 300, 400',
+                                        sizes: '200px',
+                                        alt: product.featured_image.alt
+                                    }}
+                                  {%- else -%}
+                                    {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                                  {%- endif -%}
+                                </span>
+                                <span class="header__megamenu-product-title">
+                                  {{- product.title | escape -}}
+                                </span>
+                                <span class="header__megamenu-product-price">
+                                  {{- product.price | money -}}
+                                </span>
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </details>
+              </header-menu>
+            {%- else -%}
+              <a
                 id="HeaderMenu-{{ link.handle }}"
-                class="header__menu-item list-menu__item link focus-inset"
+                href="{{ link.url }}"
+                class="header__menu-item list-menu__item link link--text focus-inset"
+                {% if link.current %}
+                  aria-current="page"
+                {% endif %}
               >
                 <span
-                  {%- if link.child_active %}
+                  {%- if link.current %}
                     class="header__active-menu-item"
                   {% endif %}
                 >
                   {{- link.title | escape -}}
                 </span>
-                {{- 'icon-caret.svg' | inline_asset_content -}}
-              </summary>
-              <ul
-                id="HeaderMenu-MenuList-{{ forloop.index }}"
-                class="header__submenu list-menu list-menu--disclosure color-{{ section.settings.menu_color_scheme }} gradient caption-large motion-reduce global-settings-popup"
-                role="list"
-                tabindex="-1"
-              >
-                {%- for childlink in link.links -%}
-                  <li>
-                    {%- if childlink.links == blank -%}
-                      <a
-                        id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
-                        href="{{ childlink.url }}"
-                        class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"
-                        {% if childlink.current %}
-                          aria-current="page"
-                        {% endif %}
-                      >
-                        {{ childlink.title | escape }}
-                      </a>
-                    {%- else -%}
-                      <details id="Details-HeaderSubMenu-{{ link.handle }}-{{ childlink.handle }}">
-                        <summary
-                          id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
-                          class="header__menu-item link link--text list-menu__item focus-inset caption-large"
-                        >
-                          <span>{{ childlink.title | escape }}</span>
-                          {{- 'icon-caret.svg' | inline_asset_content -}}
-                        </summary>
-                        <ul
-                          id="HeaderMenu-SubMenuList-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
-                          class="header__submenu list-menu motion-reduce"
-                        >
-                          {%- for grandchildlink in childlink.links -%}
-                            <li>
-                              <a
-                                id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
-                                href="{{ grandchildlink.url }}"
-                                class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"
-                                {% if grandchildlink.current %}
-                                  aria-current="page"
-                                {% endif %}
-                              >
-                                {{ grandchildlink.title | escape }}
-                              </a>
-                            </li>
-                          {%- endfor -%}
-                        </ul>
-                      </details>
-                    {%- endif -%}
-                  </li>
-                {%- endfor -%}
-              </ul>
-            </details>
-          </header-menu>
-        {%- else -%}
-          <a
-            id="HeaderMenu-{{ link.handle }}"
-            href="{{ link.url }}"
-            class="header__menu-item list-menu__item link link--text focus-inset"
-            {% if link.current %}
-              aria-current="page"
-            {% endif %}
-          >
-            <span
-              {%- if link.current %}
-                class="header__active-menu-item"
-              {% endif %}
-            >
-              {{- link.title | escape -}}
-            </span>
-          </a>
-        {%- endif -%}
-      </li>
-    {%- endfor -%}
-  </ul>
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <button
+      type="button"
+      class="nav-scroller__arrow nav-scroller__arrow--next"
+      data-nav-next
+      aria-label="{{ 'general.slider.next_slide' | t }}"
+      tabindex="-1"
+    >
+      <span class="svg-wrapper" aria-hidden="true">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+    </button>
+  </nav-scroller>
 </nav>

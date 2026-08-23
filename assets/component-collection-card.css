@@ -1,0 +1,294 @@
+/*
+  Collection card — snippets/collection-card.liquid.
+
+  An image-first card with the collection title at the foot and a circular arrow
+  control. A second image crossfades in on hover and the arrow turns to point
+  away, which is the only thing that changes: the card box, the title and the
+  arrow all hold their position, so nothing reflows.
+
+  Every value below comes from a --collection-card-* token with a default, so the
+  card works standalone and a section can retune it by emitting the tokens on an
+  ancestor. Nothing here is scoped to a section.
+*/
+
+.collection-card {
+  --collection-card-radius: 16px;
+  --collection-card-ratio: 1;
+  --collection-card-padding: 24px;
+  --collection-card-title-size: 20px;
+  --collection-card-title-weight: 500;
+  --collection-card-arrow-size: 52px;
+  --collection-card-arrow-border: 1px;
+  --collection-card-duration: 500ms;
+  --collection-card-scrim: 0.55;
+  --collection-card-ink: 255, 255, 255;
+
+  position: relative;
+  display: block;
+  /* Clips the image to the card's rounded corners, including while it scales. */
+  overflow: hidden;
+  border-radius: var(--collection-card-radius);
+  color: rgb(var(--collection-card-ink));
+  text-decoration: none;
+  /* Own stacking context so the scrim and content order never depend on what
+     the surrounding page happens to do. */
+  isolation: isolate;
+}
+
+.collection-card:hover,
+.collection-card:focus {
+  color: rgb(var(--collection-card-ink));
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------------- Media */
+
+/*
+  aspect-ratio fixes the box before either image loads, so the card reserves its
+  space and the hover image can never shift the layout.
+*/
+.collection-card__media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--collection-card-ratio);
+  overflow: hidden;
+  background-color: rgba(var(--color-foreground), 0.06);
+}
+
+/*
+  Both images occupy exactly the same box. The primary sits in flow so it defines
+  nothing about sizing (the ratio does that); the secondary is layered on top and
+  faded in.
+*/
+.collection-card__image,
+.collection-card__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.collection-card__image--secondary {
+  opacity: 0;
+  transition: opacity var(--collection-card-duration) ease;
+}
+
+/*
+  Hover is a pointer-only affordance. Touch devices fall through to the primary
+  image, which is why the secondary is opt-in rather than always stacked.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .collection-card--has-hover:hover .collection-card__image--secondary,
+  .collection-card--has-hover:focus-visible .collection-card__image--secondary {
+    opacity: 1;
+  }
+}
+
+/* Keyboard users get the same reveal, on any device. */
+.collection-card--has-hover:focus-within .collection-card__image--secondary {
+  opacity: 1;
+}
+
+/*
+  Legibility. White text and a white-bordered control need a dark ground, and a
+  photograph cannot be relied on to provide one — a pale corner would leave both
+  invisible. The scrim is concentrated at the foot where the content sits and
+  clears well before the top, so the image is not flattened.
+
+  It holds full strength across the band the content occupies rather than fading
+  from the very bottom: a gradient that starts decaying immediately is already
+  weak by the time it reaches the text, which is where it is needed.
+*/
+.collection-card__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, var(--collection-card-scrim)) 0%,
+    rgba(0, 0, 0, var(--collection-card-scrim)) 32%,
+    rgba(0, 0, 0, calc(var(--collection-card-scrim) * 0.5)) 52%,
+    rgba(0, 0, 0, 0) 78%
+  );
+}
+
+.collection-card--scrim-top .collection-card__scrim {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, var(--collection-card-scrim)) 0%,
+    rgba(0, 0, 0, var(--collection-card-scrim)) 32%,
+    rgba(0, 0, 0, calc(var(--collection-card-scrim) * 0.5)) 52%,
+    rgba(0, 0, 0, 0) 78%
+  );
+}
+
+/* ----------------------------------------------------------------- Content */
+
+.collection-card__content {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: var(--collection-card-padding);
+}
+
+.collection-card--title-top .collection-card__content {
+  bottom: auto;
+  top: 0;
+}
+
+.collection-card__title {
+  font-size: var(--collection-card-title-size);
+  font-weight: var(--collection-card-title-weight);
+  line-height: 1.2;
+  letter-spacing: normal;
+  /* Backs the scrim up on a blown-out highlight it cannot fully cover. */
+  text-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.35);
+  /* Never let a long collection name push the arrow out of the card. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------- Arrow */
+
+.collection-card__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: var(--collection-card-arrow-size);
+  height: var(--collection-card-arrow-size);
+  border: var(--collection-card-arrow-border) solid rgba(var(--collection-card-ink), 0.85);
+  border-radius: 50%;
+  color: rgb(var(--collection-card-ink));
+  transition: background-color var(--collection-card-duration) ease,
+    color var(--collection-card-duration) ease, border-color var(--collection-card-duration) ease;
+}
+
+.collection-card__arrow .svg-wrapper {
+  display: flex;
+  width: calc(var(--collection-card-arrow-size) * 0.32);
+  height: calc(var(--collection-card-arrow-size) * 0.32);
+  /* The turn is the hover cue; see the rotation below. */
+  transition: transform var(--collection-card-duration) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.collection-card__arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+  On hover the arrow turns from pointing along the card to pointing out of it —
+  the "you are leaving for this collection" cue from the reference. Rotating the
+  existing arrow avoids shipping a second icon.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .collection-card:hover .collection-card__arrow .svg-wrapper {
+    transform: rotate(-45deg);
+  }
+
+  .collection-card:hover .collection-card__arrow {
+    background-color: rgba(var(--collection-card-ink), 0.16);
+  }
+}
+
+.collection-card:focus-within .collection-card__arrow .svg-wrapper {
+  transform: rotate(-45deg);
+}
+
+/* ------------------------------------------------------------------ Focus */
+
+/*
+  The card is one big link, so focus has to read on the whole card rather than on
+  a glyph inside it. Offset inward because the card clips its own overflow.
+*/
+.collection-card:focus-visible {
+  outline: 0.2rem solid rgb(var(--collection-card-ink));
+  outline-offset: -0.4rem;
+}
+
+/* Fallback for engines without :focus-visible. */
+.collection-card:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* -------------------------------------------------------------- Small screens */
+
+@media screen and (max-width: 749px) {
+  .collection-card {
+    /* Keeps the control a comfortable tap target and the title readable when the
+       card is only a fraction of its desktop width. */
+    --collection-card-padding: 18px;
+    --collection-card-arrow-size: 44px;
+    --collection-card-title-size: 17px;
+  }
+}
+
+/* --------------------------------------------------------- Reduced motion */
+
+/*
+  The crossfade and the turn are decoration. Reduced motion keeps both states
+  reachable but removes the animation between them.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .collection-card__image--secondary,
+  .collection-card__arrow,
+  .collection-card__arrow .svg-wrapper {
+    transition: none;
+  }
+
+  .collection-card:hover .collection-card__arrow .svg-wrapper,
+  .collection-card:focus-within .collection-card__arrow .svg-wrapper {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------- Grid wrapper (section chrome) */
+
+.collection-card-grid__header {
+  max-width: 68rem;
+  margin-block-end: 3.2rem;
+}
+
+.collection-card-grid__header--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.collection-card-grid__header--right {
+  margin-inline-start: auto;
+  text-align: right;
+}
+
+.collection-card-grid__heading {
+  margin: 0;
+}
+
+.collection-card-grid__description {
+  margin-block: 1.2rem 0;
+  opacity: 0.8;
+}
+
+.collection-card-grid__description > :first-child {
+  margin-top: 0;
+}
+
+.collection-card-grid__description > :last-child {
+  margin-bottom: 0;
+}
+
+.collection-card-grid__item {
+  /* Grid items default to min-width:auto and a long title would otherwise stop
+     the column shrinking. */
+  min-width: 0;
+}

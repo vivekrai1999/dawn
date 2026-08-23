@@ -344,6 +344,9 @@
     "video": {
       "load_video": "Load video: {{ description }}"
     },
+    "reviews_marquee": {
+      "label": "Customer reviews"
+    },
     "slideshow": {
       "load_slide": "Load slide",
       "previous_slideshow": "Previous slide",

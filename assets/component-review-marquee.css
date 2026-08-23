@@ -1,0 +1,254 @@
+/*
+  Review marquee — snippets/reviews-marquee-row.liquid + assets/reviews-marquee.js.
+
+  One or more rows of review cards that scroll horizontally, forever, in either
+  direction. The loop is a single CSS animation on a track that holds N copies of
+  the same card group: the track slides by exactly one group width and restarts,
+  so the frame it restarts on is pixel-identical to the frame it left. Nothing is
+  measured or repainted per frame — the browser animates one composited transform.
+
+  Two copies are rendered server-side, which is enough to loop seamlessly for any
+  row at least as wide as its container. reviews-marquee.js appends more copies
+  when the cards do not fill the row, and swaps the percentage shift below for the
+  measured pixel width; everything here still works, at the Liquid-estimated
+  speed, if that script never runs.
+
+  This file styles the row and the motion only. The card is its own component —
+  assets/component-review-card.css — and is never reached into from here.
+*/
+
+.review-marquee {
+  --review-marquee-card-gap: 20px;
+  --review-marquee-row-gap: 20px;
+  --review-marquee-duration: 40s;
+  --review-marquee-easing: linear;
+  --review-marquee-fade: 0px;
+  /* Room under a manually scrollable row for its scrollbar. */
+  --review-marquee-scrollbar-space: 1.2rem;
+  /*
+    How far the track travels before repeating. 50% is exactly one group while
+    the track holds the two server-rendered copies; the script overrides it with
+    the measured group width once it may have added more.
+  */
+  --review-marquee-shift: 50%;
+
+  display: block;
+}
+
+/* The rows are grouped so that the section's own header is not spaced by the
+   gap that separates one moving row from the next. */
+.review-marquee__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--review-marquee-row-gap);
+}
+
+/*
+  The clip is what keeps a full-bleed marquee from widening the page: the track
+  is deliberately wider than the viewport.
+*/
+.review-marquee__row {
+  position: relative;
+  overflow: hidden;
+}
+
+/*
+  Optional soft edges, so cards dissolve at the ends instead of being cut off by
+  the clip. Purely decorative — the mask is only painted when a section asks for
+  it by setting a non-zero fade width.
+*/
+.review-marquee--fade .review-marquee__row {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--review-marquee-fade),
+    #000 calc(100% - var(--review-marquee-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--review-marquee-fade),
+    #000 calc(100% - var(--review-marquee-fade)),
+    transparent 100%
+  );
+}
+
+.review-marquee__track {
+  display: flex;
+  /* Lets the track exceed the row instead of being squeezed into it. */
+  inline-size: max-content;
+  animation-name: review-marquee-scroll;
+  animation-duration: var(--review-marquee-duration);
+  animation-timing-function: var(--review-marquee-easing);
+  animation-iteration-count: infinite;
+  /* Promotes the track to its own layer so the loop never repaints the cards. */
+  will-change: transform;
+}
+
+.review-marquee__group {
+  display: flex;
+  flex: 0 0 auto;
+  /* The card list is a <ul>. */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+  The gap lives on the item rather than on the flex container so that the space
+  after the last card of a group is real width. That makes one group's width the
+  exact repeat distance, which is what lets the seam between the last card and
+  the first clone look like any other gap.
+*/
+.review-marquee__item {
+  display: flex;
+  margin-inline-end: var(--review-marquee-card-gap);
+}
+
+@keyframes review-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(var(--review-marquee-shift) * -1), 0, 0);
+  }
+}
+
+/*
+  Direction. Reversing the same animation starts the row at the far end of the
+  identical cycle, so a right-moving row is as seamless as a left-moving one and
+  costs no second set of keyframes.
+*/
+.review-marquee__row--reverse .review-marquee__track {
+  animation-direction: reverse;
+}
+
+/* ------------------------------------------------------------------- Pause */
+
+/*
+  The no-JS pause: abrupt, but working. When the script upgrades the element it
+  adds .review-marquee--enhanced and takes over, ramping the animation's playback
+  rate down instead so the row eases to a halt.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .review-marquee--pause-on-hover:not(.review-marquee--enhanced) .review-marquee__row:hover .review-marquee__track {
+    animation-play-state: paused;
+  }
+}
+
+.review-marquee--pause-on-hover:not(.review-marquee--enhanced)
+  .review-marquee__row:focus-within
+  .review-marquee__track {
+  animation-play-state: paused;
+}
+
+/* ------------------------------------------------------- Static / no motion */
+
+/*
+  Two ways to end up with a still row: the merchant turned auto-scroll off, or
+  the visitor asked the platform for reduced motion. Both land on the same
+  presentation — a plain horizontal scroller with one copy of the cards — so the
+  reviews stay fully readable and reachable without any motion at all.
+
+  The rule immediately below is the script's last resort instead: on an engine
+  without the Web Animations API it cannot ease the playback rate down, so it
+  marks the hovered row and lets CSS stop it dead.
+*/
+.review-marquee__row--paused .review-marquee__track {
+  animation-play-state: paused;
+}
+
+.review-marquee--static .review-marquee__row {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  /*
+    A classic scrollbar is laid out inside the row, on top of the last thing in
+    it — which is the foot of every card. Reserving the gutter, and a little
+    room below the cards, is what keeps the bottom row from looking sliced.
+  */
+  scrollbar-gutter: stable;
+  padding-block-end: var(--review-marquee-scrollbar-space);
+}
+
+.review-marquee--static .review-marquee__track {
+  animation: none;
+  transform: none;
+  will-change: auto;
+}
+
+/* A duplicate group is only ever there to feed the loop. */
+.review-marquee--static .review-marquee__group[data-marquee-clone] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-marquee .review-marquee__row {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
+    padding-block-end: var(--review-marquee-scrollbar-space);
+  }
+
+  .review-marquee .review-marquee__track {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  .review-marquee .review-marquee__group[data-marquee-clone] {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------ Section chrome */
+
+/*
+  Optional intro text above the rows. It follows the description treatment in
+  sections/product-showcase.liquid — same size token, same line height, same
+  clamped width — so the two sections stacked on a page read as one design. The
+  colour comes from the active colour scheme rather than from a per-section
+  colour setting, which is how the rest of this component works.
+*/
+.review-marquee-section__header {
+  margin-block-end: clamp(2.4rem, 3vw, 4rem);
+}
+
+.review-marquee-section__header--center {
+  text-align: center;
+}
+
+.review-marquee-section__header--center .review-marquee-section__intro {
+  margin-inline: auto;
+}
+
+.review-marquee-section__header--right {
+  text-align: right;
+}
+
+.review-marquee-section__header--right .review-marquee-section__intro {
+  margin-inline-start: auto;
+}
+
+.review-marquee-section__intro {
+  max-inline-size: min(100%, var(--review-marquee-description-width));
+  min-inline-size: 0;
+}
+
+.review-marquee-section__description {
+  margin: 0;
+  font-size: var(--review-marquee-description-size);
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.review-marquee-section__description > *:first-child {
+  margin-block-start: 0;
+}
+
+.review-marquee-section__description > *:last-child {
+  margin-block-end: 0;
+}

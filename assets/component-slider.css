@@ -1,3 +1,18 @@
+/*
+  Slider controls read from --slider-ink rather than --color-foreground, so the
+  dots, arrows and scrollbar can carry the theme's accent instead of near-black.
+  Every use keeps `var(--slider-ink, var(--color-foreground))` as its fallback,
+  so a slider rendered outside this element still behaves exactly as Dawn's did.
+
+  The value is a soft rose that clears 3:1 against the light grounds it sits on,
+  which is the threshold for a non-text control.
+*/
+slider-component,
+.slider,
+.slider-buttons {
+  --slider-ink: 158, 97, 104;
+}
+
 slider-component {
   --desktop-margin-left-first-item: max(
     5rem,
@@ -219,7 +234,8 @@ slider-component.slider-component-full-width {
 /* Scrollbar */
 
 .slider {
-  scrollbar-color: rgb(var(--color-foreground)) rgba(var(--color-foreground), 0.04);
+  scrollbar-color: rgb(var(--slider-ink, var(--color-foreground)))
+    rgba(var(--slider-ink, var(--color-foreground)), 0.08);
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -231,13 +247,13 @@ slider-component.slider-component-full-width {
 }
 
 .slider::-webkit-scrollbar-thumb {
-  background-color: rgb(var(--color-foreground));
+  background-color: rgb(var(--slider-ink, var(--color-foreground)));
   border-radius: 0.4rem;
   border: 0;
 }
 
 .slider::-webkit-scrollbar-track {
-  background: rgba(var(--color-foreground), 0.04);
+  background: rgba(var(--slider-ink, var(--color-foreground)), 0.08);
   border-radius: 0.4rem;
 }
 
@@ -267,13 +283,14 @@ slider-component.slider-component-full-width {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
-  border: 0.1rem solid rgba(var(--color-foreground), 0.5);
+  border: 0.1rem solid rgba(var(--slider-ink, var(--color-foreground)), 0.55);
   padding: 0;
   display: block;
 }
 
 .slider-counter__link--active.slider-counter__link--dots .dot {
-  background-color: rgb(var(--color-foreground));
+  background-color: rgb(var(--slider-ink, var(--color-foreground)));
+  border-color: rgb(var(--slider-ink, var(--color-foreground)));
 }
 
 @media screen and (forced-colors: active) {
@@ -283,7 +300,7 @@ slider-component.slider-component-full-width {
 }
 
 .slider-counter__link--dots:not(.slider-counter__link--active):hover .dot {
-  border-color: rgb(var(--color-foreground));
+  border-color: rgb(var(--slider-ink, var(--color-foreground)));
 }
 
 .slider-counter__link--dots .dot,
@@ -298,17 +315,17 @@ slider-component.slider-component-full-width {
 }
 
 .slider-counter__link--numbers {
-  color: rgba(var(--color-foreground), 0.5);
+  color: rgba(var(--slider-ink, var(--color-foreground)), 0.65);
   text-decoration: none;
 }
 
 .slider-counter__link--numbers:hover {
-  color: rgb(var(--color-foreground));
+  color: rgb(var(--slider-ink, var(--color-foreground)));
 }
 
 .slider-counter__link--active.slider-counter__link--numbers {
   text-decoration: underline;
-  color: rgb(var(--color-foreground));
+  color: rgb(var(--slider-ink, var(--color-foreground)));
 }
 
 .slider-buttons {
@@ -336,7 +353,7 @@ slider-component.slider-component-full-width {
 }
 
 .slider-button {
-  color: rgba(var(--color-foreground), 0.75);
+  color: rgb(var(--slider-ink, var(--color-foreground)));
   background: transparent;
   border: none;
   cursor: pointer;
@@ -348,7 +365,8 @@ slider-component.slider-component-full-width {
 }
 
 .slider-button:not([disabled]):hover {
-  color: rgb(var(--color-foreground));
+  color: rgb(var(--slider-ink, var(--color-foreground)));
+  transform: scale(1.05);
 }
 
 .slider-button .icon {
@@ -356,7 +374,7 @@ slider-component.slider-component-full-width {
 }
 
 .slider-button[disabled] .icon {
-  color: rgba(var(--color-foreground), 0.3);
+  color: rgba(var(--slider-ink, var(--color-foreground)), 0.35);
   cursor: not-allowed;
 }
 

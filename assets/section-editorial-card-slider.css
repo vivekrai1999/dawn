@@ -48,9 +48,11 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* Colour comes from a token: the dots were hardcoded white, which is
+     invisible the moment the section sits on a light background. */
   background-image: radial-gradient(
     circle at center,
-    rgba(255, 255, 255, var(--editorial-texture-opacity)) 1px,
+    rgba(var(--editorial-texture-rgb, 255, 255, 255), var(--editorial-texture-opacity)) 1px,
     transparent 1.4px
   );
   background-size: 1.4rem 1.4rem;
@@ -229,9 +231,29 @@
   overflow: hidden;
   border-radius: var(--editorial-card-radius);
   background-color: var(--editorial-card-bg);
-  box-shadow: var(--editorial-card-shadow);
+  /*
+    A pure-black shadow reads as grey dirt on a warm ground. The tint comes from
+    a token so the shadow carries the palette's own deep tone, and it is layered:
+    a tight contact shadow plus a wide diffuse one, which reads as lift rather
+    than as a dark band under the card.
+  */
+  box-shadow: 0 0.1rem 0.2rem rgba(var(--editorial-shadow-rgb), calc(var(--editorial-shadow-alpha) * 0.5)),
+    0 calc(var(--editorial-shadow-size) / 2) var(--editorial-shadow-size)
+      rgba(var(--editorial-shadow-rgb), var(--editorial-shadow-alpha));
   transition: transform var(--duration-long, 500ms) cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
+}
+
+/*
+  Hairline instead of a shadow: an inset ring, so the card's box is unchanged and
+  nothing reflows when the merchant switches between the two.
+*/
+.editorial-slider--lift-hairline .editorial-slider__card {
+  box-shadow: inset 0 0 0 0.1rem rgba(var(--editorial-shadow-rgb), 0.16);
+}
+
+.editorial-slider--lift-none .editorial-slider__card {
+  box-shadow: none;
 }
 
 /*
@@ -321,17 +343,33 @@
   fill: rgba(255, 255, 255, 0.16);
 }
 
+/*
+  Positioned on purpose. .editorial-slider__media is position:relative, which puts
+  it in the positioned-elements paint layer — above any static sibling. A static
+  overlay therefore painted *underneath* the image and did nothing at all. Giving
+  it a position and a z-index puts it back on top, with the copy above both.
+*/
 .editorial-slider__overlay {
   grid-area: stack;
   align-self: stretch;
+  position: relative;
+  z-index: 1;
   pointer-events: none;
-  /* Anchored to the copy at the foot of the card and clear by two thirds up, so
-     the photograph is never flattened. */
+  /*
+    Anchored to the copy at the foot of the card and clear well before the top,
+    so the photograph is never flattened. It holds full strength across the band
+    the text occupies rather than fading from the very bottom: a gradient that
+    starts decaying immediately is already too weak where it is needed, which
+    left white text at barely 1:1 over pale photography. The band reaches just
+    past half the card because a two-line title at the default size starts
+    around there — the same proportion the reference design shades.
+  */
   background-image: linear-gradient(
     to top,
-    rgba(0, 0, 0, var(--editorial-overlay)) 0%,
-    rgba(0, 0, 0, calc(var(--editorial-overlay) * 0.55)) 38%,
-    rgba(0, 0, 0, 0) 72%
+    rgba(var(--editorial-overlay-rgb), var(--editorial-overlay)) 0%,
+    rgba(var(--editorial-overlay-rgb), var(--editorial-overlay)) 52%,
+    rgba(var(--editorial-overlay-rgb), calc(var(--editorial-overlay) * 0.45)) 72%,
+    rgba(var(--editorial-overlay-rgb), 0) 92%
   );
 }
 
@@ -340,7 +378,8 @@
 .editorial-slider__content {
   grid-area: stack;
   align-self: end;
-  position: static;
+  position: relative;
+  z-index: 2;
   padding: var(--editorial-card-padding);
   text-align: var(--editorial-card-align);
   color: var(--editorial-card-text);
@@ -353,10 +392,17 @@
   letter-spacing: 0.08em;
   opacity: 0.85;
   /* Backs the overlay up on a blown-out highlight the gradient cannot cover. */
-  text-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.45);
+  text-shadow: 0 0.1rem 0.3rem rgba(var(--editorial-overlay-rgb), 0.5);
 }
 
+/*
+  base.css colours every heading with rgb(var(--color-foreground)). That is a
+  direct rule on the element, so it beats the card colour this title would
+  otherwise inherit — which left titles dark while the eyebrow beside them stayed
+  light. Inheriting explicitly puts the title back on the card's own colour.
+*/
 .editorial-slider__title {
+  color: inherit;
   margin: 0;
   font-family: var(--font-heading-family);
   font-style: var(--font-heading-style);
@@ -365,7 +411,7 @@
   line-height: 1.12;
   letter-spacing: var(--editorial-title-spacing);
   text-transform: var(--editorial-title-transform);
-  text-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.45);
+  text-shadow: 0 0.1rem 0.4rem rgba(var(--editorial-overlay-rgb), 0.5);
 }
 
 .editorial-slider__cta {
