@@ -1,24 +1,18 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.header.name",
   "type": "header",
   "sections": {
     "announcement-bar": {
       "type": "announcement-bar",
-      "settings": {
-        "bar_background_color": "#16161d",
-        "bar_text_color": "#ffffff",
-        "bar_font_size": 13,
-        "bar_icon_size": 16,
-        "bar_height": 44,
-        "bar_height_mobile": 44,
-        "bar_width": 1920,
-        "show_social": true,
-        "show_phone": true,
-        "phone_number": "0123456780",
-        "show_store_locator": true,
-        "enable_country_selector": true,
-        "enable_language_selector": true
-      },
       "blocks": {
         "announcement-bar-0": {
           "type": "announcement",
@@ -30,10 +24,65 @@
       },
       "block_order": [
         "announcement-bar-0"
-      ]
+      ],
+      "settings": {
+        "bar_background_color": "#16161d",
+        "bar_text_color": "#ffffff",
+        "bar_icon_color": "",
+        "bar_font_size": 13,
+        "bar_icon_size": 16,
+        "bar_height": 44,
+        "bar_height_mobile": 44,
+        "bar_width": 1920,
+        "show_social": false,
+        "show_phone": false,
+        "phone_number": "0123456780",
+        "phone_link": "",
+        "show_store_locator": false,
+        "store_locator_label": "",
+        "store_locator_link": "",
+        "enable_country_selector": false,
+        "enable_language_selector": false
+      }
     },
     "header": {
       "type": "header",
+      "blocks": {
+        "search-link-1": {
+          "type": "search_link",
+          "settings": {
+            "text": "Most searched",
+            "link": ""
+          }
+        },
+        "search-link-2": {
+          "type": "search_link",
+          "settings": {
+            "text": "Jump Suit",
+            "link": ""
+          }
+        },
+        "search-link-3": {
+          "type": "search_link",
+          "settings": {
+            "text": "Activewear set",
+            "link": ""
+          }
+        },
+        "search-link-4": {
+          "type": "search_link",
+          "settings": {
+            "text": "One-piece",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "search-link-1",
+        "search-link-2",
+        "search-link-3",
+        "search-link-4"
+      ],
       "settings": {
         "header_position": "overlay",
         "sticky_header_type": "on-scroll-up",
@@ -42,6 +91,7 @@
         "header_width": 1920,
         "show_line_separator": false,
         "color_scheme": "scheme-1",
+        "brand_text": "",
         "brand_color": "#ffffff",
         "brand_font_size": 16,
         "menu": "main-menu",
@@ -83,6 +133,7 @@
         "mobile_header_position": "normal",
         "mobile_header_background": "#ffffff",
         "mobile_brand_color": "#1a1a1a",
+        "mobile_icon_color": "",
         "mobile_menu_background": "#ffffff",
         "mobile_menu_text_color": "#1a1a1a",
         "mobile_menu_inset": 15,
@@ -92,44 +143,13 @@
         "mobile_menu_overlay_opacity": 55,
         "mobile_social_icon_size": 18,
         "show_login": true,
+        "login_label": "",
         "login_background_color": "#000000",
         "login_text_color": "#ffffff",
         "margin_bottom": 0,
         "padding_top": 24,
         "padding_bottom": 24
-      },
-      "blocks": {
-        "search-link-1": {
-          "type": "search_link",
-          "settings": {
-            "text": "Most searched"
-          }
-        },
-        "search-link-2": {
-          "type": "search_link",
-          "settings": {
-            "text": "Jump Suit"
-          }
-        },
-        "search-link-3": {
-          "type": "search_link",
-          "settings": {
-            "text": "Activewear set"
-          }
-        },
-        "search-link-4": {
-          "type": "search_link",
-          "settings": {
-            "text": "One-piece"
-          }
-        }
-      },
-      "block_order": [
-        "search-link-1",
-        "search-link-2",
-        "search-link-3",
-        "search-link-4"
-      ]
+      }
     }
   },
   "order": [
