@@ -1,0 +1,233 @@
+/*
+  Top bar — sections/announcement-bar.liquid.
+
+  Deliberately built on its own `.topbar` root. Dawn's `.utility-bar`,
+  `.announcement-bar`, `.page-width` and `.list-social` classes all carry
+  layout from base.css (grid areas, six breakpoint-specific paddings, negative
+  margins) which fought this three-column bar. Nothing here inherits from them,
+  so the only base.css the bar depends on is the localization disclosure below.
+
+  Tokens (--topbar-*) are emitted per instance by the section's {% style %}.
+*/
+
+.topbar {
+  background-color: var(--topbar-bg);
+  color: var(--topbar-text);
+  font-size: var(--topbar-font-size);
+}
+
+/*
+  Three equal-ish tracks so the centre column is centred on the viewport
+  regardless of how wide the side content is. The gutter is shared with the
+  header (--header-gutter) so the bar lines up with the logo and nav below.
+*/
+.topbar__inner {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.6rem;
+  min-height: var(--topbar-height-mobile);
+  max-width: var(--topbar-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+.topbar__group {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.topbar__group--start {
+  grid-column: 1;
+  justify-content: flex-start;
+}
+
+.topbar__group--end {
+  grid-column: 3;
+  justify-content: flex-end;
+  gap: 1.6rem;
+}
+
+/* Centre column: always column 2, so it stays centred even if a side is empty. */
+.topbar__announcement {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  min-width: 0;
+}
+
+.topbar__announcement-item {
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Links: phone, store locator, announcement */
+
+.topbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-block: 0.4rem;
+  color: inherit;
+  font-size: var(--topbar-font-size);
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.topbar__link--announcement {
+  white-space: normal;
+}
+
+.topbar__link:hover,
+.topbar__link:focus-visible {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+
+.topbar :focus-visible {
+  outline: 0.2rem solid currentColor;
+  outline-offset: 0.2rem;
+}
+
+.topbar__link .svg-wrapper,
+.topbar__link svg {
+  width: var(--topbar-icon-size);
+  height: var(--topbar-icon-size);
+  color: var(--topbar-icon);
+}
+
+/* Social links */
+
+.topbar__socials {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topbar__social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  color: var(--topbar-icon);
+  text-decoration: none;
+}
+
+.topbar__social .svg-wrapper,
+.topbar__social svg {
+  width: var(--topbar-icon-size);
+  height: var(--topbar-icon-size);
+}
+
+/* Localization — Dawn's disclosure markup, retinted for the dark bar. */
+
+.topbar__localization {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.topbar__globe {
+  display: inline-flex;
+  align-items: center;
+  color: var(--topbar-icon);
+}
+
+.topbar__globe svg {
+  width: var(--topbar-icon-size);
+  height: var(--topbar-icon-size);
+}
+
+.topbar__localization .localization-form,
+.topbar__localization .localization-form:only-child {
+  flex: 0 0 auto;
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.topbar__localization .disclosure__button.localization-form__select,
+.topbar__localization .localization-form:only-child .localization-form__select {
+  width: max-content;
+  min-width: 0;
+  min-height: 3.2rem;
+  height: auto;
+  margin: 0;
+  padding: 0.4rem 2.2rem 0.4rem 0.4rem;
+  background: transparent;
+  color: inherit;
+  font-size: var(--topbar-font-size);
+}
+
+.topbar__localization .localization-form__select:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+}
+
+.topbar__localization .localization-form__select.link:after,
+.topbar__localization .localization-form__select.link:before {
+  box-shadow: none;
+}
+
+.topbar__localization .localization-form__select .icon-caret {
+  right: 0.5rem;
+}
+
+/* The picker panel drops onto the page, so it takes page colours, not bar colours. */
+.topbar__localization .disclosure__list-wrapper {
+  color: rgb(var(--color-foreground));
+}
+
+/*
+  Below the desktop breakpoint the bar carries the announcement only. Stacking
+  the side groups made it three rows tall and pushed the header down the screen;
+  everything dropped here is still reachable from the mobile menu drawer, which
+  renders the social links and the localization pickers.
+*/
+@media screen and (max-width: 989px) {
+  .topbar__inner {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding-block: 0.4rem;
+  }
+
+  .topbar__group {
+    display: none;
+  }
+
+  .topbar__announcement {
+    grid-column: 1;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .topbar__inner {
+    min-height: var(--topbar-height);
+  }
+
+}
+
+/*
+  Multiple announcements sit side by side with a separator rather than rotating.
+  Nothing is hidden from the merchant, and there is no auto-advancing text to
+  need a pause control (WCAG 2.2.2).
+*/
+.topbar__announcement-item + .topbar__announcement-item::before {
+  content: '•';
+  margin-inline-end: 1.6rem;
+  opacity: 0.6;
+}

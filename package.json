@@ -5,6 +5,8 @@
   "description": "Tooling dependencies for the Dawn Shopify theme. Runtime assets are vendored into assets/.",
   "license": "UNLICENSED",
   "dependencies": {
-    "lenis": "^1.3.26"
+    "jquery": "^3.7.1",
+    "lenis": "^1.3.26",
+    "slick-carousel": "^1.8.1"
   }
 }

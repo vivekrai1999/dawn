@@ -1,12 +1,31 @@
 {% comment %}
-  Renders a header search modal. Should be used with 'header.liquid'
+  Renders the header search panel. Should be used with 'header.liquid'.
+
+  The interactive parts are Dawn's: `details-modal` drives open/close, Escape,
+  the body-click-to-dismiss via `.modal-overlay`, the scroll lock and the focus
+  trap (which needs the `[tabindex="-1"]` container and the first
+  `button[type="button"]` as its close control), and `predictive-search` still
+  owns the live results.
 
   Accepts:
   - input_id: {String} Id for the search input element (required)
+  - section: {Object} the header section, for the popular-search blocks (optional)
 
   Usage:
-  {% render 'header-search', input_id: 'My-Id'%}
+  {% render 'header-search', input_id: 'My-Id', section: section %}
 {% endcomment %}
+
+{%- liquid
+  assign popular_links = section.blocks | where: 'type', 'search_link'
+  assign panel_title = section.settings.search_title
+  if panel_title == blank
+    assign panel_title = 'general.search.search' | t
+  endif
+  assign placeholder = section.settings.search_placeholder
+  if placeholder == blank
+    assign placeholder = 'general.search.search' | t
+  endif
+-%}
 
 <details-modal class="header__search">
   <details>
@@ -15,40 +34,50 @@
       aria-haspopup="dialog"
       aria-label="{{ 'general.search.search' | t }}"
     >
-      <span>
-        <span class="svg-wrapper">
-          {{- 'icon-search.svg' | inline_asset_content -}}
-        </span>
-        <span class="svg-wrapper header__icon-close">
-          {{- 'icon-close.svg' | inline_asset_content -}}
-        </span>
+      <span class="svg-wrapper">
+        {{- 'icon-search.svg' | inline_asset_content -}}
       </span>
     </summary>
     <div
-      class="search-modal modal__content gradient"
+      class="search-modal modal__content"
       role="dialog"
       aria-modal="true"
       aria-label="{{ 'general.search.search' | t }}"
     >
       <div class="modal-overlay"></div>
-      <div
-        class="search-modal__content{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} search-modal__content-top{% else %} search-modal__content-bottom{% endif %}"
-        tabindex="-1"
-      >
+      <div class="search-modal__content header__panel" tabindex="-1">
+        <div class="header__panel-head">
+          <h2 class="header__panel-title">{{ panel_title | escape }}</h2>
+          {%- comment -%}
+            Must stay the first button[type="button"] in this component:
+            details-modal.js wires that element up as the close control.
+          {%- endcomment -%}
+          <button
+            type="button"
+            class="header__panel-close modal__close-button link link--text focus-inset"
+            aria-label="{{ 'accessibility.close' | t }}"
+          >
+            <span class="svg-wrapper" aria-hidden="true">
+              {{- 'icon-close.svg' | inline_asset_content -}}
+            </span>
+          </button>
+        </div>
+
         {%- if settings.predictive_search_enabled -%}
           <predictive-search class="search-modal__form" data-loading-text="{{ 'accessibility.loading' | t }}">
         {%- else -%}
           <search-form class="search-modal__form">
         {%- endif -%}
         <form action="{{ routes.search_url }}" method="get" role="search" class="search search-modal__form">
-          <div class="field">
+          <div class="field search-modal__field">
+            <label class="visually-hidden" for="{{ input_id }}">{{ 'general.search.search' | t }}</label>
             <input
               class="search__input field__input"
               id="{{ input_id }}"
               type="search"
               name="q"
               value="{{ search.terms | escape }}"
-              placeholder="{{ 'general.search.search' | t }}"
+              placeholder="{{ placeholder | escape }}"
               {%- if settings.predictive_search_enabled -%}
                 role="combobox"
                 aria-expanded="false"
@@ -62,7 +91,6 @@
                 spellcheck="false"
               {%- endif -%}
             >
-            <label class="field__label" for="{{ input_id }}">{{ 'general.search.search' | t }}</label>
             <input type="hidden" name="options[prefix]" value="last">
             <button
               type="reset"
@@ -93,15 +121,44 @@
         {%- else -%}
           </search-form>
         {%- endif -%}
-        <button
-          type="button"
-          class="search-modal__close-button modal__close-button link link--text focus-inset"
-          aria-label="{{ 'accessibility.close' | t }}"
-        >
-          <span class="svg-wrapper">
-            {{- 'icon-close.svg' | inline_asset_content -}}
-          </span>
-        </button>
+
+        {%- if popular_links.size > 0 -%}
+          <div class="search-modal__popular">
+            {%- if section.settings.search_popular_title != blank -%}
+              <h3 class="search-modal__popular-title" id="PopularSearches-{{ section.id }}">
+                {{- section.settings.search_popular_title | escape -}}
+              </h3>
+            {%- endif -%}
+            <ul
+              class="search-modal__popular-list"
+              role="list"
+              {% if section.settings.search_popular_title != blank %}
+                aria-labelledby="PopularSearches-{{ section.id }}"
+              {% endif %}
+            >
+              {%- for block in popular_links -%}
+                {%- if block.settings.text == blank -%}
+                  {%- continue -%}
+                {%- endif -%}
+                {%- liquid
+                  assign link_url = block.settings.link
+                  if link_url == blank
+                    assign query = block.settings.text | url_encode
+                    assign link_url = routes.search_url | append: '?q=' | append: query
+                  endif
+                -%}
+                <li {{ block.shopify_attributes }}>
+                  <a class="search-modal__popular-link" href="{{ link_url }}">
+                    <span class="svg-wrapper" aria-hidden="true">
+                      {{- 'icon-arrow-diagonal.svg' | inline_asset_content -}}
+                    </span>
+                    <span>{{ block.settings.text | escape }}</span>
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
       </div>
     </div>
   </details>

@@ -1,0 +1,242 @@
+/*
+  Showcase product card — a presentation variant of Dawn's card-product snippet.
+
+  Opt in by passing `card_variant: 'showcase'` (and usually
+  `quick_add_style: 'icon'`) to snippets/card-product.liquid. The snippet itself
+  is untouched: this only restyles what it already renders, so quick add, the
+  cart, badges and price all keep working.
+
+  Lives apart from section-product-showcase.css so any section can use the card
+  without pulling in that section's own layout. The tokens below are the
+  standalone defaults; a section that wants its own values overrides them from
+  its {% style %} block at ID specificity, as product-showcase.liquid does.
+*/
+
+.card-wrapper--showcase {
+  --card-media-radius: 12px;
+  --card-title-size: 15px;
+  --card-price-size: 15px;
+  --card-title-color: rgb(var(--color-foreground));
+  --card-price-color: rgba(var(--color-foreground), 0.72);
+  --card-button-bg: rgb(var(--color-foreground));
+  --card-button-icon: rgb(var(--color-background));
+  --card-button-size: 44px;
+  /* Height of every media box, as a percentage of its width (125% = 4:5). */
+  --card-media-ratio: 125%;
+  /* Lines reserved for the product name, so titles never change card height. */
+  --card-title-lines: 2;
+}
+
+.card-wrapper--showcase .card,
+.card-wrapper--showcase .card__inner {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/*
+  No tile background and no inset: the product images already carry their own
+  backdrop, so the image fills the card edge to edge. The rounded corners stay
+  here with overflow clipping so the image itself is what gets rounded.
+*/
+.card-wrapper--showcase .card__inner {
+  border-radius: var(--card-media-radius);
+  overflow: hidden;
+}
+
+/*
+  base.css derives .card__media's radius from --border-radius, which is 0 for
+  this card style, so it would clip square inside the rounded frame. Setting it
+  here keeps the image's own corners rounded rather than relying on the parent.
+*/
+.card-wrapper--showcase .card__inner .card__media {
+  border-radius: var(--card-media-radius);
+}
+
+/*
+  Every card gets the same media box. card-product.liquid writes --ratio-percent
+  inline from each product's own image — which is what the section's
+  image_ratio: 'adapt' option asks for — but a grid of cards reads as broken when
+  each tile is a different height, so this variant pins the ratio to a token.
+  Three classes out-rank base.css's .ratio::before, and because that inline style
+  only sets a custom property, overriding the padding directly wins cleanly.
+*/
+.card-wrapper--showcase .card__inner.ratio::before {
+  padding-bottom: var(--card-media-ratio);
+}
+
+.card-wrapper--showcase .card__information {
+  padding: 0;
+}
+
+.card-wrapper--showcase .card__heading {
+  margin: 0;
+  font-size: var(--card-title-size);
+  font-weight: var(--font-body-weight);
+  line-height: 1.4;
+  letter-spacing: normal;
+  color: var(--card-title-color);
+}
+
+/*
+  The title reserves a fixed number of lines and clamps beyond it, so a one-word
+  product name and a long one leave the price on the same baseline and the card
+  the same height. min-height covers the short case, line-clamp the long one.
+*/
+.card-wrapper--showcase .card__content .card__heading {
+  min-height: calc(var(--card-title-lines) * 1.4em);
+}
+
+.card-wrapper--showcase .card__heading a {
+  color: inherit;
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: var(--card-title-lines);
+  line-clamp: var(--card-title-lines);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/*
+  Dawn's `underline-links-hover` class underlines card links on hover. The
+  product name is plain here, so that is switched off for this variant.
+*/
+.card-wrapper--showcase.underline-links-hover:hover a,
+.card-wrapper--showcase .card__heading a:hover,
+.card-wrapper--showcase .card__heading a:focus-visible {
+  text-decoration: none;
+}
+
+/* Focus still needs to be visible, so it shows as an outline instead. */
+.card-wrapper--showcase .card__heading a:focus-visible {
+  outline: 0.2rem solid var(--card-title-color);
+  outline-offset: 0.3rem;
+}
+
+.card-wrapper--showcase .price {
+  margin-block-start: 0.6rem;
+  font-size: var(--card-price-size);
+  line-height: 1.4;
+  color: var(--card-price-color);
+}
+
+/* ------------------------------------------------------- Quick add (icon) */
+
+/*
+  Scoped to this card, so hover state is per-card and never section-wide.
+  The control sits over the media; the card link and this button stay separate
+  interactive elements rather than nesting a button inside an anchor.
+*/
+/*
+  Dawn puts .quick-add inside .card__content, below the media. Rather than
+  positioning it absolutely — which depends on which ancestor happens to be the
+  containing block — it is reordered to the top of the content box and pulled up
+  with a negative margin. margin-top of -(size + gap) with margin-bottom of
+  +gap nets to zero, so it lifts over the media without displacing the title.
+*/
+.card-wrapper--showcase .card__content {
+  display: flex;
+  flex-direction: column;
+  /* Gap between the media tile and the title. */
+  --card-content-gap: 1.6rem;
+  --card-quick-add-inset: 1.2rem;
+  --card-quick-add-lift: calc(var(--card-content-gap) + var(--card-quick-add-inset));
+  padding: var(--card-content-gap) 0 0;
+}
+
+.card-wrapper--showcase .quick-add--icon {
+  order: -1;
+  align-self: flex-end;
+  position: relative;
+  z-index: 2;
+  /*
+    Lift = the button's own height + the gap it should keep from the media's
+    bottom edge + .card__content's top padding, since the flex row starts below
+    that padding. The matching bottom margin nets the whole thing to zero.
+  */
+  margin: calc(-1 * (var(--card-button-size) + var(--card-quick-add-lift))) var(--card-quick-add-inset)
+    var(--card-quick-add-lift) 0;
+  padding: 0;
+  width: auto;
+}
+
+.card-wrapper--showcase .quick-add--icon .quick-add__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--card-button-size);
+  min-width: var(--card-button-size);
+  height: var(--card-button-size);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: var(--card-button-bg);
+  color: var(--card-button-icon);
+  box-shadow: none;
+}
+
+.card-wrapper--showcase .quick-add--icon .quick-add__submit::after,
+.card-wrapper--showcase .quick-add--icon .quick-add__submit::before {
+  content: none;
+}
+
+.card-wrapper--showcase .quick-add--icon .quick-add__submit .svg-wrapper,
+.card-wrapper--showcase .quick-add--icon .quick-add__submit svg {
+  width: calc(var(--card-button-size) * 0.42);
+  height: calc(var(--card-button-size) * 0.42);
+  color: var(--card-button-icon);
+}
+
+.card-wrapper--showcase .quick-add--icon .quick-add__submit:focus-visible {
+  outline: 0.2rem solid var(--card-button-bg);
+  outline-offset: 0.3rem;
+}
+
+/*
+  Pointer devices only: reveal on hover or keyboard focus within this card.
+  Touch devices fall through to the always-visible default below, so the action
+  is never hover-gated on mobile.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .card-wrapper--showcase .quick-add--icon {
+    opacity: 0;
+    /* Grows in from slightly small; the reverse shrink plays on the way out. */
+    transform: scale(0.8);
+    transition: opacity var(--duration-default, 200ms) ease, transform var(--duration-default, 200ms) ease;
+  }
+
+  .card-wrapper--showcase:hover .quick-add--icon,
+  .card-wrapper--showcase:focus-within .quick-add--icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Tactile press: shrinks under the pointer, on touch devices too. */
+.card-wrapper--showcase .quick-add--icon .quick-add__submit {
+  transition: transform var(--duration-short, 100ms) ease, filter var(--duration-short, 100ms) ease;
+}
+
+.card-wrapper--showcase .quick-add--icon .quick-add__submit:hover {
+  transform: scale(1.06);
+}
+
+.card-wrapper--showcase .quick-add--icon .quick-add__submit:active {
+  transform: scale(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-wrapper--showcase .quick-add--icon,
+  .card-wrapper--showcase .quick-add--icon .quick-add__submit,
+  .product-showcase__arrow {
+    transition: none;
+  }
+
+  .card-wrapper--showcase .quick-add--icon,
+  .card-wrapper--showcase .quick-add--icon .quick-add__submit:hover,
+  .card-wrapper--showcase .quick-add--icon .quick-add__submit:active {
+    transform: none;
+  }
+}

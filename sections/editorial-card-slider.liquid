@@ -1,0 +1,1030 @@
+{% comment %}
+  theme-check-disable ExcessiveSettingsCount
+
+  Editorial card slider — a magazine-style row of tall image cards on a dark bed.
+
+  Cards are section blocks, so the merchant adds, reorders and removes them in
+  the Theme Editor; nothing about the content is fixed in this file. Slick is
+  driven by the <editorial-card-slider> custom element in
+  assets/editorial-card-slider.js, which handles the editor's re-render
+  lifecycle and keeps each instance independent, so the section can be used any
+  number of times on a page.
+
+  Reused from the theme: the vendored Slick + jQuery pair already added for the
+  hero carousel, `icon-arrow.svg`, and Dawn's image_url/image_tag responsive
+  helpers. Nothing new is vendored.
+{% endcomment %}
+
+{{ 'slick.css' | asset_url | stylesheet_tag }}
+{{ 'section-editorial-card-slider.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Slick 1.8.1 requires jQuery. Both are already vendored in assets/ (see
+  package.json) for the hero carousel, so this section adds no new dependency.
+  Shopify emits each asset URL once per page, and the browser dedupes identical
+  script URLs, so multiple instances of this section still load one copy.
+{%- endcomment -%}
+<script src="{{ 'jquery.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'slick.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'editorial-card-slider.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign cards = section.blocks | where: 'type', 'card'
+
+  comment
+    A card with neither an image nor any text would render as an empty panel.
+  endcomment
+  assign renderable = 0
+  for block in cards
+    if block.settings.image != blank or block.settings.title != blank or block.settings.eyebrow != blank
+      assign renderable = renderable | plus: 1
+    endif
+  endfor
+
+  assign show_controls = false
+  if renderable > 1
+    assign show_controls = true
+  endif
+
+  assign heading_tag = section.settings.heading_size
+
+  assign show_arrows = false
+  if show_controls and section.settings.show_arrows
+    assign show_arrows = true
+  endif
+  assign show_dots = false
+  if show_controls and section.settings.show_dots
+    assign show_dots = true
+  endif
+  assign show_controls_row = false
+  if show_arrows or show_dots
+    assign show_controls_row = true
+  endif
+-%}
+
+{%- if renderable > 0 -%}
+  {%- style -%}
+    #EditorialSlider-{{ section.id }} {
+      --editorial-bg: {{ section.settings.background_color }};
+      --editorial-text: {{ section.settings.text_color }};
+      --editorial-heading-color: {{ section.settings.heading_color }};
+      --editorial-card-bg: {{ section.settings.card_background }};
+      --editorial-card-text: {{ section.settings.card_text_color }};
+
+      --editorial-padding-top: {{ section.settings.padding_top }}px;
+      --editorial-padding-bottom: {{ section.settings.padding_bottom }}px;
+      --editorial-max-width: {{ section.settings.max_width }}px;
+      --editorial-min-height: {{ section.settings.min_height }}px;
+      --editorial-edge-inset: {{ section.settings.edge_inset }}px;
+      --editorial-gap: {{ section.settings.card_gap }}px;
+      --editorial-header-gap: {{ section.settings.header_gap }}px;
+      --editorial-controls-gap: {{ section.settings.controls_gap }}px;
+
+      --editorial-card-ratio: {{ section.settings.card_aspect_ratio | divided_by: 100.0 }};
+      --editorial-card-radius: {{ section.settings.card_radius }}px;
+      --editorial-card-padding: {{ section.settings.card_padding }}px;
+      --editorial-card-align: {{ section.settings.card_text_alignment }};
+      --editorial-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+      --editorial-card-shadow: 0 {{ section.settings.card_shadow | divided_by: 2 }}px
+        {{ section.settings.card_shadow }}px rgba(0, 0, 0, {{ section.settings.card_shadow | divided_by: 100.0 }});
+
+      --editorial-tilt: {{ section.settings.card_tilt | divided_by: 10.0 }}deg;
+      {%- comment -%}
+        Vertical room for the rotated corners and the arc lift together, so the
+        track never clips a card the merchant has angled or raised further.
+      {%- endcomment -%}
+      --editorial-tilt-room: {{ section.settings.card_tilt
+        | divided_by: 2
+        | plus: section.settings.curve_depth
+        | plus: 16
+      }}px;
+
+      --editorial-section-heading-size: {{ section.settings.heading_font_size }}px;
+      --editorial-eyebrow-size: {{ section.settings.eyebrow_font_size }}px;
+      --editorial-title-size: clamp(
+        {{ section.settings.title_font_size | times: 0.62 | round }}px,
+        {{ section.settings.title_font_size | divided_by: 10.0 }}vw,
+        {{ section.settings.title_font_size }}px
+      );
+      --editorial-title-weight: {{ section.settings.title_font_weight }};
+      --editorial-title-spacing: {{ section.settings.title_letter_spacing | divided_by: 100.0 }}em;
+      --editorial-title-transform: {{ section.settings.title_text_transform }};
+
+      --editorial-watermark-size: clamp(8rem, {{ section.settings.watermark_size }}vw, 32rem);
+      --editorial-watermark-color: {{ section.settings.watermark_color }};
+      --editorial-watermark-top: {{ section.settings.watermark_offset }}px;
+      --editorial-texture-opacity: {{ section.settings.texture_opacity | divided_by: 100.0 }};
+
+      --editorial-arrow-size: {{ section.settings.arrow_size }}px;
+      --editorial-arrow-bg: {{ section.settings.arrow_background }};
+      --editorial-arrow-color: {{ section.settings.arrow_color }};
+      --editorial-arrow-border: {{ section.settings.arrow_border_color }};
+
+      {%- comment -%}
+        Also consumed by the pre-init CSS fallback, so the row is already the
+        right shape before Slick takes over.
+      {%- endcomment -%}
+      --editorial-slides-desktop: {{ section.settings.slides_desktop }};
+      --editorial-slides-tablet: {{ section.settings.slides_tablet }};
+      --editorial-slides-mobile: {{ section.settings.slides_mobile }};
+    }
+
+    {%- if section.settings.background_image != blank -%}
+      #EditorialSlider-{{ section.id }} .editorial-slider__texture {
+        background-image: url({{ section.settings.background_image | image_url: width: 1600 }});
+        background-size: cover;
+        background-position: center;
+        opacity: {{ section.settings.background_image_opacity | divided_by: 100.0 }};
+        -webkit-mask-image: none;
+        mask-image: none;
+      }
+    {%- endif -%}
+
+    {%- for block in cards -%}
+      {%- if block.settings.focal_point != blank and block.settings.focal_point != 'center' -%}
+        #EditorialCard-{{ block.id }} {
+          --editorial-focal: {{ block.settings.focal_point }};
+        }
+      {%- endif -%}
+      {%- if block.settings.card_background != blank -%}
+        #EditorialCard-{{ block.id }} {
+          --editorial-card-bg: {{ block.settings.card_background }};
+        }
+      {%- endif -%}
+      {%- if block.settings.overlay_custom -%}
+        #EditorialCard-{{ block.id }} {
+          --editorial-overlay: {{ block.settings.overlay_opacity | divided_by: 100.0 }};
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endstyle -%}
+
+  <section
+    class="editorial-slider{% if section.settings.card_tilt > 0 %} editorial-slider--tilted{% endif %}{% if section.settings.full_bleed %} editorial-slider--bleed{% endif %}"
+    id="EditorialSlider-{{ section.id }}"
+    {% if section.settings.heading != blank %}
+      aria-labelledby="EditorialSliderHeading-{{ section.id }}"
+    {% else %}
+      aria-label="{{ 'sections.editorial_card_slider.region_label' | t }}"
+    {% endif %}
+  >
+    <span class="editorial-slider__texture" aria-hidden="true"></span>
+
+    {%- if section.settings.watermark_text != blank -%}
+      <p class="editorial-slider__watermark" aria-hidden="true">
+        {{- section.settings.watermark_text | escape -}}
+      </p>
+    {%- endif -%}
+
+    <div class="editorial-slider__inner">
+      {%- if section.settings.heading != blank or section.settings.description != blank -%}
+        <div class="editorial-slider__header editorial-slider__header--{{ section.settings.heading_alignment }}">
+          {%- if section.settings.heading != blank -%}
+            <{{ heading_tag }}
+              class="editorial-slider__heading"
+              id="EditorialSliderHeading-{{ section.id }}"
+            >
+              {{- section.settings.heading | escape -}}
+            </{{ heading_tag }}>
+          {%- endif -%}
+
+          {%- if section.settings.description != blank -%}
+            <div class="editorial-slider__description rte">{{ section.settings.description }}</div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <editorial-card-slider
+        class="editorial-slider__carousel"
+        id="EditorialCarousel-{{ section.id }}"
+        data-slides-desktop="{{ section.settings.slides_desktop }}"
+        data-slides-tablet="{{ section.settings.slides_tablet }}"
+        data-slides-mobile="{{ section.settings.slides_mobile }}"
+        data-arrows="{{ show_arrows }}"
+        data-dots="{{ show_dots }}"
+        data-infinite="{{ section.settings.infinite }}"
+        data-autoplay="{% if section.settings.autoplay and show_controls %}true{% else %}false{% endif %}"
+        data-autoplay-speed="{{ section.settings.autoplay_speed | times: 1000 }}"
+        data-speed="{{ section.settings.transition_speed }}"
+        data-curve-angle="{{ section.settings.card_tilt | divided_by: 10.0 }}"
+        data-curve-depth="{{ section.settings.curve_depth }}"
+        data-slide-label="{{ 'sections.slideshow.load_slide' | t | escape }}"
+      >
+        <div
+          class="editorial-slider__track"
+          data-editorial-track
+          role="region"
+          aria-roledescription="{{ 'sections.slideshow.carousel' | t }}"
+          aria-label="{{ section.settings.heading | default: shop.name | escape }}"
+        >
+          {%- assign card_index = 0 -%}
+          {%- for block in cards -%}
+            {%- if block.settings.image == blank
+              and block.settings.title == blank
+              and block.settings.eyebrow == blank
+            -%}
+              {%- continue -%}
+            {%- endif -%}
+
+            {%- liquid
+              assign has_link = false
+              if block.settings.link != blank
+                assign has_link = true
+              endif
+
+              comment
+                Only the cards visible without scrolling are worth fetching
+                eagerly; the rest are off-screen at first paint.
+              endcomment
+              assign card_loading = 'lazy'
+              if card_index < 2
+                assign card_loading = 'eager'
+              endif
+            -%}
+
+            <div
+              class="editorial-slider__slide"
+              data-editorial-slide
+              data-editorial-index="{{ card_index }}"
+              {{ block.shopify_attributes }}
+            >
+              <article class="editorial-slider__card" id="EditorialCard-{{ block.id }}">
+                <div class="editorial-slider__media">
+                  {%- if block.settings.image != blank -%}
+                    {%- comment -%}
+                      A separate mobile crop when the merchant supplies one, so a
+                      wide editorial image can be re-framed for a narrow card.
+                    {%- endcomment -%}
+                    {%- if block.settings.image_mobile != blank -%}
+                      <picture>
+                        <source
+                          media="(max-width: 749px)"
+                          srcset="
+                            {{ block.settings.image_mobile | image_url: width: 400 }} 400w,
+                            {{ block.settings.image_mobile | image_url: width: 600 }} 600w,
+                            {{ block.settings.image_mobile | image_url: width: 800 }} 800w
+                          "
+                          sizes="90vw"
+                          width="{{ block.settings.image_mobile.width }}"
+                          height="{{ block.settings.image_mobile.height }}"
+                        >
+                        {{
+                          block.settings.image
+                          | image_url: width: 1000
+                          | image_tag:
+                            loading: 'lazy',
+                            class: 'editorial-slider__image',
+                            widths: '300, 400, 500, 600, 800, 1000',
+                            sizes: '(min-width: 990px) 22vw, (min-width: 750px) 33vw, 80vw',
+                            alt: block.settings.image.alt
+                        }}
+                      </picture>
+                    {%- else -%}
+                      {{
+                        block.settings.image
+                        | image_url: width: 1000
+                        | image_tag:
+                          loading: card_loading,
+                          class: 'editorial-slider__image',
+                          widths: '300, 400, 500, 600, 800, 1000',
+                          sizes: '(min-width: 990px) 22vw, (min-width: 750px) 33vw, 80vw',
+                          alt: block.settings.image.alt
+                      }}
+                    {%- endif -%}
+                  {%- else -%}
+                    {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                  {%- endif -%}
+                </div>
+
+                <span class="editorial-slider__overlay" aria-hidden="true"></span>
+
+                <div class="editorial-slider__content">
+                  {%- if block.settings.eyebrow != blank -%}
+                      <p class="editorial-slider__eyebrow">{{ block.settings.eyebrow | escape }}</p>
+                    {%- endif -%}
+
+                    {%- if block.settings.title != blank -%}
+                      <h3 class="editorial-slider__title">
+                        {%- if has_link -%}
+                          <a
+                            class="editorial-slider__link"
+                            href="{{ block.settings.link }}"
+                            {% if block.settings.open_in_new_tab %}
+                              target="_blank"
+                              rel="noopener"
+                            {% endif %}
+                          >
+                            {{- block.settings.title | escape -}}
+                            {%- if block.settings.open_in_new_tab -%}
+                              <span class="visually-hidden">
+                                {{- 'accessibility.link_messages.new_window' | t -}}
+                              </span>
+                            {%- endif -%}
+                          </a>
+                        {%- else -%}
+                          {{- block.settings.title | escape -}}
+                        {%- endif -%}
+                      </h3>
+                    {%- endif -%}
+
+                    {%- if block.settings.link_text != blank and has_link -%}
+                      <span class="editorial-slider__cta" aria-hidden="true">
+                        {{- block.settings.link_text | escape -}}
+                      </span>
+                  {%- endif -%}
+                </div>
+              </article>
+            </div>
+
+            {%- assign card_index = card_index | plus: 1 -%}
+          {%- endfor -%}
+        </div>
+
+        {%- if show_controls_row -%}
+          <div class="editorial-slider__controls">
+            {%- if show_arrows -%}
+              <button
+                type="button"
+                class="editorial-slider__arrow editorial-slider__arrow--prev"
+                data-editorial-prev
+                aria-label="{{ 'general.slider.previous_slide' | t }}"
+                aria-controls="EditorialCarousel-{{ section.id }}"
+              >
+                <span class="svg-wrapper" aria-hidden="true">
+                  {{- 'icon-arrow.svg' | inline_asset_content -}}
+                </span>
+              </button>
+            {%- endif -%}
+
+            {%- if show_dots -%}
+              <div class="editorial-slider__dots" data-editorial-dots></div>
+            {%- endif -%}
+
+            {%- if show_arrows -%}
+              <button
+                type="button"
+                class="editorial-slider__arrow editorial-slider__arrow--next"
+                data-editorial-next
+                aria-label="{{ 'general.slider.next_slide' | t }}"
+                aria-controls="EditorialCarousel-{{ section.id }}"
+              >
+                <span class="svg-wrapper" aria-hidden="true">
+                  {{- 'icon-arrow.svg' | inline_asset_content -}}
+                </span>
+              </button>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </editorial-card-slider>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Editorial card slider",
+  "tag": "div",
+  "class": "editorial-card-slider-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "max_blocks": 16,
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Mobile image",
+          "info": "Optional. Used below 750px so a wide crop can be re-framed."
+        },
+        {
+          "type": "select",
+          "id": "focal_point",
+          "label": "Image focal point",
+          "info": "Which part of the image to keep when it is cropped.",
+          "options": [
+            { "value": "top left", "label": "Top left" },
+            { "value": "top", "label": "Top" },
+            { "value": "top right", "label": "Top right" },
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" },
+            { "value": "bottom left", "label": "Bottom left" },
+            { "value": "bottom", "label": "Bottom" },
+            { "value": "bottom right", "label": "Bottom right" }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Category",
+          "default": "Shoulder bags"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Crafting your unique style"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link text",
+          "info": "Shown under the title when a link is set."
+        },
+        {
+          "type": "checkbox",
+          "id": "open_in_new_tab",
+          "label": "Open link in a new tab",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Card appearance"
+        },
+        {
+          "type": "color",
+          "id": "card_background",
+          "label": "Card background",
+          "info": "Optional. Overrides the section setting for this card."
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_custom",
+          "label": "Use a custom overlay for this card",
+          "info": "Otherwise the card follows the section overlay setting.",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "min": 0,
+          "max": 90,
+          "step": 5,
+          "unit": "%",
+          "label": "Overlay opacity",
+          "default": 65
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading level",
+      "info": "Choose the level that keeps this page's headings in order.",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "text",
+      "id": "watermark_text",
+      "label": "Backdrop word",
+      "info": "Large outlined word drawn behind the cards. Decorative only — it is hidden from screen readers. Leave empty to remove.",
+      "default": "Fashion"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_bleed",
+      "label": "Run cards edge to edge",
+      "info": "Lets the row span the full window instead of the content width, so the outer cards reach the screen edges.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "edge_inset",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Edge inset",
+      "info": "Gap left at the window edges when the row runs edge to edge.",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "min": 320,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "label": "Minimum section height",
+      "default": 560
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Maximum width",
+      "default": 1800
+    },
+    {
+      "type": "select",
+      "id": "slides_desktop",
+      "label": "Cards on desktop",
+      "info": "A half step lets the next card peek in.",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "3.5", "label": "3.5" },
+        { "value": "4", "label": "4" },
+        { "value": "4.5", "label": "4.5" },
+        { "value": "5", "label": "5" },
+        { "value": "5.5", "label": "5.5" },
+        { "value": "6", "label": "6" }
+      ],
+      "default": "4.5"
+    },
+    {
+      "type": "select",
+      "id": "slides_tablet",
+      "label": "Cards on tablet",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "2.5", "label": "2.5" },
+        { "value": "3", "label": "3" },
+        { "value": "3.5", "label": "3.5" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "slides_mobile",
+      "label": "Cards on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "1.2", "label": "1.2" },
+        { "value": "1.5", "label": "1.5" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1.2"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between cards",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_aspect_ratio",
+      "min": 45,
+      "max": 130,
+      "step": 5,
+      "unit": "%",
+      "label": "Card shape",
+      "info": "Width as a percentage of height. Lower is taller.",
+      "default": 75
+    },
+    {
+      "type": "range",
+      "id": "header_gap",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below heading",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "controls_gap",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Space above arrows",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 180,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 180,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 80
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#101116"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "info": "Optional. Replaces the dotted texture."
+    },
+    {
+      "type": "range",
+      "id": "background_image_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Background image opacity",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "texture_opacity",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "%",
+      "label": "Dot texture opacity",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Body text",
+      "default": "#f4f4f6"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "watermark_color",
+      "label": "Backdrop word outline",
+      "default": "#3a3f52"
+    },
+    {
+      "type": "range",
+      "id": "watermark_size",
+      "min": 8,
+      "max": 26,
+      "step": 1,
+      "unit": "vw",
+      "label": "Backdrop word size",
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "watermark_offset",
+      "min": -80,
+      "max": 200,
+      "step": 4,
+      "unit": "px",
+      "label": "Backdrop word offset",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Cards"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#1b1d26"
+    },
+    {
+      "type": "color",
+      "id": "card_text_color",
+      "label": "Card text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "card_text_alignment",
+      "label": "Card text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "info": "Shades the foot of each card so the text stays readable.",
+      "default": 65
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Card corner radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Card text padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_shadow",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Card shadow",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "card_tilt",
+      "min": 0,
+      "max": 220,
+      "step": 5,
+      "unit": "deg",
+      "label": "Edge lean",
+      "info": "Tenths of a degree. How far the outermost cards lean outward along the curve. Always flat on mobile. 0 removes the lean.",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "curve_depth",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Curve depth",
+      "info": "How far the middle of the row sits below the ends, which is what curves the top and bottom of the strip. 0 makes the row flat.",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size",
+      "min": 20,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Section heading size",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_font_size",
+      "min": 10,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "label": "Category size",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "title_font_size",
+      "min": 18,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "label": "Card title size",
+      "info": "The maximum. Titles scale down with the card on small screens.",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "title_font_weight",
+      "label": "Card title weight",
+      "options": [
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "range",
+      "id": "title_letter_spacing",
+      "min": -4,
+      "max": 20,
+      "step": 1,
+      "unit": "%",
+      "label": "Card title letter spacing",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "title_text_transform",
+      "label": "Card title case",
+      "options": [
+        { "value": "none", "label": "As typed" },
+        { "value": "uppercase", "label": "Uppercase" },
+        { "value": "capitalize", "label": "Capitalized" }
+      ],
+      "default": "uppercase"
+    },
+    {
+      "type": "header",
+      "content": "Slider"
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite",
+      "label": "Loop cards",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "info": "Always off for visitors who prefer reduced motion.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "unit": "s",
+      "label": "Autoplay speed",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "transition_speed",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "label": "Transition speed",
+      "default": 600
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Arrows"
+    },
+    {
+      "type": "range",
+      "id": "arrow_size",
+      "min": 32,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "label": "Arrow size",
+      "default": 52
+    },
+    {
+      "type": "color",
+      "id": "arrow_background",
+      "label": "Arrow background",
+      "default": "#101116"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "Arrow icon",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "arrow_border_color",
+      "label": "Arrow border",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Editorial card slider",
+      "blocks": [
+        {
+          "type": "card",
+          "settings": {
+            "eyebrow": "Shoulder bags",
+            "title": "Crafting your unique style"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "eyebrow": "Trendy bags",
+            "title": "Stories behind iconic designs"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "eyebrow": "Brown collections",
+            "title": "A guide to the best brands"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "eyebrow": "Side bags",
+            "title": "Stay organized & stylish"
+          }
+        },
+        {
+          "type": "card",
+          "settings": {
+            "eyebrow": "Sling bags",
+            "title": "Ultimate blend of comfort"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

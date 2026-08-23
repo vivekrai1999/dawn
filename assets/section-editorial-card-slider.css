@@ -1,0 +1,557 @@
+/*
+  Editorial card slider — sections/editorial-card-slider.liquid.
+
+  Layered on top of the vendored core slick.css (which only handles track
+  mechanics), so slick-theme.css — and the five font files plus loading gif it
+  pulls in for its own arrow and dot glyphs — is never needed.
+
+  Every --editorial-* token is emitted per section instance, so several sliders
+  can coexist on one page with different colours, sizing and tilt.
+*/
+
+.editorial-slider {
+  position: relative;
+  display: block;
+  min-height: var(--editorial-min-height);
+  /* Contains the decorative layers and any mid-transition slide overhang. */
+  overflow: hidden;
+  padding-block: var(--editorial-padding-top) var(--editorial-padding-bottom);
+  background-color: var(--editorial-bg);
+  color: var(--editorial-text);
+  isolation: isolate;
+}
+
+.editorial-slider__inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--editorial-max-width);
+  margin-inline: auto;
+  /* Matches the theme gutter so the slider lines up with sections above it. */
+  padding-inline: 1.5rem;
+}
+
+@media screen and (min-width: 750px) {
+  .editorial-slider__inner {
+    padding-inline: 5rem;
+  }
+}
+
+/* ----------------------------------------------------------- Decorative bed */
+
+/*
+  The dotted corner texture from the reference, drawn with a repeating radial
+  gradient rather than shipping an image: no extra request and it recolours with
+  the section automatically.
+*/
+.editorial-slider__texture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, var(--editorial-texture-opacity)) 1px,
+    transparent 1.4px
+  );
+  background-size: 1.4rem 1.4rem;
+  /* Confines the dots to the lower corners, as in the reference. */
+  -webkit-mask-image: radial-gradient(ellipse 55% 45% at 50% 45%, transparent 60%, #000 100%);
+  mask-image: radial-gradient(ellipse 55% 45% at 50% 45%, transparent 60%, #000 100%);
+}
+
+/*
+  Oversized outline word sitting behind the cards. It is decorative only — the
+  real section heading is a normal, readable element — so it is aria-hidden and
+  never becomes the accessible name of anything.
+*/
+.editorial-slider__watermark {
+  position: absolute;
+  inset-inline: 0;
+  top: var(--editorial-watermark-top);
+  z-index: 0;
+  margin: 0;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: var(--editorial-watermark-size);
+  line-height: 0.85;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--editorial-watermark-color);
+  /* Non-WebKit fallback: a faint fill still reads as a watermark. */
+  text-shadow: none;
+}
+
+@supports not ((-webkit-text-stroke: 1px currentColor)) {
+  .editorial-slider__watermark {
+    color: var(--editorial-watermark-color);
+    opacity: 0.35;
+  }
+}
+
+/* --------------------------------------------------------------- Section head */
+
+.editorial-slider__header {
+  position: relative;
+  z-index: 1;
+  max-width: 68rem;
+  margin-block-end: var(--editorial-header-gap);
+}
+
+.editorial-slider__header--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.editorial-slider__header--right {
+  margin-inline-start: auto;
+  text-align: right;
+}
+
+.editorial-slider__heading {
+  margin: 0;
+  color: var(--editorial-heading-color);
+  font-size: var(--editorial-section-heading-size);
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.editorial-slider__description {
+  margin-block: 1.2rem 0;
+  color: var(--editorial-text);
+  opacity: 0.75;
+}
+
+.editorial-slider__description > :first-child {
+  margin-top: 0;
+}
+
+.editorial-slider__description > :last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------- Track */
+
+.editorial-slider--bleed .editorial-slider__carousel {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding-inline: var(--editorial-edge-inset);
+  box-sizing: border-box;
+}
+
+.editorial-slider__track {
+  position: relative;
+  z-index: 1;
+  /* Negative inline margin pairs with the slide padding to make the card gap,
+     keeping the outer cards flush with the section gutter. */
+  margin-inline: calc(-1 * var(--editorial-gap) / 2);
+}
+
+.editorial-slider__slide {
+  padding-inline: calc(var(--editorial-gap) / 2);
+  /* Room for the lean and the lift so no rotated corner is clipped. */
+  padding-block: var(--editorial-tilt-room);
+  box-sizing: border-box;
+  outline: none;
+}
+
+/*
+  Before Slick initialises — and if the library never arrives at all — the track
+  is a plain horizontal scroller. That keeps the cards reachable rather than
+  stacking them into a very tall column.
+*/
+.editorial-slider__track:not(.slick-initialized) {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.editorial-slider__track:not(.slick-initialized)::-webkit-scrollbar {
+  display: none;
+}
+
+.editorial-slider__track:not(.slick-initialized) .editorial-slider__slide {
+  flex: 0 0 calc(100% / var(--editorial-slides-mobile));
+  scroll-snap-align: start;
+}
+
+@media screen and (min-width: 750px) {
+  .editorial-slider__track:not(.slick-initialized) .editorial-slider__slide {
+    flex-basis: calc(100% / var(--editorial-slides-tablet));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .editorial-slider__track:not(.slick-initialized) .editorial-slider__slide {
+    flex-basis: calc(100% / var(--editorial-slides-desktop));
+  }
+}
+
+/* Slick sets its slides to display:block; the card needs the full slide box. */
+.editorial-slider .slick-list {
+  overflow: visible;
+  /* Clips the row vertically only, so tilted cards breathe but neighbouring
+     sections are never overlapped. */
+  clip-path: inset(-100vh 0 -100vh 0);
+}
+
+.editorial-slider .slick-track {
+  display: flex;
+  align-items: stretch;
+}
+
+.editorial-slider .slick-slide {
+  height: auto;
+  /* Flex items default to min-width:auto and would refuse to shrink to the
+     width Slick assigns, pushing the cards wider than the screen. */
+  min-width: 0;
+}
+
+.editorial-slider .slick-slide > div {
+  height: 100%;
+}
+
+/* -------------------------------------------------------------------- Card */
+
+.editorial-slider__card {
+  position: relative;
+  display: grid;
+  grid-template-areas: 'stack';
+  /* Drives the card box; the media stretches into it rather than sizing it, so
+     no gap can open between the image and the card edge. */
+  aspect-ratio: var(--editorial-card-ratio);
+  overflow: hidden;
+  border-radius: var(--editorial-card-radius);
+  background-color: var(--editorial-card-bg);
+  box-shadow: var(--editorial-card-shadow);
+  transition: transform var(--duration-long, 500ms) cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/*
+  The magazine tilt. It lives on the card, never on the Slick slide wrapper —
+  Slick writes transforms onto the track and slides itself, and rotating those
+  would break its position maths.
+*/
+.editorial-slider--tilted:not(.editorial-slider--curve-active) .slick-slide:nth-child(odd) .editorial-slider__card,
+.editorial-slider--tilted:not(.editorial-slider--curve-active) .editorial-slider__slide:nth-child(odd) .editorial-slider__card {
+  transform: rotate(calc(-1 * var(--editorial-tilt)));
+}
+
+.editorial-slider--tilted:not(.editorial-slider--curve-active) .slick-slide:nth-child(even) .editorial-slider__card,
+.editorial-slider--tilted:not(.editorial-slider--curve-active) .editorial-slider__slide:nth-child(even) .editorial-slider__card {
+  transform: rotate(var(--editorial-tilt));
+}
+
+/*
+  The arc. --curve-angle and --curve-lift are written per card by the JS from the
+  card's live position across the slider, so the curve stays anchored to the
+  viewport while the cards travel through it: outer cards lean outward and ride
+  high, the middle of the row sits lowest, and both edges of the strip curve.
+*/
+.editorial-slider--curve-active .editorial-slider__card {
+  transform: translateY(calc(var(--curve-lift, 0) * 1px))
+    rotate(calc(var(--curve-angle, 0) * 1deg));
+}
+
+.editorial-slider--tilted .editorial-slider__card:hover,
+.editorial-slider--tilted .editorial-slider__card:focus-within {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.editorial-slider--curve-active .editorial-slider__card:hover,
+.editorial-slider--curve-active .editorial-slider__card:focus-within {
+  transform: translateY(calc(var(--curve-lift, 0) * 1px)) rotate(0deg) scale(1.02);
+}
+
+.editorial-slider__media {
+  grid-area: stack;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--editorial-card-bg);
+}
+
+.editorial-slider__image,
+.editorial-slider__media .placeholder-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Per-card focal point, so a subject off to one side survives the crop. */
+  object-position: var(--editorial-focal, center);
+  display: block;
+}
+
+/*
+  The tilt rotates the card, which would reveal the background at the corners.
+  Scaling the media slightly past the frame keeps the image bleeding to every
+  edge at any rotation in the supported range.
+*/
+.editorial-slider--tilted .editorial-slider__image {
+  transform: scale(1.06);
+}
+
+/*
+  Shopify's placeholders paint a light background rect *inside* the SVG, so a
+  background-color on the element cannot cover it — an image-less card would read
+  as a white product-card frame against the dark section. Recolour the shapes
+  themselves. The element background covers any letterboxing, since object-fit
+  does not apply to inline SVG.
+*/
+.editorial-slider__media .placeholder-svg {
+  background-color: var(--editorial-card-bg);
+}
+
+.editorial-slider__media .placeholder-svg rect {
+  fill: var(--editorial-card-bg);
+}
+
+.editorial-slider__media .placeholder-svg path,
+.editorial-slider__media .placeholder-svg circle,
+.editorial-slider__media .placeholder-svg ellipse,
+.editorial-slider__media .placeholder-svg polygon {
+  fill: rgba(255, 255, 255, 0.16);
+}
+
+.editorial-slider__overlay {
+  grid-area: stack;
+  align-self: stretch;
+  pointer-events: none;
+  /* Anchored to the copy at the foot of the card and clear by two thirds up, so
+     the photograph is never flattened. */
+  background-image: linear-gradient(
+    to top,
+    rgba(0, 0, 0, var(--editorial-overlay)) 0%,
+    rgba(0, 0, 0, calc(var(--editorial-overlay) * 0.55)) 38%,
+    rgba(0, 0, 0, 0) 72%
+  );
+}
+
+/* Static on purpose — see the note on .editorial-slider__card. Painting order
+   comes from DOM order, so no z-index is needed to sit above the overlay. */
+.editorial-slider__content {
+  grid-area: stack;
+  align-self: end;
+  position: static;
+  padding: var(--editorial-card-padding);
+  text-align: var(--editorial-card-align);
+  color: var(--editorial-card-text);
+}
+
+.editorial-slider__eyebrow {
+  margin: 0 0 0.8rem;
+  font-size: var(--editorial-eyebrow-size);
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+  /* Backs the overlay up on a blown-out highlight the gradient cannot cover. */
+  text-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.45);
+}
+
+.editorial-slider__title {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--editorial-title-weight);
+  font-size: var(--editorial-title-size);
+  line-height: 1.12;
+  letter-spacing: var(--editorial-title-spacing);
+  text-transform: var(--editorial-title-transform);
+  text-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.45);
+}
+
+.editorial-slider__cta {
+  display: inline-block;
+  margin-block-start: 1.2rem;
+  font-size: var(--editorial-eyebrow-size);
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 0.4rem;
+}
+
+/*
+  Stretched link: the whole card is clickable, but the accessible name comes
+  from the real anchor text rather than a wrapper around the image.
+*/
+.editorial-slider__link {
+  position: static;
+  color: currentColor;
+  text-decoration: none;
+}
+
+.editorial-slider__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.editorial-slider__link:hover .editorial-slider__title {
+  text-decoration: underline;
+  text-underline-offset: 0.6rem;
+}
+
+/* Focus lands on the link but must read as the whole card. */
+.editorial-slider__card:focus-within {
+  outline: 0.2rem solid var(--editorial-card-text);
+  outline-offset: 0.4rem;
+}
+
+.editorial-slider__link:focus-visible {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------- Controls */
+
+.editorial-slider__controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-block-start: var(--editorial-controls-gap);
+}
+
+.editorial-slider__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--editorial-arrow-size);
+  height: var(--editorial-arrow-size);
+  padding: 0;
+  border: 0.1rem solid var(--editorial-arrow-border);
+  border-radius: 50%;
+  background-color: var(--editorial-arrow-bg);
+  color: var(--editorial-arrow-color);
+  cursor: pointer;
+  transition: background-color var(--duration-short, 100ms) ease,
+    color var(--duration-short, 100ms) ease, border-color var(--duration-short, 100ms) ease;
+}
+
+.editorial-slider__arrow:hover {
+  background-color: var(--editorial-arrow-color);
+  border-color: var(--editorial-arrow-color);
+  color: var(--editorial-arrow-bg);
+}
+
+.editorial-slider__arrow:focus-visible {
+  outline: 0.2rem solid var(--editorial-arrow-color);
+  outline-offset: 0.3rem;
+}
+
+/* Slick sets this on the arrows when the track cannot move any further. */
+.editorial-slider__arrow.slick-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.editorial-slider__arrow .svg-wrapper {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.editorial-slider__arrow--prev .svg-wrapper {
+  transform: rotate(180deg);
+}
+
+.editorial-slider__dots .slick-dots {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: auto;
+}
+
+.editorial-slider__dots .slick-dots li {
+  margin: 0;
+  width: auto;
+  height: auto;
+}
+
+.editorial-slider__dots .slick-dots button {
+  width: 0.8rem;
+  height: 0.8rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--editorial-arrow-border);
+  /* The number stays for assistive tech but must not be drawn in the dot. */
+  font-size: 0;
+  color: transparent;
+  cursor: pointer;
+  transition: background-color var(--duration-short, 100ms) ease;
+}
+
+.editorial-slider__dots .slick-dots .slick-active button {
+  background-color: var(--editorial-arrow-color);
+}
+
+.editorial-slider__dots .slick-dots button:focus-visible {
+  outline: 0.2rem solid var(--editorial-arrow-color);
+  outline-offset: 0.3rem;
+}
+
+/* ------------------------------------------------------------- Small screens */
+
+@media screen and (max-width: 989px) {
+  .editorial-slider__watermark {
+    /* The oversized word competes with the cards once the row narrows. */
+    display: none;
+  }
+}
+
+@media screen and (max-width: 749px) {
+  .editorial-slider__inner {
+    padding-inline: 1.6rem;
+  }
+
+  /* Rotation costs width the phone does not have, and reads as a mistake at
+     this size — the reference composition only works across a wide row. These
+     must match the :nth-child specificity of the tilt rules above to win. */
+  .editorial-slider--tilted .slick-slide:nth-child(odd) .editorial-slider__card,
+  .editorial-slider--tilted .slick-slide:nth-child(even) .editorial-slider__card,
+  .editorial-slider--tilted .editorial-slider__slide:nth-child(odd) .editorial-slider__card,
+  .editorial-slider--tilted .editorial-slider__slide:nth-child(even) .editorial-slider__card,
+  .editorial-slider--curve-active .editorial-slider__card,
+  .editorial-slider--curve-active .editorial-slider__card:hover,
+  .editorial-slider--curve-active .editorial-slider__card:focus-within {
+    transform: none;
+    outline-offset: 11px;
+  }
+
+  .editorial-slider--tilted .editorial-slider__image {
+    transform: none;
+  }
+
+  .editorial-slider__slide {
+    padding-block: 0;
+  }
+}
+
+/*
+  Reduced motion: the carousel still works, it just stops moving by itself and
+  drops the transform flourishes.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .editorial-slider__card,
+  .editorial-slider .slick-track {
+    transition: none;
+  }
+
+  .editorial-slider--tilted .editorial-slider__card:hover,
+  .editorial-slider--tilted .editorial-slider__card:focus-within {
+    transform: none;
+  }
+}

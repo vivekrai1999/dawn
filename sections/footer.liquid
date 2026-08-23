@@ -180,7 +180,7 @@
           {%- endif -%}
 
           {%- if section.settings.show_social and has_social -%}
-            {%- render 'footer-social' -%}
+            {%- render 'social-links', class: 'footer__socials', link_class: 'footer__social' -%}
           {%- endif -%}
         </div>
 

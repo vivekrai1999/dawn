@@ -4,6 +4,8 @@
   @param {boolean} [show_country_selector] - Whether to render the country selector in the drawer.
   @param {boolean} [show_language_selector] - Whether to render the language selector in the drawer.
   @param {boolean} [show_social_links] - Whether to render social links list in the drawer.
+  @param {boolean} [show_login] - Whether to render the login/account button.
+  @param {string} [login_label] - Label for the login button; falls back to the theme translation.
 
   @example
   {% render 'header-drawer', show_language_selector: true %}
@@ -22,6 +24,20 @@
     </summary>
     <div id="menu-drawer" class="gradient menu-drawer motion-reduce color-{{ section.settings.menu_color_scheme }}">
       <div class="menu-drawer__inner-container">
+        {%- comment -%}
+          Dismisses the whole drawer. The `menu-drawer__panel-close` class is what
+          MenuDrawer.bindEvents uses to route it to closeMenuDrawer rather than to
+          the submenu back-button handler.
+        {%- endcomment -%}
+        <button
+          type="button"
+          class="menu-drawer__panel-close"
+          aria-label="{{ 'accessibility.close' | t }}"
+        >
+          <span class="svg-wrapper" aria-hidden="true">
+            {{- 'icon-close.svg' | inline_asset_content -}}
+          </span>
+        </button>
         <div class="menu-drawer__navigation-container">
           <nav class="menu-drawer__navigation">
             <ul class="menu-drawer__menu has-submenu list-menu" role="list">
@@ -140,6 +156,23 @@
             </ul>
           </nav>
           <div class="menu-drawer__utility-links">
+            {%- if show_login and shop.customer_accounts_enabled -%}
+              {%- liquid
+                if customer
+                  assign account_url = routes.account_url
+                  assign account_label = 'customer.account.title' | t
+                else
+                  assign account_url = routes.account_login_url
+                  assign account_label = 'customer.log_in' | t
+                endif
+
+                if login_label != blank and customer == null
+                  assign account_label = login_label
+                endif
+              -%}
+              <a href="{{ account_url }}" class="menu-drawer__login">{{ account_label | escape }}</a>
+            {%- endif -%}
+
             {%- if show_country_selector or show_language_selector -%}
               <div class="menu-drawer__localization header-localization">
                 {%- if show_country_selector -%}

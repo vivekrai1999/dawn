@@ -608,6 +608,8 @@
                                         {%- endif -%}
                                         {% render 'card-product',
                                           card_product: product,
+                                          card_variant: 'showcase',
+                                          quick_add_style: 'icon',
                                           media_aspect_ratio: block.settings.image_ratio,
                                           show_secondary_image: false,
                                           lazy_load: false,
@@ -680,6 +682,7 @@
                       </aside>
                     {%- endif -%}
                     {{ 'component-card.css' | asset_url | stylesheet_tag }}
+                    {{ 'component-card-showcase.css' | asset_url | stylesheet_tag }}
                     {{ 'component-complementary-products.css' | asset_url | stylesheet_tag }}
                     {%- if block.settings.enable_quick_add -%}
                       {{ 'quick-add.css' | asset_url | stylesheet_tag }}

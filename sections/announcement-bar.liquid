@@ -1,234 +1,202 @@
-{{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
-{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{% comment %}
+  The top bar above the header: social links and a phone number on the left,
+  announcements in the centre, store locator and localization on the right.
+
+  Written on its own `.topbar` class root rather than Dawn's `.utility-bar`.
+  The stock classes carry grid areas, `page-width` padding and `.list-social`
+  offsets from base.css that fight this three-column layout; owning the root
+  keeps the bar's gutters aligned with the header below it.
+
+  Reused as-is: Dawn's `country-localization` / `language-localization`
+  snippets with the `localization-form` custom element, and the shared
+  `social-links` snippet.
+{% endcomment %}
+
+{{ 'section-announcement-bar.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
-  assign social_icons = true
-  if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank
-    assign social_icons = false
+  assign announcements = section.blocks | where: 'type', 'announcement'
+
+  assign has_announcement = false
+  for block in announcements
+    if block.settings.text != blank
+      assign has_announcement = true
+      break
+    endif
+  endfor
+
+  assign has_social = false
+  if settings.social_facebook_link != blank or settings.social_instagram_link != blank or settings.social_youtube_link != blank or settings.social_tiktok_link != blank or settings.social_twitter_link != blank or settings.social_pinterest_link != blank or settings.social_snapchat_link != blank or settings.social_tumblr_link != blank or settings.social_vimeo_link != blank
+    assign has_social = true
   endif
-  if section.settings.enable_country_selector or section.settings.enable_language_selector
-    assign language_country_selector = true
+
+  assign show_social = false
+  if section.settings.show_social and has_social
+    assign show_social = true
   endif
-  if section.blocks.size > 0
-    assign announcement_bar = true
+
+  assign show_phone = false
+  if section.settings.show_phone and section.settings.phone_number != blank
+    assign show_phone = true
+  endif
+
+  assign show_stores = false
+  if section.settings.show_store_locator and section.settings.store_locator_link != blank
+    assign show_stores = true
+  endif
+
+  assign show_country = false
+  if section.settings.enable_country_selector and localization.available_countries.size > 1
+    assign show_country = true
+  endif
+
+  assign show_language = false
+  if section.settings.enable_language_selector and localization.available_languages.size > 1
+    assign show_language = true
+  endif
+
+  assign has_localization = false
+  if show_country or show_language
+    assign has_localization = true
+  endif
+
+  comment
+    Colour settings can be cleared in the editor, so resolve each to a concrete
+    value before it reaches the style block.
+  endcomment
+  assign bar_bg = section.settings.bar_background_color | default: '#16161d'
+  assign bar_text = section.settings.bar_text_color | default: '#ffffff'
+  assign bar_icon = section.settings.bar_icon_color | default: bar_text
+
+  assign phone_href = section.settings.phone_link
+  if phone_href == blank
+    assign phone_href = section.settings.phone_number | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | prepend: 'tel:'
+  endif
+
+  assign store_label = section.settings.store_locator_label
+  if store_label == blank
+    assign store_label = 'sections.header.stores' | t
   endif
 -%}
 
-{% if social_icons %}
-  {{ 'component-list-social.css' | asset_url | stylesheet_tag }}
-{% endif %}
+{%- if has_announcement or show_social or show_phone or show_stores or has_localization -%}
+  {%- style -%}
+    #Topbar-{{ section.id }} {
+      --topbar-bg: {{ bar_bg }};
+      --topbar-text: {{ bar_text }};
+      --topbar-icon: {{ bar_icon }};
+      --topbar-font-size: {{ section.settings.bar_font_size }}px;
+      --topbar-icon-size: {{ section.settings.bar_icon_size }}px;
+      --topbar-height: {{ section.settings.bar_height }}px;
+      --topbar-height-mobile: {{ section.settings.bar_height_mobile }}px;
+      --topbar-width: {{ section.settings.bar_width }}px;
+    }
+  {%- endstyle -%}
 
-<div
-  class="utility-bar color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator and section.blocks.size > 0 %} utility-bar--bottom-border{% elsif section.settings.show_line_separator and section.settings.show_social and social_icons%} utility-bar--bottom-border-social-only{% endif %}{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header-localization{% endif %}"
->
-  <div class="page-width utility-bar__grid{% if announcement_bar and language_country_selector or section.settings.show_social and social_icons %} utility-bar__grid--3-col{% elsif language_country_selector or section.settings.show_social and social_icons %} utility-bar__grid--2-col{% endif %}">
-    {%- if section.settings.show_social and social_icons -%}
-      {%- render 'social-icons' -%}
-    {%- endif -%}
-    {%- if section.blocks.size == 1 -%}
-      <div
-        class="announcement-bar{% if section.settings.show_social %} announcement-bar--one-announcement{% endif %}"
-        role="region"
-        aria-label="{{ 'sections.header.announcement' | t }}"
-        {{ section.blocks.first.shopify_attributes }}
-      >
-        {%- if section.blocks.first.settings.text != blank -%}
-          {%- if section.blocks.first.settings.link != blank -%}
-            <a
-              href="{{ section.blocks.first.settings.link }}"
-              class="announcement-bar__link link link--text focus-inset animate-arrow"
-            >
+  <div class="topbar" id="Topbar-{{ section.id }}">
+    <div class="topbar__inner">
+      {%- if show_social or show_phone -%}
+        <div class="topbar__group topbar__group--start">
+          {%- if show_social -%}
+            {%- render 'social-links', class: 'topbar__socials', link_class: 'topbar__social' -%}
           {%- endif -%}
-          <p class="announcement-bar__message h5">
-            <span>{{ section.blocks.first.settings.text | escape }}</span>
-            {%- if section.blocks.first.settings.link != blank -%}
-              {{- 'icon-arrow.svg' | inline_asset_content -}}
-            {%- endif -%}
-          </p>
-          {%- if section.blocks.first.settings.link != blank -%}
+
+          {%- if show_phone -%}
+            <a class="topbar__link" href="{{ phone_href }}">
+              <span class="visually-hidden">{{ 'sections.header.phone_label' | t }}</span>
+              <span aria-hidden="true">{{ section.settings.phone_number | escape }}</span>
             </a>
           {%- endif -%}
-        {%- endif -%}
-      </div>
-    {%- elsif section.blocks.size > 1 -%}
-      <slideshow-component
-        class="announcement-bar"
-        role="region"
-        aria-roledescription="{{ 'sections.announcements.carousel' | t }}"
-        aria-label="{{ 'sections.announcements.announcement_bar' | t }}"
-      >
-        <div class="announcement-bar-slider slider-buttons">
-          <button
-            type="button"
-            class="slider-button slider-button--prev"
-            name="previous"
-            aria-label="{{ 'sections.announcements.previous_announcement' | t }}"
-            aria-controls="Slider-{{ section.id }}"
-          >
-            <span class="svg-wrapper">
-              {{- 'icon-caret.svg' | inline_asset_content -}}
-            </span>
-          </button>
-          <div
-            class="grid grid--1-col slider slider--everywhere"
-            id="Slider-{{ section.id }}"
-            aria-live="polite"
-            aria-atomic="true"
-            data-autoplay="{{ section.settings.auto_rotate }}"
-            data-speed="{{ section.settings.change_slides_speed }}"
-          >
-            {%- for block in section.blocks -%}
-              <div
-                class="slideshow__slide slider__slide grid__item grid--1-col"
-                id="Slide-{{ section.id }}-{{ forloop.index }}"
-                {{ block.shopify_attributes }}
-                role="group"
-                aria-roledescription="{{ 'sections.announcements.announcement' | t }}"
-                aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-                tabindex="-1"
-              >
-                <div
-                  class="announcement-bar__announcement"
-                  role="region"
-                  aria-label="{{ 'sections.header.announcement' | t }}"
-                >
-                  {%- if block.settings.text != blank -%}
-                    {%- if block.settings.link != blank -%}
-                      <a
-                        href="{{ block.settings.link }}"
-                        class="announcement-bar__link link link--text focus-inset animate-arrow"
-                      >
-                    {%- endif -%}
-                    <p class="announcement-bar__message h5">
-                      <span>{{ block.settings.text | escape }}</span>
-                      {%- if block.settings.link != blank -%}
-                        {{- 'icon-arrow.svg' | inline_asset_content -}}
-                      {%- endif -%}
-                    </p>
-                    {%- if block.settings.link != blank -%}
-                      </a>
-                    {%- endif -%}
-                  {%- endif -%}
-                </div>
-              </div>
-            {%- endfor -%}
-          </div>
-          <button
-            type="button"
-            class="slider-button slider-button--next"
-            name="next"
-            aria-label="{{ 'sections.announcements.next_announcement' | t }}"
-            aria-controls="Slider-{{ section.id }}"
-          >
-            <span class="svg-wrapper">
-              {{- 'icon-caret.svg' | inline_asset_content -}}
-            </span>
-          </button>
         </div>
-      </slideshow-component>
-      {%- if request.design_mode -%}
-        <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
-        <style>
-          /* theme editor power preview fix */
-          .announcement-bar-slider .slider__slide[aria-hidden='true'] {
-            visibility: hidden;
-          }
-        </style>
       {%- endif -%}
-    {%- endif -%}
-    <div class="localization-wrapper">
-      {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
-        <localization-form class="small-hide medium-hide">
-          {%- form 'localization', id: 'AnnouncementCountryForm', class: 'localization-form' -%}
-            <div>
-              <h2 class="visually-hidden" id="AnnouncementCountryLabel">{{ 'localization.country_label' | t }}</h2>
-              {%- render 'country-localization', localPosition: 'AnnouncementCountry' -%}
-            </div>
-          {%- endform -%}
-        </localization-form>
-      {% endif %}
 
-      {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
-        <localization-form class="small-hide medium-hide">
-          {%- form 'localization', id: 'AnnouncementLanguageForm', class: 'localization-form' -%}
-            <div>
-              <h2 class="visually-hidden" id="AnnouncementLanguageLabel">{{ 'localization.language_label' | t }}</h2>
-              {%- render 'language-localization', localPosition: 'AnnouncementLanguage' -%}
+      {%- if has_announcement -%}
+        <div
+          class="topbar__announcement"
+          role="region"
+          aria-label="{{ 'sections.header.announcement' | t }}"
+        >
+          {%- for block in announcements -%}
+            {%- if block.settings.text == blank -%}
+              {%- continue -%}
+            {%- endif -%}
+            <p class="topbar__announcement-item" {{ block.shopify_attributes }}>
+              {%- if block.settings.link != blank -%}
+                <a class="topbar__link topbar__link--announcement" href="{{ block.settings.link }}">
+                  {{- block.settings.text | escape -}}
+                </a>
+              {%- else -%}
+                {{ block.settings.text | escape }}
+              {%- endif -%}
+            </p>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      {%- if show_stores or has_localization -%}
+        <div class="topbar__group topbar__group--end">
+          {%- if show_stores -%}
+            <a class="topbar__link" href="{{ section.settings.store_locator_link }}">
+              <span class="svg-wrapper" aria-hidden="true">
+                {{- 'icon-store.svg' | inline_asset_content -}}
+              </span>
+              <span>{{ store_label | escape }}</span>
+            </a>
+          {%- endif -%}
+
+          {%- if has_localization -%}
+            {%- comment -%}
+              `isolate` gives the disclosure panels their own stacking context so
+              they open above the page rather than behind the header below.
+            {%- endcomment -%}
+            <div class="topbar__localization isolate">
+              <span class="topbar__globe" aria-hidden="true">
+                {{- 'icon-globe.svg' | inline_asset_content -}}
+              </span>
+
+              {%- if show_country -%}
+                {%- assign country_position = 'TopbarCountry-' | append: section.id -%}
+                <localization-form class="small-hide medium-hide">
+                  {%- form 'localization', id: country_position, class: 'localization-form' -%}
+                    <div>
+                      <h2 class="visually-hidden" id="{{ country_position }}Label">
+                        {{ 'localization.country_label' | t }}
+                      </h2>
+                      {%- render 'country-localization', localPosition: country_position -%}
+                    </div>
+                  {%- endform -%}
+                </localization-form>
+              {%- endif -%}
+
+              {%- if show_language -%}
+                {%- assign language_position = 'TopbarLanguage-' | append: section.id -%}
+                <localization-form class="small-hide medium-hide">
+                  {%- form 'localization', id: language_position, class: 'localization-form' -%}
+                    <div>
+                      <h2 class="visually-hidden" id="{{ language_position }}Label">
+                        {{ 'localization.language_label' | t }}
+                      </h2>
+                      {%- render 'language-localization', localPosition: language_position -%}
+                    </div>
+                  {%- endform -%}
+                </localization-form>
+              {%- endif -%}
             </div>
-          {%- endform -%}
-        </localization-form>
+          {%- endif -%}
+        </div>
       {%- endif -%}
     </div>
   </div>
-</div>
+{%- endif -%}
 
 {% schema %}
 {
   "name": "t:sections.announcement-bar.name",
-  "max_blocks": 12,
   "class": "announcement-bar-section",
+  "max_blocks": 5,
   "enabled_on": {
     "groups": ["header"]
   },
-  "settings": [
-    {
-      "type": "checkbox",
-      "id": "auto_rotate",
-      "label": "t:sections.announcement-bar.settings.auto_rotate.label",
-      "default": false
-    },
-    {
-      "type": "range",
-      "id": "change_slides_speed",
-      "min": 3,
-      "max": 10,
-      "step": 1,
-      "unit": "s",
-      "label": "t:sections.announcement-bar.settings.change_slides_speed.label",
-      "default": 5
-    },    
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "t:sections.all.colors.label",
-      "default": "scheme-4"
-    },  
-    {
-      "type": "checkbox",
-      "id": "show_line_separator",
-      "default": true,
-      "label": "t:sections.header.settings.show_line_separator.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.announcement-bar.settings.heading_utilities.content"
-    },
-    {
-      "type": "paragraph",
-         "content": "t:sections.announcement-bar.settings.paragraph.content"
-    },             
-    {
-      "type": "checkbox",
-      "id": "show_social",
-      "default": false,
-      "label": "t:sections.announcement-bar.settings.show_social.label",
-      "info": "t:sections.announcement-bar.settings.show_social.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_country_selector",
-      "default": false,
-      "label": "t:sections.announcement-bar.settings.enable_country_selector.label",
-      "info": "t:sections.announcement-bar.settings.enable_country_selector.info"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_language_selector",
-      "default": false,
-      "label": "t:sections.announcement-bar.settings.enable_language_selector.label",
-      "info": "t:sections.announcement-bar.settings.enable_language_selector.info"
-    }
-  ],
   "blocks": [
     {
       "type": "announcement",
@@ -248,14 +216,153 @@
       ]
     }
   ],
+  "settings": [
+    {
+      "type": "color",
+      "id": "bar_background_color",
+      "label": "Background",
+      "default": "#16161d"
+    },
+    {
+      "type": "color",
+      "id": "bar_text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "bar_icon_color",
+      "label": "Icons",
+      "info": "Leave blank to use the text color."
+    },
+    {
+      "type": "range",
+      "id": "bar_font_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "bar_icon_size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "bar_height",
+      "min": 28,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Desktop height",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "bar_height_mobile",
+      "min": 28,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile height",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "bar_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1920
+    },
+    {
+      "type": "header",
+      "content": "Social links"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "default": true,
+      "label": "t:sections.announcement-bar.settings.show_social.label",
+      "info": "t:sections.announcement-bar.settings.show_social.info"
+    },
+    {
+      "type": "header",
+      "content": "Phone number"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show phone number",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "phone_number",
+      "label": "Phone number",
+      "default": "0123456780"
+    },
+    {
+      "type": "url",
+      "id": "phone_link",
+      "label": "Phone link",
+      "info": "Leave blank to build a tel: link from the number above."
+    },
+    {
+      "type": "header",
+      "content": "Store locator"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_store_locator",
+      "label": "Show store locator",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "store_locator_label",
+      "label": "Label",
+      "info": "Leave blank to use the theme default."
+    },
+    {
+      "type": "url",
+      "id": "store_locator_link",
+      "label": "Link",
+      "info": "The locator is hidden until a link is set."
+    },
+    {
+      "type": "header",
+      "content": "Localization"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_country_selector",
+      "default": true,
+      "label": "t:sections.announcement-bar.settings.enable_country_selector.label",
+      "info": "t:sections.announcement-bar.settings.enable_country_selector.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_language_selector",
+      "default": true,
+      "label": "t:sections.announcement-bar.settings.enable_language_selector.label",
+      "info": "t:sections.announcement-bar.settings.enable_language_selector.info"
+    }
+  ],
   "presets": [
     {
       "name": "t:sections.announcement-bar.presets.name",
-      "blocks": [
-        {
-          "type": "announcement"
-        }
-      ]
+      "blocks": [{ "type": "announcement" }]
     }
   ]
 }

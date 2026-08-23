@@ -1,4 +1,31 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.enable_quick_add -%}
+  {{ 'quick-add.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{{ 'component-card-showcase.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  The showcase card pins every media box to one ratio so the grid stays even.
+  This keeps the merchant's Image ratio choice meaningful: portrait and square
+  are already uniform, so they are passed through; "adapt" cannot be uniform by
+  definition, so it falls back to the card's own default.
+{%- endcomment -%}
+{%- liquid
+  assign card_media_ratio = ''
+  if section.settings.image_ratio == 'portrait'
+    assign card_media_ratio = '125%'
+  elsif section.settings.image_ratio == 'square'
+    assign card_media_ratio = '100%'
+  endif
+-%}
+{%- if card_media_ratio != blank -%}
+  {%- style -%}
+    #shopify-section-{{ section.id }} .card-wrapper--showcase {
+      --card-media-ratio: {{ card_media_ratio }};
+    }
+  {%- endstyle -%}
+{%- endif -%}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'section-related-products.css' | asset_url | stylesheet_tag }}
 
@@ -38,8 +65,18 @@
         {% assign skip_card_product_styles = false %}
         {% for recommendation in recommendations.products %}
           <li class="grid__item">
+            {%- liquid
+              assign quick_add_type = 'none'
+              if section.settings.enable_quick_add
+                assign quick_add_type = 'standard'
+              endif
+            -%}
             {% render 'card-product',
               card_product: recommendation,
+              card_variant: 'showcase',
+              quick_add_style: 'icon',
+              quick_add: quick_add_type,
+              section_id: section.id,
               media_aspect_ratio: section.settings.image_ratio,
               image_shape: section.settings.image_shape,
               show_secondary_image: section.settings.show_secondary_image,
@@ -219,6 +256,12 @@
       "id": "show_vendor",
       "default": false,
       "label": "t:sections.related-products.settings.show_vendor.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_quick_add",
+      "label": "t:sections.featured-collection.settings.quick_add.label",
+      "default": true
     },
     {
       "type": "checkbox",

@@ -280,7 +280,9 @@
       "cart_count": {
         "one": "{{ count }} item",
         "other": "{{ count }} items"
-      }
+      },
+      "phone_label": "Call us",
+      "stores": "Stores"
     },
     "cart": {
       "title": "Your cart",
@@ -314,7 +316,8 @@
       "login": {
         "title": "Have an account?",
         "paragraph_html": "<a href=\"{{ link }}\" class=\"link underlined-link\">Log in</a> to check out faster."
-      }
+      },
+      "bag_title": "Your bag"
     },
     "footer": {
       "payment": "Payment methods",
@@ -377,6 +380,9 @@
       "min_error": "This item has a minimum of {{ min }}",
       "max_error": "This item has a maximum of {{ max }}",
       "step_error": "You can only add this item in increments of {{ step }}"
+    },
+    "editorial_card_slider": {
+      "region_label": "Editorial cards"
     }
   },
   "localization": {

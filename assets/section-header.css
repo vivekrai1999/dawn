@@ -1,0 +1,1163 @@
+/*
+  Layout for sections/header.liquid.
+
+  Loaded after base.css, so the rules here intentionally override Dawn's stock
+  `.header` grid. Colour/size tokens (--header-*) are emitted per section
+  instance by the section's {% style %} block.
+*/
+
+/* -------------------------------------------------------------- Main header */
+
+/*
+  Overrides Dawn's `.header` grid. The stock header is a three-column grid keyed
+  to logo position; this one is a two-part bar — brand, then a floating pill.
+*/
+.header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  max-width: var(--header-width);
+  margin-inline: auto;
+  padding: var(--header-padding-block) var(--header-gutter);
+}
+
+.header-wrapper {
+  background-color: transparent;
+}
+
+/*
+  Overlay mode is switched on per instance from the section's {% style %} block,
+  which targets #shopify-section-{{ section.id }} — the section wrapper Shopify
+  emits, whose class list a section cannot change conditionally.
+*/
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.header__heading {
+  margin: 0;
+  line-height: 1.1;
+}
+
+.header__heading-link {
+  display: inline-block;
+  padding: 0.4rem 0;
+  color: var(--header-brand-color);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.header__heading-link:focus-visible {
+  outline: 0.2rem solid var(--header-brand-color);
+  outline-offset: 0.4rem;
+}
+
+.header__brand-text {
+  display: block;
+  max-width: 12ch;
+  font-family: var(--font-body-family);
+  font-size: var(--header-brand-font-size);
+  font-weight: var(--font-body-weight);
+  line-height: 1.25;
+  color: inherit;
+}
+
+.header__heading-logo-wrapper {
+  display: block;
+  width: var(--header-logo-width-mobile);
+}
+
+.header__heading-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------------------------------------------------------------- Nav pill */
+
+.header__pill {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1.6rem, 3vw, 4rem);
+  flex: 0 1 auto;
+  max-width: var(--nav-max-width);
+  min-width: 0;
+  padding: var(--nav-padding-block) var(--nav-padding-inline);
+  border: var(--nav-border-width) solid var(--nav-border-color);
+  border-radius: var(--nav-radius);
+}
+
+/*
+  The fill and blur live on a pseudo-element, not on .header__pill itself.
+  backdrop-filter would make the pill a containing block for its
+  position: fixed descendants, which would anchor the search panel to the pill
+  instead of the viewport.
+*/
+.header__pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--nav-bg);
+  backdrop-filter: blur(var(--nav-blur));
+  -webkit-backdrop-filter: blur(var(--nav-blur));
+}
+
+.header__inline-menu {
+  display: none;
+  min-width: 0;
+  /* Dawn offsets the list to compensate for its own item padding; the gap
+     below owns the spacing here, so the offset is removed. */
+  margin-left: 0;
+}
+
+.header__inline-menu > .list-menu,
+.header__inline-menu > .list-menu--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nav-link-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.header__inline-menu .header__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0;
+  color: var(--nav-text);
+  font-size: var(--nav-font-size);
+  line-height: 1.3;
+  letter-spacing: var(--nav-letter-spacing);
+  text-decoration: none;
+  text-transform: var(--nav-text-transform);
+  white-space: nowrap;
+  background: transparent;
+  transition: color var(--duration-short, 100ms) ease;
+}
+
+.header__menu-item:hover,
+.header__menu-item:focus-visible,
+.header__menu-item[aria-current] {
+  color: var(--nav-text-hover);
+}
+
+/*
+  Dawn underlines the inner <span> on hover (.header__menu-item:hover span) and
+  on the active item (.header__active-menu-item). This design marks state with
+  colour instead, so both underlines are cleared.
+*/
+.header__inline-menu .header__menu-item:hover span,
+.header__inline-menu .header__menu-item span,
+.header__inline-menu .header__active-menu-item,
+.header__inline-menu details[open] > .header__menu-item {
+  text-decoration: none;
+}
+
+.header__menu-item:focus-visible {
+  outline: 0.2rem solid var(--nav-text-hover);
+  outline-offset: 0.4rem;
+}
+
+/* Submenus reuse Dawn's header-menu disclosure markup. */
+.header__submenu {
+  border-radius: var(--popup-corner-radius);
+}
+
+.header__menu-item .icon-caret {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ---------------------------------------------------------------- Actions */
+
+.header__icons {
+  display: flex;
+  align-items: center;
+  gap: var(--icon-gap);
+  padding: 0;
+}
+
+.header__icon,
+.header__icon--summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: calc(var(--icon-size) + 1.6rem);
+  height: calc(var(--icon-size) + 1.6rem);
+  padding: 0;
+  color: var(--icon-color);
+  text-decoration: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color var(--duration-short, 100ms) ease;
+}
+
+.header__icon:hover,
+.header__icon--summary:hover {
+  background-color: var(--icon-hover-bg);
+}
+
+.header__icon:focus-visible,
+.header__icon--summary:focus-visible {
+  outline: 0.2rem solid var(--icon-color);
+  outline-offset: 0.2rem;
+}
+
+.header__icon .svg-wrapper,
+.header__icon svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.header__icon--cart {
+  position: relative;
+}
+
+/*
+  The cart glyphs sit inside a 40x40 viewBox with generous padding, while the
+  search and account glyphs fill an 18x19 box. Scaling with a transform draws
+  them at the same optical size as the others without Dawn's fixed 4.4rem box,
+  which would inflate the button and eat the gap between icons.
+*/
+.header__icon--cart .svg-wrapper {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.header__icon--cart .svg-wrapper svg,
+.header__icon--cart .icon {
+  width: 100%;
+  height: 100%;
+  transform: scale(2.2);
+}
+
+.header__icon .cart-count-bubble {
+  position: absolute;
+  inset-block-start: 0.2rem;
+  inset-inline-end: 0.2rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 1rem;
+  line-height: 1.7rem;
+  border-radius: 50%;
+}
+
+/* Shopify's account web component, sized to match the icon buttons. */
+shopify-account.header__icon:not(:defined) {
+  min-width: calc(var(--icon-size) + 1.6rem);
+  height: calc(var(--icon-size) + 1.6rem);
+}
+
+/* ------------------------------------------------------- Mobile / breakpoints */
+
+/* The menu trigger is Dawn's header-drawer; hide it once the inline menu shows. */
+header-drawer {
+  justify-self: auto;
+  margin-left: 0;
+}
+
+@media screen and (min-width: 990px) {
+  .header--menu-inline header-drawer {
+    display: none;
+  }
+
+  .header--menu-inline .header__inline-menu {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 989px) {
+  .header__pill {
+    flex: 0 1 auto;
+    gap: 0.4rem;
+    padding: var(--nav-padding-block-mobile) var(--nav-padding-inline-mobile);
+  }
+
+  .header {
+    min-height: var(--header-height-mobile);
+    padding-block: 0;
+  }
+
+  .header__heading-logo-wrapper {
+    width: var(--header-logo-width-mobile);
+  }
+
+  .header__brand-text {
+    font-size: calc(var(--header-brand-font-size) * 0.85);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .header__heading-logo-wrapper {
+    width: var(--header-logo-width);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__icon,
+  .header__menu-item {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Mobile header and navigation drawer
+
+   A deliberate mobile layout rather than a shrunken desktop one: the menu
+   toggle, a centred logo, and the search / cart actions sit in three grid
+   columns on an opaque bar. The drawer itself is Dawn's `header-drawer`
+   (MenuDrawer: focus trap, Escape, scroll lock, submenu back buttons) with
+   only its presentation changed.
+   ========================================================================== */
+
+@media screen and (max-width: 989px) {
+  .header-wrapper {
+    background-color: var(--mobile-header-bg);
+  }
+
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.8rem;
+    min-height: var(--header-height-mobile);
+    padding-inline: 1.6rem;
+  }
+
+  /* Menu toggle, centred logo, actions. */
+  .header > header-drawer {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .header__brand {
+    grid-column: 2;
+    justify-self: center;
+  }
+
+  .header__pill {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .header__brand-text,
+  .header__heading-link {
+    color: var(--mobile-brand-color);
+  }
+
+  /* On mobile the actions sit on the bar itself, not in a floating pill. */
+  .header__pill {
+    flex: 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  /* The bar itself is opaque on mobile, so the pill's fill is switched off. */
+  .header__pill::before {
+    content: none;
+  }
+
+  .header__icon,
+  .header__icon--summary {
+    color: var(--mobile-icon-color);
+    /* Touch target stays >= 44px even when --icon-size is small. */
+    width: max(4.4rem, calc(var(--icon-size) + 1.6rem));
+    height: max(4.4rem, calc(var(--icon-size) + 1.6rem));
+  }
+
+  /* Account lives in the drawer as the Login button on mobile. */
+  .header__icon--account,
+  shopify-account.header__icon {
+    display: none;
+  }
+
+  .header__icon--menu .svg-wrapper,
+  .header__icon--menu svg {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  /* ------------------------------------------------------------ Overlay */
+
+  /*
+    Dawn anchors this scrim below the header (top: 100% plus a computed height).
+    A bottom sheet dims the whole page, so it becomes a plain fixed overlay.
+  */
+  .header__icon--menu[aria-expanded='true']::before {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    height: auto;
+    z-index: 4;
+    background: rgba(0, 0, 0, var(--mobile-menu-overlay-opacity));
+  }
+
+  /* ------------------------------------------------------- Drawer panel */
+
+  /*
+    Bottom sheet: full width, pinned to the bottom edge, rounded at the top only.
+    Dawn's drawer is an absolutely positioned panel that slides in from the left
+    under the header, so position, insets and the slide axis are all replaced.
+  */
+  .menu-drawer {
+    position: fixed;
+    inset-inline: 0;
+    inset-block: auto 0;
+    width: 100%;
+    transform: translateY(100%);
+    border-radius: var(--mobile-menu-radius) var(--mobile-menu-radius) 0 0;
+    background-color: var(--mobile-menu-bg);
+    color: var(--mobile-menu-text);
+    overflow: hidden;
+    z-index: 5;
+  }
+
+  /* dvh tracks the collapsing mobile browser chrome; svh/vh are the fallbacks. */
+  .js .menu-drawer {
+    height: auto;
+    max-height: var(--sheet-max-height-fallback);
+    max-height: var(--sheet-max-height);
+    margin: 0;
+  }
+
+  .js details[open].menu-opening > .menu-drawer {
+    transform: translateY(0);
+  }
+
+  .menu-drawer__inner-container {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: var(--sheet-max-height-fallback);
+    max-height: var(--sheet-max-height);
+  }
+
+  .menu-drawer__navigation-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+  }
+
+  .menu-drawer__navigation {
+    padding-block: 0.8rem 2.4rem;
+  }
+
+  /* Circular close control, top right of the panel. */
+  .menu-drawer__panel-close {
+    position: relative;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 3.6rem;
+    height: 3.6rem;
+    margin: 1.6rem 1.6rem 0 0;
+    padding: 0;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.25);
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--mobile-menu-text);
+    cursor: pointer;
+  }
+
+  /* The 36px circle is decorative; the tappable area is a full 44px. */
+  .menu-drawer__panel-close::after {
+    content: '';
+    position: absolute;
+    inset: -0.4rem;
+  }
+
+  .menu-drawer__panel-close:focus-visible {
+    outline: 0.2rem solid var(--mobile-menu-text);
+    outline-offset: 0.2rem;
+  }
+
+  .menu-drawer__panel-close .svg-wrapper {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  /* ------------------------------------------------------- Menu entries */
+
+  .js .menu-drawer__menu li {
+    margin-bottom: 0;
+  }
+
+  .menu-drawer__menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    min-height: 4.4rem;
+    padding: calc(var(--mobile-menu-row-gap) / 2) 2.4rem;
+    color: var(--mobile-menu-text);
+    font-size: var(--mobile-menu-font-size);
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .menu-drawer summary.menu-drawer__menu-item {
+    padding-right: 2.4rem;
+  }
+
+  .menu-drawer__menu-item--active,
+  .menu-drawer__menu-item:hover,
+  .menu-drawer__menu-item:focus {
+    background-color: transparent;
+    text-decoration: underline;
+    text-underline-offset: 0.4rem;
+  }
+
+  /*
+    Dawn renders both an arrow and a caret and hides the caret. The reference
+    uses a right chevron, so show the caret rotated instead and keep it in flow
+    at the end of the row rather than absolutely placed.
+  */
+  .menu-drawer__menu-item > .svg-wrapper {
+    position: static;
+    width: 1.4rem;
+    height: 1.4rem;
+    transform: none;
+  }
+
+  /* First wrapper is Dawn's arrow, second is the caret. Positional rather than
+     :has(), so the fallback in older engines is still a single icon. */
+  .js .menu-drawer__menu-item > .svg-wrapper:nth-of-type(1) {
+    display: none;
+  }
+
+  .js .menu-drawer__menu-item .icon-caret {
+    display: block;
+    transform: rotate(-90deg);
+  }
+
+  .menu-drawer__submenu {
+    background-color: var(--mobile-menu-bg);
+  }
+
+  .menu-drawer__close-button {
+    padding-inline: 2.4rem;
+    color: var(--mobile-menu-text);
+    font-size: 1.4rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* --------------------------------------------------------- Panel foot */
+
+  .menu-drawer__utility-links,
+  .header--has-localizations .menu-drawer__utility-links,
+  .header--has-social .menu-drawer__utility-links {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1.6rem 1.2rem;
+    padding: 1.6rem 2.4rem 2.4rem;
+    background-color: transparent;
+  }
+
+  .menu-drawer__login {
+    grid-column: 1 / -1;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: fit-content;
+    min-width: 12rem;
+    min-height: 4.4rem;
+    padding: 0 2.4rem;
+    border-radius: 999px;
+    background-color: var(--mobile-login-bg);
+    color: var(--mobile-login-text);
+    font-size: 1.5rem;
+    text-decoration: none;
+  }
+
+  .menu-drawer__login:focus-visible {
+    outline: 0.2rem solid var(--mobile-menu-text);
+    outline-offset: 0.3rem;
+  }
+
+  /* Localization and socials share the final row. */
+  .menu-drawer__localization {
+    grid-column: 1;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .menu-drawer__localization .localization-form__select {
+    padding-inline: 0 2.2rem;
+    font-size: 1.3rem;
+    color: var(--mobile-menu-text);
+  }
+
+  .menu-drawer .list-social {
+    grid-column: 2;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .menu-drawer .list-social__link {
+    padding: 0.8rem;
+    color: var(--mobile-menu-text);
+  }
+
+  .menu-drawer .list-social__link .svg-wrapper,
+  .menu-drawer .list-social__link svg {
+    width: var(--mobile-social-icon-size);
+    height: var(--mobile-social-icon-size);
+  }
+}
+
+@media screen and (max-width: 989px) and (prefers-reduced-motion: reduce) {
+  .js details[open] > .menu-drawer,
+  .js details[open] > .menu-drawer__submenu,
+  menu-drawer > details[open] > summary::before {
+    transition: none;
+  }
+}
+
+/*
+  Dawn draws a field's visible box with `.field:before` and `.field:after`, both
+  squared off by --inputs-radius. Over the pill-shaped search input they trace a
+  rectangle, so they are switched off and the input's own border and focus ring
+  carry the styling — the same fix Dawn applies to `.share-button__fallback`.
+  Declared outside the breakpoints because both the panel and the sheet use it.
+*/
+.search-modal__field:before,
+.search-modal__field:after {
+  content: none;
+}
+
+/* ==========================================================================
+   Anchored header panels (search and cart)
+
+   Both open as a card pinned under the navigation pill, matching its width and
+   left edge. The pill's width is content-driven and the cart drawer is rendered
+   at body level, so neither can be positioned against the pill in pure CSS;
+   header.js publishes the pill's rect as --header-panel-* and these rules
+   consume it. Below the desktop breakpoint both fall back to their full-width
+   sheet behaviour.
+   ========================================================================== */
+
+@media screen and (min-width: 990px) {
+  /*
+    The card is pinned directly under the pill rather than behind it. Tucking it
+    behind would mean ordering the pill, the card and two page scrims across two
+    separate DOM subtrees (the search panel lives inside the pill, the cart
+    drawer at body level); sitting below keeps the nav row legible and the
+    layering trivial.
+  */
+  .header__panel {
+    box-sizing: border-box;
+    position: fixed;
+    top: calc(var(--header-panel-top, 0px) + var(--header-panel-row, 7rem) + var(--panel-offset));
+    left: var(--header-panel-left, 0px);
+    width: var(--header-panel-width, 100%);
+    max-height: calc(
+      100dvh - var(--header-panel-top, 0px) - var(--header-panel-row, 7rem) - var(--panel-offset) - 2.4rem
+    );
+    padding: 2.8rem var(--panel-inline) 3.2rem;
+    border-radius: var(--nav-radius);
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 5;
+  }
+
+  /*
+    Layering inside the pill: scrim (3) sits under the nav links and icons (4),
+    which sit under the open card (5). Without this the scrim would paint over
+    its earlier siblings and dim the navigation.
+  */
+  .header__inline-menu,
+  .header__icons > .header__icon,
+  .header__icons > shopify-account,
+  .header__search .header__icon--summary {
+    position: relative;
+    z-index: 4;
+  }
+
+  .header__panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    margin-block-end: 2.4rem;
+  }
+
+  .header__panel-title {
+    margin: 0;
+    font-size: clamp(2rem, 1.6vw, 2.8rem);
+    line-height: 1.2;
+    color: var(--panel-text);
+  }
+
+  .header__panel-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 3.6rem;
+    height: 3.6rem;
+    padding: 0;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.25);
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--panel-text);
+    cursor: pointer;
+  }
+
+  .header__panel-close:hover {
+    background-color: rgba(var(--color-foreground), 0.06);
+  }
+
+  .header__panel-close:focus-visible {
+    outline: 0.2rem solid var(--panel-text);
+    outline-offset: 0.2rem;
+  }
+
+  .header__panel-close .svg-wrapper {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  /* ---------------------------------------------------------- Search panel */
+
+  /*
+    Dawn stretches .modal__content over the header and paints its own scrim from
+    `.modal-overlay::after` anchored under it. The card owns the layout now, so
+    the wrapper is neutralised and the overlay becomes a plain full-page scrim
+    sitting one layer below the card.
+  */
+  .header__search .search-modal {
+    position: static;
+    min-height: 0;
+    height: auto;
+    border-bottom: 0;
+    background: transparent;
+    opacity: 1;
+  }
+
+  /*
+    Dawn animates `transform` on .search-modal. A running transform animation
+    makes that element a containing block, which re-anchored the fixed panel to
+    it instead of the viewport. The entrance moves to the card itself, where a
+    transform is harmless.
+  */
+  details[open] > .search-modal {
+    animation: none;
+  }
+
+  details[open] > .search-modal .header__panel {
+    animation: animateMenuOpen var(--duration-default, 200ms) ease;
+  }
+
+  /*
+    The scrim is painted from body, not from inside the pill. Dawn's
+    `.modal-overlay` is a descendant of the pill, so any scrim drawn there
+    covers the pill's own fill and dims the navigation. Rendering it at body
+    level under the header group's z-index 4 matches how the cart drawer's
+    scrim already behaves, so both panels dim the page identically.
+    details-modal.js still closes on any click outside the component, so the
+    overlay element is not needed as a hit target.
+  */
+  /*
+    .header__search wraps <details>, so the descendant order is
+    .header__search > details[open] > … > .modal-overlay. Writing it the other
+    way round never matches, and base.css's `details[open] .modal-overlay`
+    out-ranks the bare two-class selector.
+  */
+  .header__search details[open] .modal-overlay {
+    display: none;
+  }
+
+  /*
+    z-index 2 keeps the scrim under the header's own stacking context. A sticky
+    header is positioned and base.css gives it z-index 3, so anything at 3 or
+    above would paint over the panel, which lives inside that context and cannot
+    escape it. Page sections are unpositioned, so 2 is still above them.
+  */
+  body:has(.header__search details[open])::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    background-color: rgba(0, 0, 0, var(--panel-overlay-opacity));
+  }
+
+
+
+  .header__search .search-modal__content {
+    display: block;
+    height: auto;
+    line-height: inherit;
+  }
+
+  .search-modal__form {
+    width: 100%;
+    max-width: none;
+  }
+
+  .search-modal__field {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-modal__field .search__input.field__input {
+    height: 6rem;
+    padding: 0 7rem 0 2.4rem;
+    border: 0.1rem solid var(--panel-border);
+    border-radius: 999px;
+    background-color: transparent;
+    color: var(--panel-text);
+    font-size: 1.6rem;
+  }
+
+  .search-modal__field .search__input.field__input:focus-visible {
+    outline: 0.2rem solid var(--panel-text);
+    outline-offset: 0.2rem;
+  }
+
+  /* Dark circular submit, sitting inside the pill-shaped input. */
+  .search-modal__field .search__button.field__button {
+    position: absolute;
+    inset-inline-end: 0.8rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.4rem;
+    height: 4.4rem;
+    border-radius: 50%;
+    background-color: var(--panel-accent);
+    color: var(--panel-accent-text);
+  }
+
+  .search-modal__field .search__button.field__button:hover,
+  .search-modal__field .search__button.field__button:focus-visible {
+    background-color: var(--panel-accent);
+  }
+
+  .search-modal__field .search__button .svg-wrapper,
+  .search-modal__field .search__button svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .search-modal__field .reset__button.field__button {
+    inset-inline-end: 6rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    height: 4.4rem;
+  }
+
+  .search-modal__field .reset__button:not(:focus-visible)::after,
+  .search-modal__field .reset__button:not(:focus)::after {
+    border: 0;
+  }
+
+  .search-modal__popular {
+    margin-block-start: 3.2rem;
+  }
+
+  .search-modal__popular-title {
+    margin: 0 0 1.6rem;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    color: var(--panel-text);
+  }
+
+  .search-modal__popular-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .search-modal__popular-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-height: 4.4rem;
+    padding-block: 0.4rem;
+    color: var(--panel-text);
+    font-size: 1.5rem;
+    text-decoration: none;
+  }
+
+  .search-modal__popular-link:hover,
+  .search-modal__popular-link:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.4rem;
+  }
+
+  .search-modal__popular-link .svg-wrapper {
+    width: 1.4rem;
+    height: 1.4rem;
+    color: var(--panel-text);
+  }
+
+  /* The predictive results sit inside the card rather than over the page. */
+  .header__search .predictive-search--header {
+    position: static;
+    border: 0;
+    box-shadow: none;
+    margin-block-start: 1.6rem;
+  }
+}
+
+@media screen and (min-width: 990px) and (prefers-reduced-motion: reduce) {
+  details[open] > .search-modal {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Mobile bottom sheets
+
+   Below the desktop breakpoint the search panel, the cart drawer and the menu
+   drawer all present as the same full-width sheet rising from the bottom edge,
+   matching Shopify's account dialog. The cart's own rules live in
+   component-cart-drawer.css, which consumes the same tokens.
+   ========================================================================== */
+
+:root {
+  /*
+    One gutter for the header row and the announcement bar above it, so the
+    logo, the nav pill and the top-bar content all sit on the same margins.
+  */
+  --header-gutter: clamp(1.6rem, 4vw, 8rem);
+
+  /* svh avoids the sheet jumping as mobile browser chrome collapses. */
+  --sheet-max-height-fallback: 85vh;
+  --sheet-max-height: min(85dvh, 72rem);
+  --sheet-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media screen and (max-width: 989px) {
+  /* Sheets sit above the page but below nothing else; the scrim is one step under. */
+  .header__panel,
+  .search-modal__content.header__panel {
+    box-sizing: border-box;
+    position: fixed;
+    inset-inline: 0;
+    inset-block: auto 0;
+    width: 100%;
+    max-width: none;
+    max-height: var(--sheet-max-height-fallback);
+    max-height: var(--sheet-max-height);
+    padding: 2.4rem 2rem calc(2.4rem + var(--sheet-safe-bottom));
+    border-radius: var(--mobile-menu-radius) var(--mobile-menu-radius) 0 0;
+    background-color: var(--panel-bg);
+    color: var(--panel-text);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 5;
+  }
+
+  .header__search .search-modal {
+    position: static;
+    min-height: 0;
+    height: auto;
+    border-bottom: 0;
+    background: transparent;
+    opacity: 1;
+  }
+
+  /* base.css centres .search-modal__content with flex; the sheet stacks instead. */
+  .header__search .search-modal__content {
+    display: block;
+    width: auto;
+    height: auto;
+    line-height: inherit;
+  }
+
+  /* Same containing-block trap as on desktop: the transform animation would
+     re-anchor the fixed sheet to .search-modal. */
+  details[open] > .search-modal {
+    animation: none;
+  }
+
+  /*
+    .header__search wraps <details>, so the descendant order is
+    .header__search > details[open] > … > .modal-overlay. Writing it the other
+    way round never matches, and base.css's `details[open] .modal-overlay`
+    out-ranks the bare two-class selector.
+  */
+  .header__search details[open] .modal-overlay {
+    display: none;
+  }
+
+  /* Same reasoning as the desktop rule: stay below the header's z-index 3. */
+  body:has(.header__search details[open])::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    background-color: rgba(0, 0, 0, var(--panel-overlay-opacity));
+  }
+
+  .header__panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    margin-block-end: 2rem;
+  }
+
+  .header__panel-title {
+    margin: 0;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    color: var(--panel-text);
+  }
+
+  .header__panel-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 3.6rem;
+    height: 3.6rem;
+    padding: 0;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.25);
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--panel-text);
+    cursor: pointer;
+  }
+
+  .header__panel-close .svg-wrapper {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .search-modal__form {
+    width: 100%;
+    max-width: none;
+  }
+
+  .search-modal__field {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-modal__field .search__input.field__input {
+    height: 5.4rem;
+    padding: 0 6.4rem 0 2rem;
+    border: 0.1rem solid var(--panel-border);
+    border-radius: 999px;
+    background-color: transparent;
+    color: var(--panel-text);
+    font-size: 1.6rem;
+  }
+
+  .search-modal__field .search__button.field__button {
+    position: absolute;
+    inset-inline-end: 0.6rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.2rem;
+    height: 4.2rem;
+    border-radius: 50%;
+    background-color: var(--panel-accent);
+    color: var(--panel-accent-text);
+  }
+
+  .search-modal__field .search__button .svg-wrapper,
+  .search-modal__field .search__button svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .search-modal__field .reset__button.field__button {
+    inset-inline-end: 5.6rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    height: 4.2rem;
+  }
+
+  .search-modal__field .reset__button:not(:focus-visible)::after,
+  .search-modal__field .reset__button:not(:focus)::after {
+    border: 0;
+  }
+
+  .search-modal__popular {
+    margin-block-start: 2.4rem;
+  }
+
+  .search-modal__popular-title {
+    margin: 0 0 1.2rem;
+    font-size: 1.7rem;
+    color: var(--panel-text);
+  }
+
+  .search-modal__popular-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .search-modal__popular-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-height: 4.4rem;
+    color: var(--panel-text);
+    font-size: 1.5rem;
+    text-decoration: none;
+  }
+
+  .search-modal__popular-link .svg-wrapper {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .header__search .predictive-search--header {
+    position: static;
+    border: 0;
+    box-shadow: none;
+    margin-block-start: 1.6rem;
+  }
+}
+
+@media screen and (max-width: 989px) and (prefers-reduced-motion: reduce) {
+  .js details[open] > .menu-drawer,
+  .js details[open] > .menu-drawer__submenu {
+    transition: none;
+  }
+}

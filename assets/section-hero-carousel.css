@@ -1,0 +1,512 @@
+/*
+  Hero carousel — sections/hero-carousel.liquid.
+
+  Layered on top of the vendored core slick.css (which only handles track
+  mechanics). All presentation lives here so slick-theme.css — and the five font
+  files plus loading gif it pulls in for its own arrow/dot glyphs — is not
+  needed.
+
+  Tokens (--hero-*) are emitted per section instance and per slide, so several
+  carousels can coexist with different settings.
+*/
+
+.hero-carousel {
+  position: relative;
+  display: block;
+  /* Contains the slick track; without this a mid-transition slide can push the
+     page sideways. */
+  overflow: hidden;
+  background-color: rgb(var(--color-background));
+}
+
+.hero-carousel--contained {
+  max-width: var(--page-width);
+  margin-inline: auto;
+}
+
+/*
+  svh tracks the mobile URL bar without the jumpiness of vh, with vh as the
+  fallback for engines that lack it.
+*/
+.hero-carousel.hero-carousel--height-protected .hero-carousel__slide {
+  position: relative;
+  min-height: var(--hero-min-height);
+  display: grid;
+  grid-template-rows: minmax(min-content, 1fr);
+}
+
+@media screen and (min-width: 750px) {
+  .hero-carousel.hero-carousel--height-protected .hero-carousel__slide {
+    min-height: var(--hero-height);
+  }
+}
+
+/*
+  Before Slick initialises, only the first slide shows. This is Slick's own
+  recommended pattern: it prevents a flash of stacked slides and, because the
+  slide already reserves its height, there is no layout shift when the library
+  takes over.
+*/
+.hero-carousel__slider:not(.slick-initialized) .hero-carousel__slide + .hero-carousel__slide {
+  display: none;
+}
+
+.hero-carousel .slick-slide.hero-carousel__slide {
+  display: grid;
+}
+
+/* Slick wraps slides in divs; they must not collapse the flex layout. */
+.hero-carousel .slick-list,
+.hero-carousel .slick-track {
+  height: 100%;
+}
+
+.hero-carousel .slick-slide > div {
+  height: 100%;
+}
+
+/* ------------------------------------------------------------------- Media */
+
+.hero-carousel__media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-carousel__media picture {
+  display: block;
+  height: 100%;
+}
+
+.hero-carousel__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Per-slide focal point, so a subject off to one side survives cropping. */
+  object-position: var(--hero-object-position, center);
+}
+
+.hero-carousel__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--hero-overlay);
+  opacity: var(--hero-overlay-opacity);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------- Content */
+
+/*
+  Each slide carries its own colour scheme so the merchant can flip a slide to
+  dark-on-light for a bright photo. Dawn's .color-<scheme> class also paints an
+  opaque background; two classes out-rank that rule regardless of load order, so
+  the image stays visible while the scheme's tokens still apply.
+*/
+.hero-carousel .hero-carousel__content {
+  background-color: transparent;
+}
+
+.hero-carousel__content {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  padding: clamp(2.4rem, 5vw, 6.4rem) var(--hero-gutter);
+  box-sizing: border-box;
+}
+
+/*
+  Legibility scrim.
+
+  A flat overlay across the whole image cannot carry this on its own: at 25%
+  over a bright photo white text lands at ~1.3:1, far under AA. This gradient is
+  concentrated where the copy sits and fades out over the rest of the frame, so
+  the text gets a dark ground without flattening the photograph. It is drawn on
+  ::before at z-index -1 — the content element makes its own stacking context,
+  so the scrim sits above the image but under the words.
+*/
+.hero-carousel__content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(var(--color-background), var(--hero-scrim)) 0%,
+    rgba(var(--color-background), var(--hero-scrim)) 45%,
+    rgba(var(--color-background), calc(var(--hero-scrim) * 0.55)) 72%,
+    rgba(var(--color-background), 0) 96%
+  );
+}
+
+.hero-carousel--no-scrim .hero-carousel__content::before {
+  content: none;
+}
+
+/* The gradient follows the copy: top-anchored content is lit from the top. */
+.hero-carousel__slide--top-left .hero-carousel__content::before,
+.hero-carousel__slide--top-center .hero-carousel__content::before,
+.hero-carousel__slide--top-right .hero-carousel__content::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--color-background), var(--hero-scrim)) 0%,
+    rgba(var(--color-background), var(--hero-scrim)) 45%,
+    rgba(var(--color-background), calc(var(--hero-scrim) * 0.55)) 72%,
+    rgba(var(--color-background), 0) 96%
+  );
+}
+
+/* Middle-anchored copy has no nearby edge, so the scrim comes from its side. */
+.hero-carousel__slide--middle-left .hero-carousel__content::before {
+  background: linear-gradient(
+    to right,
+    rgba(var(--color-background), var(--hero-scrim)) 0%,
+    rgba(var(--color-background), var(--hero-scrim)) 45%,
+    rgba(var(--color-background), calc(var(--hero-scrim) * 0.55)) 72%,
+    rgba(var(--color-background), 0) 96%
+  );
+}
+
+.hero-carousel__slide--middle-right .hero-carousel__content::before {
+  background: linear-gradient(
+    to left,
+    rgba(var(--color-background), var(--hero-scrim)) 0%,
+    rgba(var(--color-background), var(--hero-scrim)) 45%,
+    rgba(var(--color-background), calc(var(--hero-scrim) * 0.55)) 72%,
+    rgba(var(--color-background), 0) 96%
+  );
+}
+
+.hero-carousel__slide--middle-center .hero-carousel__content::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--color-background), var(--hero-scrim)) 0%,
+    rgba(var(--color-background), var(--hero-scrim)) 45%,
+    rgba(var(--color-background), calc(var(--hero-scrim) * 0.55)) 72%,
+    rgba(var(--color-background), 0) 96%
+  );
+}
+
+.hero-carousel__content-inner {
+  max-width: min(100%, var(--hero-content-width));
+  color: rgb(var(--color-foreground));
+}
+
+/* Position is a 3x3 grid expressed as two axes on the flex container. */
+.hero-carousel__slide--top-left .hero-carousel__content,
+.hero-carousel__slide--top-center .hero-carousel__content,
+.hero-carousel__slide--top-right .hero-carousel__content {
+  align-items: flex-start;
+}
+
+.hero-carousel__slide--middle-left .hero-carousel__content,
+.hero-carousel__slide--middle-center .hero-carousel__content,
+.hero-carousel__slide--middle-right .hero-carousel__content {
+  align-items: center;
+}
+
+.hero-carousel__slide--bottom-left .hero-carousel__content,
+.hero-carousel__slide--bottom-center .hero-carousel__content,
+.hero-carousel__slide--bottom-right .hero-carousel__content {
+  align-items: flex-end;
+}
+
+.hero-carousel__slide--top-left .hero-carousel__content,
+.hero-carousel__slide--middle-left .hero-carousel__content,
+.hero-carousel__slide--bottom-left .hero-carousel__content {
+  justify-content: flex-start;
+}
+
+.hero-carousel__slide--top-center .hero-carousel__content,
+.hero-carousel__slide--middle-center .hero-carousel__content,
+.hero-carousel__slide--bottom-center .hero-carousel__content {
+  justify-content: center;
+}
+
+.hero-carousel__slide--top-right .hero-carousel__content,
+.hero-carousel__slide--middle-right .hero-carousel__content,
+.hero-carousel__slide--bottom-right .hero-carousel__content {
+  justify-content: flex-end;
+}
+
+.hero-carousel__slide--text-left .hero-carousel__content-inner {
+  text-align: left;
+}
+
+.hero-carousel__slide--text-center .hero-carousel__content-inner {
+  text-align: center;
+}
+
+.hero-carousel__slide--text-right .hero-carousel__content-inner {
+  text-align: right;
+}
+
+/*
+  Text shadow backs the scrim up on blown-out highlights, where a gradient
+  alone would still leave light text on light pixels.
+*/
+.hero-carousel__eyebrow,
+.hero-carousel__heading,
+.hero-carousel__description {
+  text-shadow: 0 0.1rem 0.3rem rgba(var(--color-background), 0.35);
+}
+
+.hero-carousel--no-scrim .hero-carousel__eyebrow,
+.hero-carousel--no-scrim .hero-carousel__heading,
+.hero-carousel--no-scrim .hero-carousel__description {
+  text-shadow: none;
+}
+
+.hero-carousel__eyebrow {
+  margin: 0 0 1.2rem;
+  font-size: var(--hero-eyebrow-size);
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.hero-carousel__heading {
+  margin: 0 0 1.6rem;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  /* Fluid down to a readable floor on small screens. */
+  font-size: clamp(3.2rem, 6vw, var(--hero-heading-size));
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.hero-carousel__description {
+  margin: 0 0 2.4rem;
+  font-size: var(--hero-text-size);
+  line-height: 1.5;
+}
+
+.hero-carousel__description > *:first-child {
+  margin-top: 0;
+}
+
+.hero-carousel__description > *:last-child {
+  margin-bottom: 0;
+}
+
+.hero-carousel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.hero-carousel__slide--text-center .hero-carousel__actions {
+  justify-content: center;
+}
+
+.hero-carousel__slide--text-right .hero-carousel__actions {
+  justify-content: flex-end;
+}
+
+/* A button whose link was left empty is inert rather than a dead anchor. */
+.hero-carousel__button[aria-disabled='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- Controls */
+
+.hero-carousel__controls {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  inset-block-end: clamp(1.6rem, 3vw, 3.2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  pointer-events: none;
+}
+
+.hero-carousel__controls > * {
+  pointer-events: auto;
+}
+
+.hero-carousel__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* Comfortably above the 44px touch-target floor. */
+  width: 4.8rem;
+  height: 4.8rem;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: rgb(var(--color-foreground));
+  background-color: transparent;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.4);
+  transition: background-color var(--duration-short, 100ms) ease, opacity var(--duration-short, 100ms) ease;
+}
+
+.hero-carousel__arrow--filled {
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  border-color: transparent;
+}
+
+.hero-carousel__arrow--minimal {
+  border-color: transparent;
+}
+
+.hero-carousel__arrow:hover {
+  background-color: rgba(var(--color-foreground), 0.12);
+}
+
+.hero-carousel__arrow--filled:hover {
+  background-color: rgba(var(--color-foreground), 0.85);
+}
+
+.hero-carousel__arrow:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+/* Slick marks the ends as disabled when looping is off. */
+.hero-carousel__arrow.slick-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.hero-carousel__arrow .svg-wrapper {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.hero-carousel__arrow--prev .svg-wrapper {
+  transform: rotate(180deg);
+}
+
+/* Dots — Slick renders the <ul>; these are the marks themselves. */
+.hero-carousel__dots .slick-dots {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-carousel__dots .slick-dots li {
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.hero-carousel__dots .slick-dots li button {
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: 0.1rem solid rgb(var(--color-foreground));
+  border-radius: 50%;
+  background-color: transparent;
+  /* Hides Slick's numeric label without removing it from the accessible name. */
+  font-size: 0;
+  line-height: 0;
+  cursor: pointer;
+  transition: background-color var(--duration-short, 100ms) ease;
+}
+
+.hero-carousel__dots .slick-dots li button:before {
+  content: none;
+}
+
+.hero-carousel__dots .slick-dots li.slick-active button {
+  background-color: rgb(var(--color-foreground));
+}
+
+.hero-carousel__dots .slick-dots li button:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.3rem;
+}
+
+.hero-carousel__counter {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  color: rgb(var(--color-foreground));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ Mobile */
+
+@media screen and (max-width: 749px) {
+  .hero-carousel__content {
+    /* Never lets copy run into the screen edge. */
+    padding-inline: max(1.6rem, calc(var(--hero-gutter) / 3));
+    padding-block-end: 8rem;
+  }
+
+  /*
+    Mobile anchors the copy to the chosen edge regardless of the slide's desktop
+    position: a hero read on a phone puts the headline and CTA within thumb
+    reach at the bottom, not floating at the top of the frame.
+  */
+  .hero-carousel--mobile-bottom .hero-carousel__content {
+    align-items: flex-end;
+  }
+
+  .hero-carousel--mobile-middle .hero-carousel__content {
+    align-items: center;
+  }
+
+  .hero-carousel--mobile-top .hero-carousel__content {
+    align-items: flex-start;
+  }
+
+  /* Bottom-anchored copy always takes the bottom-up scrim. */
+  .hero-carousel--mobile-bottom .hero-carousel__content::before {
+    background: linear-gradient(
+      to top,
+      rgba(var(--color-background), var(--hero-scrim)) 0%,
+      rgba(var(--color-background), var(--hero-scrim)) 48%,
+      rgba(var(--color-background), calc(var(--hero-scrim) * 0.6)) 74%,
+      rgba(var(--color-background), 0) 96%
+    );
+  }
+
+  .hero-carousel__actions {
+    /* Full-width taps rather than two cramped buttons side by side. */
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-carousel__slide--text-center .hero-carousel__actions,
+  .hero-carousel__slide--text-right .hero-carousel__actions {
+    align-items: stretch;
+  }
+
+  .hero-carousel__controls {
+    inset-block-end: 2rem;
+    gap: 1.2rem;
+  }
+
+  .hero-carousel__arrow {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-carousel__arrow,
+  .hero-carousel__dots .slick-dots li button {
+    transition: none;
+  }
+
+  /* Slick's own transition is neutralised; the JS also drops speed to 1ms. */
+  .hero-carousel .slick-track,
+  .hero-carousel .slick-slide {
+    transition: none;
+  }
+}

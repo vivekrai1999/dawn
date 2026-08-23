@@ -1,15 +1,20 @@
 {% comment %}
-  Renders the circular social buttons of the footer.
+  Renders the store's social links as an accessible list.
 
   URLs come from the theme's own social settings (Theme settings > Social media),
-  so nothing is hardcoded and platforms without a URL are skipped entirely.
-  Icons are the theme's existing icon-*.svg assets.
+  so nothing is hardcoded and platforms without a URL are skipped entirely. Icons
+  are the theme's existing icon-*.svg assets.
+
+  This is deliberately separate from Dawn's `social-icons` snippet: that one
+  carries `.list-social` styling with layout offsets baked in, and no
+  new-window handling. Consumers here style the list through their own classes.
 
   Accepts:
-  - class: {String} extra class for the <ul> (optional).
+  - class: {String} class for the <ul>, used by the consumer for layout (required).
+  - link_class: {String} class for each <a> (required).
 
   Usage:
-  {% render 'footer-social' %}
+  {% render 'social-links', class: 'topbar__socials', link_class: 'topbar__social' %}
 {% endcomment %}
 
 {%- liquid
@@ -17,7 +22,7 @@
   assign new_window_message = 'accessibility.link_messages.new_window' | t
 -%}
 
-<ul class="footer__socials{% if class != blank %} {{ class }}{% endif %}" role="list">
+<ul class="{{ class }}" role="list">
   {%- for platform in platforms -%}
     {%- liquid
       assign setting_key = 'social_' | append: platform | append: '_link'
@@ -28,7 +33,7 @@
     {%- if social_url != blank -%}
       <li>
         <a
-          class="footer__social"
+          class="{{ link_class }}"
           href="{{ social_url }}"
           target="_blank"
           rel="noopener noreferrer"

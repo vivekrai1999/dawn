@@ -1,0 +1,181 @@
+/*
+  Product showcase — sections/product-showcase.liquid.
+
+  Two parts:
+    1. The section shell (header, controls, carousel track).
+    2. The card variant it uses lives in component-card-showcase.css, so other
+       sections can render the same card without this section's layout.
+       The variant lives here rather than in a forked card snippet so any
+       section can opt in with `card_variant: 'showcase'` and get this look.
+
+  Tokens (--showcase-* / --card-*) are emitted per instance by the section.
+*/
+
+.product-showcase {
+  padding-block: var(--showcase-padding-top) var(--showcase-padding-bottom);
+}
+
+.product-showcase__inner {
+  box-sizing: border-box;
+  max-width: var(--showcase-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+/* ------------------------------------------------------------------ Header */
+
+.product-showcase__header {
+  margin-block-end: clamp(2.4rem, 3vw, 4rem);
+}
+
+.product-showcase__heading {
+  margin: 0 0 1.2rem;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2.4rem, 3vw, var(--showcase-heading-size));
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--showcase-heading);
+}
+
+.product-showcase__description {
+  max-width: min(100%, var(--showcase-description-width));
+  margin: 0;
+  font-size: var(--showcase-text-size);
+  line-height: 1.5;
+  color: var(--showcase-text);
+}
+
+.product-showcase__description > *:first-child {
+  margin-top: 0;
+}
+
+.product-showcase__description > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------- Controls */
+
+/*
+  The buttons must live inside <slider-component> for SliderComponent to bind
+  them, so the slider is a grid and the controls are placed in a row above the
+  track — visually top-right, matching the header.
+*/
+.product-showcase__slider {
+  display: grid;
+  grid-template-rows: auto auto;
+  /* component-slider.css sets `position: relative` on the element; the controls
+     are positioned against .product-showcase__inner instead. */
+  position: static;
+}
+
+.product-showcase__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  margin-block-end: 2rem;
+}
+
+.product-showcase__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 4.8rem;
+  height: 4.8rem;
+  padding: 0;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.35);
+  border-radius: 50%;
+  background-color: transparent;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  transition: background-color var(--duration-short, 100ms) ease,
+    border-color var(--duration-short, 100ms) ease, opacity var(--duration-short, 100ms) ease;
+}
+
+.product-showcase__arrow:hover:not([disabled]) {
+  border-color: rgb(var(--color-foreground));
+  background-color: rgba(var(--color-foreground), 0.06);
+}
+
+.product-showcase__arrow:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+/* Disabled state is conveyed by opacity and the disabled attribute, not colour alone. */
+.product-showcase__arrow[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.product-showcase__arrow .svg-wrapper {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* One arrow asset, mirrored for the previous button. */
+.product-showcase__arrow--prev .svg-wrapper {
+  transform: rotate(180deg);
+}
+
+/* ------------------------------------------------------------------- Track */
+
+.product-showcase__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--showcase-columns-mobile) - 1) * var(--showcase-gap)) / var(--showcase-columns-mobile));
+  gap: var(--showcase-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product-showcase__item {
+  min-width: 0;
+}
+
+/* Non-carousel: wrap into rows instead of scrolling. */
+.product-showcase__slider--static .product-showcase__track {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(var(--showcase-columns-mobile), minmax(0, 1fr));
+  grid-auto-columns: auto;
+}
+
+@media screen and (min-width: 750px) {
+  .product-showcase__track {
+    grid-auto-columns: calc((100% - (var(--showcase-columns-tablet) - 1) * var(--showcase-gap)) / var(--showcase-columns-tablet));
+  }
+
+  .product-showcase__slider--static .product-showcase__track {
+    grid-template-columns: repeat(var(--showcase-columns-tablet), minmax(0, 1fr));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .product-showcase__track {
+    grid-auto-columns: calc((100% - (var(--showcase-columns) - 1) * var(--showcase-gap)) / var(--showcase-columns));
+  }
+
+  .product-showcase__slider--static .product-showcase__track {
+    grid-template-columns: repeat(var(--showcase-columns), minmax(0, 1fr));
+  }
+
+  /* Header and controls share a row on desktop. */
+  .product-showcase__inner {
+    position: relative;
+  }
+
+  .product-showcase__controls {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+    margin-block-end: 0;
+  }
+
+  .product-showcase__header {
+    padding-inline-end: 14rem;
+  }
+}

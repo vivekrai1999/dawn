@@ -412,3 +412,299 @@ cart-drawer-items::-webkit-scrollbar-track-piece {
     margin-left: 0;
   }
 }
+
+/* ==========================================================================
+   Drawer presentation
+   Dawn's cart drawer behaviour (cart-drawer.js: open/close, Escape, overlay
+   click, focus trap, scroll lock, AJAX re-render) is untouched. These rules
+   only restyle it: a wide rounded panel, a persistent title row carrying the
+   item count, and a centred empty state.
+   ========================================================================== */
+
+cart-drawer {
+  --cart-drawer-width: 42vw;
+  --cart-drawer-min-width: 36rem;
+  --cart-drawer-max-width: 78rem;
+  --cart-drawer-radius: 2.4rem;
+  --cart-drawer-padding: clamp(2rem, 3vw, 4rem);
+}
+
+/* Overlay fades with the panel rather than snapping in with visibility. */
+.drawer {
+  opacity: 0;
+  transition: opacity var(--duration-default, 200ms) ease, visibility var(--duration-default, 200ms) ease;
+}
+
+.drawer.active {
+  opacity: 1;
+}
+
+.drawer__inner {
+  box-sizing: border-box;
+  width: clamp(var(--cart-drawer-min-width), var(--cart-drawer-width), var(--cart-drawer-max-width));
+  max-width: 100vw;
+  padding: 0 var(--cart-drawer-padding);
+  border: 0;
+  border-end-start-radius: var(--cart-drawer-radius);
+  background-color: rgb(var(--color-background));
+}
+
+/*
+  The title row is part of the empty state too, so it can no longer be hidden.
+  align-items must be reset explicitly: Dawn centres the empty drawer's only
+  child, which would shrink the title row instead of spanning it.
+*/
+cart-drawer.is-empty .drawer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 var(--cart-drawer-padding);
+}
+
+cart-drawer.is-empty .drawer__header {
+  display: flex;
+}
+
+.drawer__inner-empty {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+}
+
+.drawer__header {
+  flex: 0 0 auto;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.6rem;
+  padding: clamp(2rem, 2.5vw, 3.2rem) 0;
+}
+
+.drawer__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin: 0;
+  font-size: clamp(2.4rem, 2.4vw, 3.6rem);
+  line-height: 1.1;
+}
+
+.drawer__heading-count {
+  font-size: 0.5em;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+/* Circular outline close button, in flow at the end of the title row. */
+.drawer__close,
+.cart-drawer__warnings .drawer__close {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 4.4rem;
+  height: 4.4rem;
+  min-width: 4.4rem;
+  min-height: 4.4rem;
+  margin: 0;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.25);
+  border-radius: 50%;
+  box-shadow: none;
+  transition: background-color var(--duration-short, 100ms) ease;
+}
+
+.drawer__close:hover {
+  background-color: rgba(var(--color-foreground), 0.06);
+}
+
+.drawer__close:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+.drawer__close .svg-wrapper {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* Empty state */
+
+.cart-drawer__empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+}
+
+.cart__empty-icon {
+  display: inline-flex;
+  color: rgb(var(--color-foreground));
+}
+
+.cart__empty-icon svg {
+  width: clamp(5.6rem, 6vw, 7.2rem);
+  height: clamp(5.6rem, 6vw, 7.2rem);
+}
+
+.cart__empty-text {
+  margin: 0;
+  font-size: clamp(2.2rem, 2.2vw, 3.2rem);
+  line-height: 1.2;
+}
+
+.cart__empty-link {
+  color: rgb(var(--color-foreground));
+  font-size: 1.5rem;
+  text-decoration: underline;
+  text-underline-offset: 0.4rem;
+}
+
+.cart__empty-link:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.3rem;
+}
+
+.cart-drawer__collection {
+  margin-inline: 0;
+}
+
+/* Breakpoints */
+
+@media screen and (min-width: 750px) and (max-width: 989px) {
+  cart-drawer {
+    --cart-drawer-width: 60vw;
+  }
+}
+
+/*
+  Mobile: the cart presents as a full-width bottom sheet, matching the search
+  and menu sheets and Shopify's account dialog. Dawn's drawer slides in from the
+  right, so the flex alignment and the slide axis are both replaced.
+*/
+@media screen and (max-width: 989px) {
+  .drawer {
+    justify-content: stretch;
+    align-items: flex-end;
+  }
+
+  .drawer__inner,
+  .drawer__inner.header__panel {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+    max-height: var(--sheet-max-height-fallback);
+    max-height: var(--sheet-max-height);
+    padding: 2.4rem 2rem calc(2.4rem + var(--sheet-safe-bottom));
+    border: 0;
+    border-radius: var(--mobile-menu-radius, 1.6rem) var(--mobile-menu-radius, 1.6rem) 0 0;
+    transform: translateY(100%);
+    transition: transform var(--duration-default, 200ms) ease;
+  }
+
+  .drawer.active .drawer__inner,
+  .drawer.active .drawer__inner.header__panel {
+    transform: translateY(0);
+  }
+
+  cart-drawer.is-empty .drawer__inner,
+  cart-drawer.is-empty .drawer__inner.header__panel {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 2.4rem 2rem calc(2.4rem + var(--sheet-safe-bottom));
+  }
+
+  .drawer__inner-empty {
+    min-height: 24rem;
+  }
+
+  .drawer__header {
+    padding: 0;
+    margin-block-end: 2rem;
+  }
+
+  .drawer__heading {
+    font-size: 2.2rem;
+  }
+}
+
+@media screen and (max-width: 989px) and (prefers-reduced-motion: reduce) {
+  .drawer__inner,
+  .drawer__inner.header__panel {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawer__inner,
+  .drawer__close {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Desktop: the cart opens as the same anchored card as the search panel,
+   pinned under the navigation pill. Below 990px it stays the full-height
+   sheet defined above.
+   ========================================================================== */
+
+@media screen and (min-width: 990px) {
+  /*
+    Below the header's stacking level (base.css gives the header group z-index 4)
+    so the scrim dims the page without dimming the navigation. The card no longer
+    overlaps the pill, so nothing is lost by sitting underneath it.
+  */
+  .drawer {
+    z-index: 3;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .drawer__inner.header__panel {
+    /* Anchoring comes from .header__panel in section-header.css. */
+    width: var(--header-panel-width, 40rem);
+    max-width: none;
+    height: auto;
+    min-height: min(
+      42rem,
+      calc(100dvh - var(--header-panel-top, 0px) - var(--header-panel-row, 7rem) - var(--panel-offset) - 2.4rem)
+    );
+    border: 0;
+    border-radius: var(--nav-radius, 1.2rem);
+    transform: translateY(-1.2rem);
+    transition: transform var(--duration-default, 200ms) ease;
+  }
+
+  .drawer.active .drawer__inner.header__panel {
+    transform: translateY(0);
+  }
+
+  cart-drawer.is-empty .drawer__inner.header__panel {
+    padding: 2.8rem var(--panel-inline, 4rem) 3.2rem;
+  }
+
+  .drawer__inner.header__panel .drawer__header {
+    padding: 0;
+    margin-block-end: 2.4rem;
+  }
+
+  /* The card already pads itself; the empty block just fills what is left. */
+  .drawer__inner-empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 28rem;
+  }
+}
+
+@media screen and (min-width: 990px) and (prefers-reduced-motion: reduce) {
+  .drawer__inner.header__panel {
+    transition: none;
+    transform: none;
+  }
+}

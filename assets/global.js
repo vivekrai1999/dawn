@@ -435,8 +435,23 @@ class MenuDrawer extends HTMLElement {
       summary.addEventListener('click', this.onSummaryClick.bind(this))
     );
     this.querySelectorAll(
-      'button:not(.localization-selector):not(.country-selector__close-button):not(.country-filter__reset-button)'
+      'button:not(.localization-selector):not(.country-selector__close-button):not(.country-filter__reset-button):not(.menu-drawer__panel-close)'
     ).forEach((button) => button.addEventListener('click', this.onCloseButtonClick.bind(this)));
+
+    // The panel close button dismisses the whole drawer, not a submenu, so it is
+    // excluded above and bound here instead. Routing it through closeMenuDrawer
+    // is what releases the body scroll lock and restores focus to the toggle.
+    this.querySelectorAll('.menu-drawer__panel-close').forEach((button) =>
+      button.addEventListener('click', (event) => {
+        const summary = this.mainDetailsToggle.querySelector('summary');
+        this.closeMenuDrawer(event, summary);
+        // closeMenuDrawer only clears aria-expanded for keyboard events, and the
+        // summary's own click handler never runs for this button. The scrim is
+        // drawn by .header__icon--menu[aria-expanded='true']::before, so without
+        // this it would stay on screen after the drawer closes.
+        summary?.setAttribute('aria-expanded', 'false');
+      })
+    );
   }
 
   onKeyUp(event) {

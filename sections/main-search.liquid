@@ -5,6 +5,8 @@
 
 {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
   {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+  {{ 'component-facets-showcase.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'sort-select.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
 

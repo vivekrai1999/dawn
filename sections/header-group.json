@@ -5,21 +5,25 @@
     "announcement-bar": {
       "type": "announcement-bar",
       "settings": {
-        "color_scheme": "scheme-1",
-        "show_line_separator": true,
-        "show_social": false,
-        "auto_rotate": false,
-        "change_slides_speed": 5,
-        "enable_country_selector": false,
-        "enable_language_selector": false
+        "bar_background_color": "#16161d",
+        "bar_text_color": "#ffffff",
+        "bar_font_size": 13,
+        "bar_icon_size": 16,
+        "bar_height": 44,
+        "bar_height_mobile": 44,
+        "bar_width": 1920,
+        "show_social": true,
+        "show_phone": true,
+        "phone_number": "0123456780",
+        "show_store_locator": true,
+        "enable_country_selector": true,
+        "enable_language_selector": true
       },
       "blocks": {
         "announcement-bar-0": {
           "type": "announcement",
           "settings": {
-            "text": "Welcome to our store",
-            "text_alignment": "center",
-            "color_scheme": "scheme-1",
+            "text": "Winters sale - Receive 20% off on orders over 50$",
             "link": ""
           }
         }
@@ -31,20 +35,101 @@
     "header": {
       "type": "header",
       "settings": {
+        "header_position": "overlay",
+        "sticky_header_type": "on-scroll-up",
+        "sticky_opaque": false,
+        "sticky_background_color": "#ffffff",
+        "header_width": 1920,
+        "show_line_separator": false,
         "color_scheme": "scheme-1",
-        "menu_color_scheme": "scheme-1",
-        "logo_position": "middle-left",
+        "brand_color": "#ffffff",
+        "brand_font_size": 16,
         "menu": "main-menu",
         "menu_type_desktop": "dropdown",
-        "sticky_header_type": "on-scroll-up",
-        "show_line_separator": true,
+        "menu_color_scheme": "scheme-1",
+        "nav_background_color": "#ffffff",
+        "nav_opacity": 75,
+        "nav_blur": 8,
+        "nav_text_color": "#1a1a1a",
+        "nav_text_hover_color": "#000000",
+        "nav_border_color": "#ffffff",
+        "nav_border_opacity": 0,
+        "nav_border_width": 0,
+        "nav_radius": 12,
+        "nav_max_width": 800,
+        "nav_padding_inline": 32,
+        "nav_padding_block": 14,
+        "nav_link_gap": 32,
+        "nav_font_size": 15,
+        "nav_uppercase": true,
+        "nav_letter_spacing": 6,
+        "search_title": "Search",
+        "search_placeholder": "Suggested searches",
+        "search_popular_title": "Popular categories",
+        "panel_background_color": "#ffffff",
+        "panel_text_color": "#1a1a1a",
+        "panel_accent_color": "#1a1a1a",
+        "panel_accent_text_color": "#ffffff",
+        "panel_padding_inline": 40,
+        "panel_overlay_opacity": 55,
+        "panel_offset": 8,
+        "icon_size": 20,
+        "icon_color": "#1a1a1a",
+        "icon_gap": 4,
+        "mobile_logo_width": 90,
+        "mobile_header_height": 64,
         "enable_country_selector": true,
         "enable_language_selector": true,
-        "mobile_logo_position": "center",
+        "mobile_header_position": "normal",
+        "mobile_header_background": "#ffffff",
+        "mobile_brand_color": "#1a1a1a",
+        "mobile_menu_background": "#ffffff",
+        "mobile_menu_text_color": "#1a1a1a",
+        "mobile_menu_inset": 15,
+        "mobile_menu_radius": 16,
+        "mobile_menu_font_size": 20,
+        "mobile_menu_row_gap": 16,
+        "mobile_menu_overlay_opacity": 55,
+        "mobile_social_icon_size": 18,
+        "show_login": true,
+        "login_background_color": "#000000",
+        "login_text_color": "#ffffff",
         "margin_bottom": 0,
-        "padding_top": 20,
-        "padding_bottom": 20
-      }
+        "padding_top": 24,
+        "padding_bottom": 24
+      },
+      "blocks": {
+        "search-link-1": {
+          "type": "search_link",
+          "settings": {
+            "text": "Most searched"
+          }
+        },
+        "search-link-2": {
+          "type": "search_link",
+          "settings": {
+            "text": "Jump Suit"
+          }
+        },
+        "search-link-3": {
+          "type": "search_link",
+          "settings": {
+            "text": "Activewear set"
+          }
+        },
+        "search-link-4": {
+          "type": "search_link",
+          "settings": {
+            "text": "One-piece"
+          }
+        }
+      },
+      "block_order": [
+        "search-link-1",
+        "search-link-2",
+        "search-link-3",
+        "search-link-4"
+      ]
     }
   },
   "order": [
