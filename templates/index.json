@@ -148,10 +148,191 @@
         "button_background_color": "#9E6168",
         "button_icon_color": "#ffffff"
       }
+    },
+    "editorial_card_slider_7gBFWw": {
+      "type": "editorial-card-slider",
+      "blocks": {
+        "card_pxyP7q": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/person-stands-on-rocks-poking-out-of-the-ocean-shoreline.jpg",
+            "focal_point": "center",
+            "eyebrow": "Shoulder bags",
+            "title": "Crafting your unique style",
+            "link": "",
+            "link_text": "",
+            "open_in_new_tab": false,
+            "card_background": "",
+            "overlay_custom": false,
+            "overlay_opacity": 65
+          }
+        },
+        "card_kndUaY": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/OnePlus_10_Pro_Crimson_Stone_c7a095e4-7c6f-4671-81e6-731fd576239b.png",
+            "focal_point": "center",
+            "eyebrow": "Trendy bags",
+            "title": "Stories behind iconic designs",
+            "link": "",
+            "link_text": "",
+            "open_in_new_tab": false,
+            "card_background": "",
+            "overlay_custom": false,
+            "overlay_opacity": 65
+          }
+        },
+        "card_cWikz8": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/Vivo_V25_Pro_Stargazer_1e44b03a-9951-49d7-bf10-dbba5b46f64b.png",
+            "focal_point": "center",
+            "eyebrow": "Brown collections",
+            "title": "A guide to the best brands",
+            "link": "",
+            "link_text": "",
+            "open_in_new_tab": false,
+            "card_background": "",
+            "overlay_custom": false,
+            "overlay_opacity": 65
+          }
+        },
+        "card_KBmDK3": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/OnePlus_10_Pro_Heat_sink_0db79477-568b-4386-ae10-bc922c848751.png",
+            "focal_point": "center",
+            "eyebrow": "Side bags",
+            "title": "Stay organized & stylish",
+            "link": "",
+            "link_text": "",
+            "open_in_new_tab": false,
+            "card_background": "",
+            "overlay_custom": false,
+            "overlay_opacity": 65
+          }
+        },
+        "card_hkfgtK": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/OnePlus_10_Pro_Chroma_Rush_7e78257e-9166-4b95-9ec6-2a144dfc032d.png",
+            "focal_point": "center",
+            "eyebrow": "Sling bags",
+            "title": "Ultimate blend of comfort",
+            "link": "",
+            "link_text": "",
+            "open_in_new_tab": false,
+            "card_background": "",
+            "overlay_custom": false,
+            "overlay_opacity": 65
+          }
+        }
+      },
+      "block_order": [
+        "card_pxyP7q",
+        "card_kndUaY",
+        "card_cWikz8",
+        "card_KBmDK3",
+        "card_hkfgtK"
+      ],
+      "name": "Editorial card slider",
+      "settings": {
+        "heading": "",
+        "heading_size": "h2",
+        "heading_alignment": "left",
+        "description": "",
+        "watermark_text": "Fashion",
+        "full_bleed": true,
+        "edge_inset": 0,
+        "min_height": 560,
+        "max_width": 1800,
+        "slides_desktop": "4.5",
+        "slides_tablet": "3",
+        "slides_mobile": "1.2",
+        "card_gap": 24,
+        "card_aspect_ratio": 75,
+        "header_gap": 40,
+        "controls_gap": 40,
+        "padding_top": 80,
+        "padding_bottom": 80,
+        "background_color": "#101116",
+        "background_image_opacity": 30,
+        "texture_opacity": 8,
+        "text_color": "#f4f4f6",
+        "heading_color": "#ffffff",
+        "watermark_color": "#3a3f52",
+        "watermark_size": 17,
+        "watermark_offset": 40,
+        "card_background": "#1b1d26",
+        "card_text_color": "#ffffff",
+        "card_text_alignment": "center",
+        "overlay_opacity": 65,
+        "card_radius": 4,
+        "card_padding": 24,
+        "card_shadow": 24,
+        "card_tilt": 150,
+        "curve_depth": 12,
+        "heading_font_size": 36,
+        "eyebrow_font_size": 13,
+        "title_font_size": 30,
+        "title_font_weight": "400",
+        "title_letter_spacing": 0,
+        "title_text_transform": "uppercase",
+        "infinite": true,
+        "autoplay": false,
+        "autoplay_speed": 5,
+        "transition_speed": 600,
+        "show_arrows": true,
+        "show_dots": false,
+        "arrow_size": 52,
+        "arrow_background": "#101116",
+        "arrow_color": "#ffffff",
+        "arrow_border_color": "#ffffff"
+      }
+    },
+    "product_showcase_TDakeE": {
+      "type": "product-showcase",
+      "name": "Product showcase",
+      "settings": {
+        "heading": "Collection",
+        "description": "<p>This guide explores the latest trends in tote bags, helping you choose the perfect one to enhance your everyday wardrobe.</p>",
+        "heading_size": 40,
+        "description_size": 15,
+        "description_width": 760,
+        "product_source": "collection",
+        "collection": "",
+        "products_limit": 8,
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": 2,
+        "grid_gap": 24,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 64,
+        "enable_carousel": true,
+        "show_navigation": true,
+        "image_ratio": "square",
+        "card_media_radius": 12,
+        "show_secondary_image": false,
+        "show_vendor": false,
+        "show_quick_add": true,
+        "card_title_size": 15,
+        "card_price_size": 15,
+        "button_size": 48,
+        "background_color": "",
+        "heading_color": "#1a1a1a",
+        "text_color": "#5c5c5c",
+        "card_title_color": "#1a1a1a",
+        "card_price_color": "#5c5c5c",
+        "button_background_color": "#000000",
+        "button_icon_color": "#ffffff"
+      }
     }
   },
   "order": [
     "hero_carousel",
-    "product_showcase"
+    "product_showcase",
+    "editorial_card_slider_7gBFWw",
+    "product_showcase_TDakeE"
   ]
 }
