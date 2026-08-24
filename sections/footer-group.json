@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "name": "t:sections.footer.name",
   "type": "footer",
@@ -8,25 +17,33 @@
         "announcement-1": {
           "type": "announcement",
           "settings": {
-            "text": "Handmade in India"
+            "text": "Handmade in India",
+            "link": "",
+            "text_color": ""
           }
         },
         "announcement-2": {
           "type": "announcement",
           "settings": {
-            "text": "Free shipping over ₹1,499"
+            "text": "Free shipping over ₹1,499",
+            "link": "",
+            "text_color": ""
           }
         },
         "announcement-3": {
           "type": "announcement",
           "settings": {
-            "text": "New patterns every week"
+            "text": "New patterns every week",
+            "link": "",
+            "text_color": ""
           }
         },
         "announcement-4": {
           "type": "announcement",
           "settings": {
-            "text": "Gift wrapping on request"
+            "text": "Gift wrapping on request",
+            "link": "",
+            "text_color": ""
           }
         }
       },
@@ -38,18 +55,18 @@
       ],
       "settings": {
         "enable_footer": true,
-        "background_color": "#FFF7F1",
-        "text_color": "#4E3B34",
+        "background_color": "#fff7f1",
+        "text_color": "#4e3b34",
         "secondary_text_color": "#786158",
-        "accent_color": "#9E6168",
+        "accent_color": "#9e6168",
         "content_max_width": 1600,
         "padding_top": 80,
         "padding_bottom": 32,
         "column_gap": 48,
         "row_gap_mobile": 40,
         "marquee_enable": true,
-        "marquee_background": "linear-gradient(90deg, #F7DFDA 0%, #E2EDE0 100%)",
-        "marquee_text_color": "#4E3B34",
+        "marquee_background": "linear-gradient(90deg, rgba(247, 223, 218, 1), rgba(226, 237, 224, 1) 100%)",
+        "marquee_text_color": "#4e3b34",
         "marquee_separator": "●",
         "marquee_font_size": 44,
         "marquee_font_weight": "700",
@@ -60,13 +77,14 @@
         "marquee_speed": 5,
         "marquee_direction": "left",
         "logo_width": 240,
+        "brand_text": "",
         "brand_description": "<p>Tell customers what your store is about in a sentence or two.</p>",
         "description_width": 400,
         "show_social": true,
         "quick_links_heading": "Quick links",
-        "quick_links_menu": "main-menu",
+        "quick_links_menu": "footer",
         "support_heading": "Support",
-        "support_menu": "footer",
+        "support_menu": "customer-account-main-menu",
         "menu_links_limit": 0,
         "newsletter_enable": true,
         "newsletter_heading": "Join our crochet circle",
@@ -74,11 +92,17 @@
         "newsletter_placeholder": "Email Address",
         "newsletter_button_label": "Subscribe",
         "newsletter_button_icon": "arrow",
+        "newsletter_button_color": "#9e6168",
+        "newsletter_button_icon_color": "#fff7f1",
+        "newsletter_input_text_color": "#4e3b34",
+        "newsletter_input_border_color": "#786158",
         "newsletter_alignment": "left",
+        "newsletter_success_message": "",
         "show_bottom_divider": true,
         "enable_country_selector": true,
         "enable_language_selector": true,
         "show_copyright": true,
+        "copyright_text": "",
         "show_shopify_attribution": true,
         "show_back_to_top": true
       }

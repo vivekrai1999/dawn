@@ -79,11 +79,7 @@
           }
         }
       },
-      "block_order": [
-        "slide-1",
-        "slide-2",
-        "slide-3"
-      ],
+      "block_order": ["slide-1", "slide-2", "slide-3"],
       "settings": {
         "color_scheme": "scheme-1",
         "full_width": true,
@@ -141,11 +137,11 @@
         "card_price_size": 15,
         "button_size": 48,
         "background_color": "",
-        "heading_color": "#4E3B34",
+        "heading_color": "#4e3b34",
         "text_color": "#786158",
-        "card_title_color": "#4E3B34",
+        "card_title_color": "#4e3b34",
         "card_price_color": "#786158",
-        "button_background_color": "#9E6168",
+        "button_background_color": "#9e6168",
         "button_icon_color": "#ffffff"
       }
     },
@@ -228,13 +224,7 @@
           }
         }
       },
-      "block_order": [
-        "card_pxyP7q",
-        "card_kndUaY",
-        "card_cWikz8",
-        "card_KBmDK3",
-        "card_hkfgtK"
-      ],
+      "block_order": ["card_pxyP7q", "card_kndUaY", "card_cWikz8", "card_KBmDK3", "card_hkfgtK"],
       "name": "Editorial card slider",
       "settings": {
         "heading": "",
@@ -332,12 +322,121 @@
         "button_background_color": "#000000",
         "button_icon_color": "#ffffff"
       }
+    },
+    "reviews_marquee_kWRrBF": {
+      "type": "reviews-marquee",
+      "blocks": {
+        "review_zGL9Ff": {
+          "type": "review",
+          "settings": {
+            "quote": "The baby blanket arrived softer than I expected and has survived a dozen washes without pilling. My sister has already asked where I ordered it from.",
+            "name": "Ananya Iyer",
+            "role": "Bengaluru",
+            "row": "auto"
+          }
+        },
+        "review_gx6aAN": {
+          "type": "review",
+          "settings": {
+            "quote": "I ordered three amigurumi for my nephew's birthday and they were packed beautifully, each one with a little tag naming the artisan who made it.",
+            "name": "Rohan Mehta",
+            "role": "Mumbai",
+            "row": "auto"
+          }
+        },
+        "review_V8jCeC": {
+          "type": "review",
+          "settings": {
+            "quote": "The cotton yarn is genuinely good quality and the colours match the photos, which is rare when buying craft supplies online.",
+            "name": "Priya Nair",
+            "role": "Kochi",
+            "row": "auto"
+          }
+        },
+        "review_QrtAfH": {
+          "type": "review",
+          "settings": {
+            "quote": "Delivery to a small town in Rajasthan took four days and everything arrived intact. The handwritten note was a lovely touch.",
+            "name": "Vikram Singh",
+            "role": "Udaipur",
+            "row": "auto"
+          }
+        },
+        "review_MmmcGY": {
+          "type": "review",
+          "settings": {
+            "quote": "I asked for a custom colour for a table runner and they sent swatch photos before starting. That kind of care is why I keep ordering.",
+            "name": "Meera Krishnan",
+            "role": "Chennai",
+            "row": "auto"
+          }
+        },
+        "review_4kbPNK": {
+          "type": "review",
+          "settings": {
+            "quote": "Prices are clear, no surprises at checkout, and the crochet hooks are far better made than the ones I had been using.",
+            "name": "Aditi Sharma",
+            "role": "Jaipur",
+            "row": "auto"
+          }
+        }
+      },
+      "block_order": [
+        "review_zGL9Ff",
+        "review_gx6aAN",
+        "review_V8jCeC",
+        "review_QrtAfH",
+        "review_MmmcGY",
+        "review_4kbPNK"
+      ],
+      "name": "Reviews marquee",
+      "settings": {
+        "description": "",
+        "text_alignment": "left",
+        "description_size": 15,
+        "description_width": 760,
+        "autoplay": true,
+        "pause_on_hover": true,
+        "show_second_row": true,
+        "top_direction": "left",
+        "top_speed": 40,
+        "bottom_direction": "right",
+        "bottom_speed": 45,
+        "easing": "linear",
+        "full_width": true,
+        "card_width": 320,
+        "card_min_height": 0,
+        "card_gap": 20,
+        "row_gap": 20,
+        "edge_fade": 0,
+        "padding_top": 64,
+        "padding_bottom": 64,
+        "card_radius": 16,
+        "card_padding": 24,
+        "card_content_gap": 24,
+        "card_surface_opacity": 4,
+        "card_border_opacity": 10,
+        "card_border_width": 1,
+        "avatar_size": 40,
+        "quote_marks": true,
+        "quote_size": 15,
+        "quote_line_height": 160,
+        "quote_lines": 0,
+        "name_size": 15,
+        "name_weight": "600",
+        "role_size": 13,
+        "text_opacity": 90,
+        "muted_text_opacity": 75,
+        "color_scheme": "",
+        "background_tint": 3
+      }
     }
   },
   "order": [
     "hero_carousel",
     "product_showcase",
     "editorial_card_slider_7gBFWw",
-    "product_showcase_TDakeE"
+    "product_showcase_TDakeE",
+    "reviews_marquee_kWRrBF"
   ]
 }
