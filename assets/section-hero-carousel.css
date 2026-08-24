@@ -461,9 +461,20 @@
     The rules below still apply when a merchant turns this off, which is why
     they are left in place rather than deleted.
   */
-  .hero-carousel--bare-mobile .hero-carousel__content,
-  .hero-carousel--bare-mobile .hero-carousel__arrow {
+  .hero-carousel--bare-mobile .hero-carousel__content {
     display: none;
+  }
+
+  /*
+    !important is load-bearing here. Slick's initUI() calls jQuery's .show() on
+    the arrow buttons, which writes an inline `display: block` onto each one —
+    and an inline declaration outranks any selector. This is the one way to keep
+    them off the small screen short of re-initialising the carousel per
+    breakpoint. display:none also takes them out of the tab order, so nothing
+    invisible is left focusable.
+  */
+  .hero-carousel--bare-mobile .hero-carousel__arrow {
+    display: none !important;
   }
 
   .hero-carousel__content {

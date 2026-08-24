@@ -710,6 +710,67 @@
   }
 }
 
+/* ------------------------------------------------------- Mobile bottom sheet */
+
+/*
+  Filter and sort open as the same sheet the nav menu uses: full width, rising
+  from the bottom edge, rounded at the top, over a dimmed page. Dawn's drawer is
+  a full-height panel that slides in from the right, so the slide axis, the
+  insets and the panel's own height are what change here — the markup, the
+  disclosures and facets.js are untouched, and it is still the same drawer.
+
+  The height and safe-area tokens are the ones section-header.css puts on :root
+  for the menu, search and cart sheets, so every sheet in the store opens to the
+  same height and the same corner.
+*/
+@media screen and (max-width: 989px) {
+  /*
+    The form is the fixed, page-covering scrim; bottom-aligning it is what puts
+    the panel on the bottom edge.
+  */
+  .facets-container .mobile-facets {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background-color: rgba(0, 0, 0, var(--mobile-menu-overlay-opacity, 0.5));
+  }
+
+  .facets-container .mobile-facets__inner {
+    /*
+      Positioned, so the panel that slides in for an individual filter is
+      bounded by the sheet rather than by the whole viewport — those panels are
+      absolutely placed against their nearest positioned ancestor.
+    */
+    position: relative;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: var(--sheet-max-height-fallback, 85vh);
+    max-height: var(--sheet-max-height, min(85dvh, 72rem));
+    margin: 0;
+    border-width: 0;
+    border-radius: var(--mobile-menu-radius, 1.6rem) var(--mobile-menu-radius, 1.6rem) 0 0;
+    /* A drop-shadow filter would also create a containing block for the panels
+       above, so the lift is drawn as a box-shadow instead. */
+    filter: none;
+    box-shadow: 0 -0.8rem 3rem rgba(0, 0, 0, 0.18);
+  }
+
+  /* Up from the bottom edge rather than in from the right. */
+  .js .facets-container .disclosure-has-popup:not(.menu-opening) .mobile-facets__inner {
+    transform: translateY(100%);
+  }
+
+  .facets-container .menu-opening .mobile-facets__inner {
+    transform: translateY(0);
+  }
+
+  /* Clears the home indicator on phones that have one. */
+  .facets-container .mobile-facets__footer {
+    padding-bottom: calc(2rem + var(--sheet-safe-bottom, 0px));
+  }
+}
+
 /* Motion is decoration here; the controls must still read as interactive. */
 @media (prefers-reduced-motion: reduce) {
   .facets-container .facets__summary,
