@@ -1,0 +1,371 @@
+{% comment %}
+  Brands marquee — a row of brand logos scrolling horizontally, forever.
+
+  Each logo is a section block, so the merchant adds, reorders and removes them
+  in the Theme Editor. Nothing about a particular brand is written into this
+  file.
+
+  The loop is one CSS animation on a track holding N identical copies of the
+  logo group: the track slides by exactly one group and restarts, so the frame
+  it restarts on is pixel-identical to the frame it left. No script runs, and
+  nothing is measured per frame — the browser animates a single composited
+  transform.
+
+  How many copies are needed is worked out below from the logo count and size,
+  because a track narrower than the viewport would leave a visible gap as it
+  wrapped. That is the one thing the reviews marquee needs JavaScript for; a
+  logo has a bounded width, so here it can be estimated in Liquid and be right.
+
+  Reused from the theme: the colour-scheme system, the page-width container, the
+  intro treatment of sections/product-showcase.liquid, and Dawn's responsive
+  image helpers.
+{% endcomment %}
+
+{{ 'section-brands-marquee.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign logos = section.blocks | where: 'type', 'logo'
+
+  comment
+    A block with no image would scroll past as a hole in the row.
+  endcomment
+  assign renderable = 0
+  for block in logos
+    if block.settings.image != blank
+      assign renderable = renderable | plus: 1
+    endif
+  endfor
+
+  assign logo_height = section.settings.logo_height
+  assign gap = section.settings.gap
+
+  comment
+    Widest a logo is allowed to run, and therefore the most one slot can take.
+    Estimating with the maximum is deliberate: it can only over-count copies,
+    which costs a little markup, where under-counting would show a gap.
+  endcomment
+  assign slot_width = logo_height | times: 4 | plus: gap
+  assign group_span = slot_width | times: renderable
+  if group_span < 1
+    assign group_span = 1
+  endif
+
+  comment
+    The track has to stay wider than the viewport at every moment of the loop,
+    which means covering it twice over. 3840px is two of the widest common
+    desktop, and the cap keeps a shop with two small logos from emitting copies
+    without end.
+  endcomment
+  assign copies = 3840 | plus: group_span | minus: 1 | divided_by: group_span
+  assign copies = copies | at_least: 2 | at_most: 10
+
+  comment
+    One lap is one group, so the duration follows from the merchant's speed in
+    pixels per second.
+  endcomment
+  assign duration = group_span | times: 1.0 | divided_by: section.settings.speed | round: 2
+  assign duration = duration | at_least: 1
+-%}
+
+{%- if renderable > 0 -%}
+  {%- style -%}
+    #BrandsMarquee-{{ section.id }} {
+      --brands-logo-height: {{ logo_height }}px;
+      --brands-gap: {{ gap }}px;
+      --brands-duration: {{ duration }}s;
+      --brands-copies: {{ copies }};
+      --brands-opacity: {{ section.settings.logo_opacity | divided_by: 100.0 }};
+      --brands-fade: {{ section.settings.edge_fade }}px;
+      --brands-heading-size: {{ section.settings.heading_size }}px;
+      --brands-padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      --brands-padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      #BrandsMarquee-{{ section.id }} {
+        --brands-padding-top: {{ section.settings.padding_top }}px;
+        --brands-padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    class="brands-marquee color-{{ section.settings.color_scheme }} gradient
+      {%- if section.settings.direction == 'right' %} brands-marquee--reverse{% endif -%}
+      {%- if section.settings.grayscale %} brands-marquee--grayscale{% endif -%}
+      {%- if section.settings.pause_on_hover %} brands-marquee--pausable{% endif -%}
+      {%- if section.settings.edge_fade > 0 %} brands-marquee--fade{% endif -%}"
+    id="BrandsMarquee-{{ section.id }}"
+  >
+    <div class="brands-marquee__inner">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="brands-marquee__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <div class="brands-marquee__row">
+        <div class="brands-marquee__track">
+          {%- comment -%}
+            One loop for every copy rather than repeated blocks of markup. Only
+            the first copy is real content: the rest are hidden from assistive
+            technology and carry no Theme Editor attributes, so a screen reader
+            reads the brand list once and selecting a logo in the editor still
+            resolves to a single element.
+          {%- endcomment -%}
+          {%- for copy in (1..copies) -%}
+            <ul
+              class="brands-marquee__group"
+              {% if copy == 1 %}
+                role="list"
+                {% if section.settings.heading != blank %}
+                  aria-label="{{ section.settings.heading | escape }}"
+                {% endif %}
+              {% else %}
+                aria-hidden="true"
+              {% endif %}
+            >
+              {%- for block in logos -%}
+                {%- if block.settings.image == blank -%}
+                  {%- continue -%}
+                {%- endif -%}
+
+                {%- liquid
+                  comment
+                    Alt text is the merchant's: the image's own alt first, then
+                    the block's name. It is never invented from a filename, and
+                    a logo that is purely decorative keeps an empty alt.
+                  endcomment
+                  assign logo_alt = block.settings.image.alt | default: block.settings.name
+
+                  comment
+                    The first row of logos is likely above the fold on a page
+                    that opens with this section, so those are not lazy loaded.
+                  endcomment
+                  assign lazy = 'lazy'
+                  if copy == 1 and forloop.index0 < 6
+                    assign lazy = 'eager'
+                  endif
+                -%}
+
+                <li class="brands-marquee__item" {% if copy == 1 %}{{ block.shopify_attributes }}{% endif %}>
+                  {%- if block.settings.link != blank and copy == 1 -%}
+                    <a class="brands-marquee__link" href="{{ block.settings.link }}">
+                  {%- endif -%}
+
+                  {{
+                    block.settings.image
+                    | image_url: height: 240
+                    | image_tag:
+                      loading: lazy,
+                      class: 'brands-marquee__logo',
+                      widths: '120, 240, 360, 480',
+                      sizes: '(min-width: 750px) 240px, 160px',
+                      alt: logo_alt
+                  }}
+
+                  {%- if block.settings.link != blank and copy == 1 -%}
+                    </a>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="brands-marquee__empty page-width">
+    <p>{{ 'onboarding.no_content' | t | default: 'Add a Logo block to show your brands here.' }}</p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Brands marquee",
+  "tag": "section",
+  "class": "brands-marquee-section",
+  "max_blocks": 20,
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Logo"
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Brand name",
+          "info": "Used as the image's alternative text when the image has none of its own."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave blank to show the logos on their own."
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 13
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Logos"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "min": 20,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Logo height",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 16,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Space between logos",
+      "default": 64
+    },
+    {
+      "type": "checkbox",
+      "id": "grayscale",
+      "label": "Show logos in grayscale",
+      "info": "They return to full colour on hover.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "logo_opacity",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Logo opacity",
+      "default": 70
+    },
+    {
+      "type": "header",
+      "content": "Motion"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "min": 10,
+      "max": 120,
+      "step": 5,
+      "unit": "px",
+      "label": "Speed",
+      "info": "Pixels travelled per second. Motion is switched off entirely for visitors who prefer reduced motion.",
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Direction",
+      "options": [
+        {
+          "value": "left",
+          "label": "Right to left"
+        },
+        {
+          "value": "right",
+          "label": "Left to right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "edge_fade",
+      "min": 0,
+      "max": 160,
+      "step": 8,
+      "unit": "px",
+      "label": "Fade at the edges",
+      "default": 64
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brands marquee",
+      "blocks": [
+        {
+          "type": "logo"
+        },
+        {
+          "type": "logo"
+        },
+        {
+          "type": "logo"
+        },
+        {
+          "type": "logo"
+        },
+        {
+          "type": "logo"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

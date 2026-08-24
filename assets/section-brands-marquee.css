@@ -1,0 +1,200 @@
+/*
+  Brands marquee — sections/brands-marquee.liquid.
+
+  The loop is one animation on a track holding --brands-copies identical copies
+  of the logo group. Sliding the track by exactly one group and restarting puts
+  the restart frame on a pixel-identical image, so the seam is invisible. A
+  percentage translate is what makes that exact: -100% / copies is one group,
+  whatever the logos measure.
+
+  Nothing here runs a script or measures anything, and the animated property is
+  a transform, so the row is composited rather than laid out each frame.
+
+  Tokens (--brands-*) are emitted per instance by the section.
+*/
+
+.brands-marquee {
+  display: block;
+  padding-block: var(--brands-padding-top) var(--brands-padding-bottom);
+  /* The track is deliberately wider than the page; this is what stops it from
+     widening the page in turn. */
+  overflow: hidden;
+}
+
+.brands-marquee__inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.6rem, 2.5vw, 2.8rem);
+}
+
+.brands-marquee__heading {
+  margin: 0;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+  font-family: var(--font-body-family);
+  font-size: var(--brands-heading-size);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.62);
+}
+
+/* ---------------------------------------------------------------- The row */
+
+.brands-marquee__row {
+  position: relative;
+  overflow: hidden;
+}
+
+/*
+  Optional soft edges, so logos dissolve at the ends instead of being cut off.
+  Purely decorative: the mask is only painted when the merchant asks for a
+  non-zero fade.
+*/
+.brands-marquee--fade .brands-marquee__row {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--brands-fade),
+    #000 calc(100% - var(--brands-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--brands-fade),
+    #000 calc(100% - var(--brands-fade)),
+    transparent 100%
+  );
+}
+
+.brands-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: brands-marquee-scroll var(--brands-duration) linear infinite;
+  /* Hints the compositor before the first frame, so the loop does not stutter
+     as it starts. */
+  will-change: transform;
+}
+
+.brands-marquee--reverse .brands-marquee__track {
+  animation-direction: reverse;
+}
+
+.brands-marquee--pausable:hover .brands-marquee__track,
+.brands-marquee--pausable:focus-within .brands-marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes brands-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    /* Exactly one copy of the group, so the next frame repeats the first. */
+    transform: translateX(calc(-100% / var(--brands-copies)));
+  }
+}
+
+.brands-marquee__group {
+  display: flex;
+  align-items: center;
+  gap: var(--brands-gap);
+  /* The gap belongs between groups as much as within one, or the seam shows as
+     a double-width space. */
+  margin: 0;
+  padding: 0 0 0 var(--brands-gap);
+  list-style: none;
+}
+
+.brands-marquee__item {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------- The logo */
+
+.brands-marquee__logo {
+  display: block;
+  width: auto;
+  max-width: calc(var(--brands-logo-height) * 4);
+  height: var(--brands-logo-height);
+  /* Logos arrive at every aspect ratio; contain is what keeps them undistorted
+     and on one baseline. */
+  object-fit: contain;
+  object-position: center;
+  opacity: var(--brands-opacity);
+  transition: opacity var(--duration-default, 200ms) ease, filter var(--duration-default, 200ms) ease;
+}
+
+.brands-marquee--grayscale .brands-marquee__logo {
+  filter: grayscale(100%);
+}
+
+/*
+  Pointer devices only. On a touch screen there is no hover to return the logo
+  to full colour, so the muted state would simply be permanent.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .brands-marquee__item:hover .brands-marquee__logo {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+.brands-marquee__link {
+  display: block;
+  line-height: 0;
+}
+
+.brands-marquee__link:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.4rem;
+}
+
+.brands-marquee__empty {
+  padding-block: 4rem;
+  text-align: center;
+  color: rgba(var(--color-foreground), 0.7);
+}
+
+/* -------------------------------------------------------------- Motion off */
+
+/*
+  No animation at all rather than a slower one: a marquee cannot be paused by
+  the reader, and this is exactly the kind of unstoppable movement the
+  preference is about. The row becomes a centred, wrapping set of logos, which
+  is a complete presentation of the same content — so the clones are dropped
+  rather than repeating every brand several times over.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .brands-marquee__track {
+    width: auto;
+    animation: none;
+    will-change: auto;
+  }
+
+  .brands-marquee__group + .brands-marquee__group {
+    display: none;
+  }
+
+  .brands-marquee__group {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: calc(var(--brands-gap) / 2);
+    padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+  }
+
+  .brands-marquee--fade .brands-marquee__row {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .brands-marquee__logo {
+    transition: none;
+  }
+}

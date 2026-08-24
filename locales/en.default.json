@@ -111,7 +111,8 @@
   },
   "onboarding": {
     "product_title": "Example product title",
-    "collection_title": "Your collection's name"
+    "collection_title": "Your collection's name",
+    "no_content": "Add a Logo block to show your brands here."
   },
   "products": {
     "product": {

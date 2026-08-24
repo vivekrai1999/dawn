@@ -1,0 +1,371 @@
+/*
+  Process / How it works — sections/process.liquid.
+
+  A list of steps on one side and the media for the selected step on the other.
+  Every step's media and copy is in the DOM; which one is on show is a class,
+  so switching steps never waits on a network request and the section works as
+  a plain stacked list if assets/process.js never runs.
+
+  Tokens (--process-*) are emitted per instance by the section, so several of
+  these can share a page with different settings.
+*/
+
+.process {
+  padding-block: var(--process-padding-top) var(--process-padding-bottom);
+}
+
+.process__inner {
+  box-sizing: border-box;
+  max-width: var(--process-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+/* ------------------------------------------------------------------ Header */
+
+.process__header {
+  max-width: 64rem;
+  margin-block-end: clamp(2.4rem, 4vw, 4.8rem);
+}
+
+.process__header--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.process__header--right {
+  margin-inline-start: auto;
+  text-align: right;
+}
+
+.process__heading {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2.4rem, 3vw, var(--process-heading-size));
+  line-height: 1.15;
+  color: rgb(var(--color-foreground));
+}
+
+.process__subheading {
+  margin-block-start: 1.2rem;
+  font-size: var(--process-body-size);
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.7);
+}
+
+.process__subheading > *:first-child {
+  margin-top: 0;
+}
+
+.process__subheading > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------ Layout */
+
+/*
+  Media first in the source, because on a narrow screen the picture is what
+  introduces the step. Desktop puts the list back on the left with `order`,
+  which is safe here: the two are siblings, not a reading sequence, and each
+  tab already points at its panel through aria-controls.
+*/
+/*
+  The columns stretch to the taller of the two rather than each sizing itself,
+  which is what lets the image match the height of the step list.
+*/
+.process__layout {
+  display: grid;
+  gap: clamp(2.4rem, 4vw, 5.6rem);
+}
+
+@media screen and (min-width: 750px) {
+  .process__layout {
+    grid-template-columns: minmax(0, var(--process-list-width)) minmax(0, 1fr);
+  }
+
+  .process__list-column {
+    order: -1;
+  }
+}
+
+/* ------------------------------------------------------------------- Steps */
+
+.process__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.process__step {
+  display: flex;
+  gap: 1.6rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 1.6rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  border-radius: 1.2rem;
+  background-color: transparent;
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--duration-default, 200ms) var(--ease-out-slow, ease),
+    background-color var(--duration-default, 200ms) var(--ease-out-slow, ease);
+}
+
+.process__step:hover {
+  border-color: rgba(var(--color-foreground), 0.32);
+}
+
+.process__step:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+.process__step[aria-selected='true'] {
+  border-color: rgb(var(--color-foreground));
+  background-color: rgba(var(--color-foreground), 0.04);
+}
+
+.process__step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.2);
+  border-radius: 50%;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(var(--color-foreground));
+  transition: background-color var(--duration-default, 200ms) var(--ease-out-slow, ease),
+    color var(--duration-default, 200ms) var(--ease-out-slow, ease),
+    border-color var(--duration-default, 200ms) var(--ease-out-slow, ease);
+}
+
+/* Behind the sequence: solid, so completed steps read as done. */
+.process__item[data-state='done'] .process__step-number {
+  border-color: rgb(var(--color-foreground));
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+}
+
+/* The step being shown: solid, and lifted off the rail by a ring. */
+.process__step[aria-selected='true'] .process__step-number {
+  border-color: rgb(var(--color-foreground));
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  box-shadow: 0 0 0 0.4rem rgba(var(--color-foreground), 0.12);
+}
+
+/*
+  The rail passes behind the numbers, so each one needs its own ground to sit
+  on or the line would show through the ring around it.
+*/
+.process__step-number {
+  position: relative;
+  z-index: 1;
+}
+
+.process__step-text {
+  min-width: 0;
+}
+
+.process__step-title {
+  margin: 0;
+  font-size: var(--process-body-size);
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgb(var(--color-foreground));
+}
+
+/* The step's description, and the only place it is shown. */
+.process__step-summary {
+  display: block;
+  margin: 0.4rem 0 0;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.65);
+}
+
+/* -------------------------------------------------------------- The rail */
+
+/*
+  Progress runs down the list itself rather than sitting in a bar beneath it:
+  a line joins each step's number to the next, and fills in as the sequence
+  advances. Read at a glance it says both where you are and how far is left,
+  in the same place the eye is already reading.
+
+  The geometry is fixed by the card, not measured: the number is 3.2rem tall
+  and sits 1.6rem inside the card, so its centre is always 3.2rem from the
+  card's top and left edges. The segment therefore runs from 4.8rem (the
+  number's bottom) down past the card's own bottom edge by the list gap plus
+  the next card's padding.
+*/
+.process__item {
+  position: relative;
+}
+
+.process__item:not(:last-child)::before,
+.process__item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset-block: 4.8rem -2.4rem;
+  inset-inline-start: calc(3.2rem - 0.1rem);
+  width: 0.2rem;
+  border-radius: 999px;
+}
+
+/* The unfilled track. */
+.process__item:not(:last-child)::before {
+  background-color: rgba(var(--color-foreground), 0.14);
+}
+
+/*
+  The fill. Scaled rather than resized, so the growth is composited: a segment
+  behind the sequence is complete, one ahead of it is empty.
+*/
+.process__item:not(:last-child)::after {
+  background-color: rgb(var(--color-foreground));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--duration-default, 200ms) var(--ease-out-slow, ease);
+}
+
+.process__item[data-state='done']:not(:last-child)::after {
+  transform: scaleY(1);
+}
+
+/*
+  On the step being shown, the fill becomes the countdown to the next one — the
+  rail is drawn over exactly as long as the step is held. It only runs while the
+  section is actually advancing on its own.
+*/
+.process--autoplay .process__item[data-state='current']:not(:last-child)::after {
+  animation: process-rail-fill var(--process-dwell, 4000ms) linear forwards;
+}
+
+/* Whatever holds the sequence still holds the countdown at the same point. */
+.process--autoplay.is-paused .process__item[data-state='current']:not(:last-child)::after {
+  animation-play-state: paused;
+}
+
+@keyframes process-rail-fill {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ------------------------------------------------------------------- Media */
+
+/*
+  One frame with every panel stacked inside it, so the section's height cannot
+  jump as the step changes, whatever the images measure.
+
+  The panels are taken out of flow deliberately: an image inside the frame must
+  not be able to push the frame taller, or the frame could no longer be sized
+  from the outside — which is exactly what the desktop rule below does.
+*/
+.process__media {
+  position: relative;
+  aspect-ratio: var(--process-media-ratio);
+  border-radius: 1.2rem;
+  background-color: rgba(var(--color-foreground), 0.04);
+  overflow: hidden;
+}
+
+/*
+  Beside the steps the frame takes its height from them rather than from a
+  ratio: the grid row is as tall as the step list, and the frame stretches to
+  fill it. It can only stretch while its height stays `auto` — an explicit
+  height, including `100%`, opts an item out of stretching and then resolves
+  against an indefinite row, which is how the frame ends up taller than the
+  steps beside it.
+
+  This has to sit after the rule above, not with the other layout rules earlier
+  in the file: both selectors carry the same weight, so the later one is the one
+  that applies.
+*/
+@media screen and (min-width: 750px) {
+  .process__media {
+    aspect-ratio: auto;
+  }
+}
+
+.process__panel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-default, 200ms) var(--ease-out-slow, ease),
+    visibility var(--duration-default, 200ms) var(--ease-out-slow, ease);
+}
+
+.process__panel--active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/*
+  The frame is a fixed ratio so the section cannot change height between steps,
+  which leaves the merchant's own image to be reconciled with it. `contain`
+  shows the whole photograph inside the frame; `cover` fills the frame and crops
+  whatever does not fit — which reads as a zoom on any image whose shape differs
+  from the chosen ratio.
+*/
+.process__image,
+.process__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--process-media-fit, contain);
+  object-position: center;
+}
+
+.process__placeholder {
+  background-color: rgba(var(--color-foreground), 0.04);
+  fill: rgba(var(--color-foreground), 0.12);
+}
+
+/*
+  The step's link, sitting under its card rather than inside it — the card is a
+  tab, and one control cannot hold another.
+*/
+.process__link {
+  display: inline-flex;
+  align-items: center;
+  margin: 0.8rem 0 0 calc(3.2rem + 1.6rem + 1.6rem);
+  font-size: 1.3rem;
+  color: rgb(var(--color-foreground));
+  text-underline-offset: 0.3rem;
+}
+
+/* --------------------------------------------------------------- Motion off */
+
+@media (prefers-reduced-motion: reduce) {
+  .process__step,
+  .process__step-number,
+  .process__panel,
+  .process__item::after {
+    transition: none;
+  }
+
+  /*
+    No countdown animation: the rail simply shows how far the sequence has got.
+    Autoplay is off under this preference anyway, so nothing is being timed.
+  */
+  .process--autoplay .process__item[data-state='current']:not(:last-child)::after {
+    animation: none;
+  }
+}
