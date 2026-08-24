@@ -85,8 +85,14 @@
       --editorial-card-padding: {{ section.settings.card_padding }}px;
       --editorial-card-align: {{ section.settings.card_text_alignment }};
       --editorial-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
-      --editorial-card-shadow: 0 {{ section.settings.card_shadow | divided_by: 2 }}px
-        {{ section.settings.card_shadow }}px rgba(0, 0, 0, {{ section.settings.card_shadow | divided_by: 100.0 }});
+      {%- comment -%}
+        Shadow and overlay carry a colour, not pure black: on a warm ground a
+        black shadow reads as grey dirt, and a black scrim greys the photograph.
+      {%- endcomment -%}
+      --editorial-shadow-size: {{ section.settings.card_shadow }}px;
+      --editorial-shadow-alpha: {{ section.settings.card_shadow_opacity | divided_by: 100.0 }};
+      --editorial-shadow-rgb: {{ section.settings.card_shadow_color.red }}, {{ section.settings.card_shadow_color.green }}, {{ section.settings.card_shadow_color.blue }};
+      --editorial-overlay-rgb: {{ section.settings.overlay_color.red }}, {{ section.settings.overlay_color.green }}, {{ section.settings.overlay_color.blue }};
 
       --editorial-tilt: {{ section.settings.card_tilt | divided_by: 10.0 }}deg;
       {%- comment -%}
@@ -165,7 +171,7 @@
   {%- endstyle -%}
 
   <section
-    class="editorial-slider{% if section.settings.card_tilt > 0 %} editorial-slider--tilted{% endif %}{% if section.settings.full_bleed %} editorial-slider--bleed{% endif %}"
+    class="editorial-slider editorial-slider--lift-{{ section.settings.card_lift }}{% if section.settings.card_tilt > 0 %} editorial-slider--tilted{% endif %}{% if section.settings.full_bleed %} editorial-slider--bleed{% endif %}"
     id="EditorialSlider-{{ section.id }}"
     {% if section.settings.heading != blank %}
       aria-labelledby="EditorialSliderHeading-{{ section.id }}"
@@ -512,7 +518,7 @@
           "step": 5,
           "unit": "%",
           "label": "Overlay opacity",
-          "default": 65
+          "default": 75
         }
       ]
     }
@@ -893,8 +899,15 @@
       "step": 5,
       "unit": "%",
       "label": "Overlay opacity",
-      "info": "Shades the foot of each card so the text stays readable.",
-      "default": 65
+      "info": "Shades the foot of each card so the text stays readable. A warm overlay colour is lighter than black, so it needs a few points more than a black one to hold the same contrast.",
+      "default": 75
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "info": "Warmer than black keeps the photograph from going grey. Anything lighter than this will need the opacity above raised to keep the white text readable.",
+      "default": "#3A282C"
     },
     {
       "type": "range",
@@ -923,8 +936,47 @@
       "max": 60,
       "step": 2,
       "unit": "px",
-      "label": "Card shadow",
-      "default": 24
+      "label": "Card lift size",
+      "default": 24,
+      "info": "How far the shadow spreads. Only used by the soft shadow style."
+    },
+    {
+      "type": "select",
+      "id": "card_lift",
+      "label": "Card lift style",
+      "info": "How each card separates from the background.",
+      "options": [
+        {
+          "value": "soft",
+          "label": "Soft shadow"
+        },
+        {
+          "value": "hairline",
+          "label": "Hairline outline"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "soft"
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_opacity",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "%",
+      "label": "Card lift strength",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "card_shadow_color",
+      "label": "Card lift color",
+      "info": "A deep tone from your palette reads as depth; pure black reads as grey on a warm background.",
+      "default": "#4E3B34"
     },
     {
       "type": "range",

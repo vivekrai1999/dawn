@@ -10,3 +10,7 @@ Thumbs.db
 .shopify
 node_modules
 *.zip
+.env
+/scripts
+/docs
+/tools
