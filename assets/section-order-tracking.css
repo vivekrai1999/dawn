@@ -1,0 +1,221 @@
+/*
+  Order tracking — sections/order-tracking.liquid.
+
+  Two parts: the lookup panel, drawn as a card so it reads as the thing to do
+  first, and the routes below it for anyone the form cannot help.
+*/
+
+.tracking {
+  padding-block: var(--tracking-padding-top) var(--tracking-padding-bottom);
+}
+
+.tracking__inner {
+  box-sizing: border-box;
+  max-width: var(--tracking-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+/* ------------------------------------------------------------ Lookup panel */
+
+.tracking__panel {
+  box-sizing: border-box;
+  max-width: var(--tracking-measure);
+  padding: clamp(2rem, 3vw, 3.2rem);
+  border: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  border-radius: 1.2rem;
+}
+
+.tracking__heading {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2rem, 3vw, var(--tracking-heading-size));
+  line-height: 1.2;
+  color: rgb(var(--color-foreground));
+}
+
+.tracking__intro {
+  margin-block-start: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.tracking__intro > *:first-child {
+  margin-top: 0;
+}
+
+.tracking__intro > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------- Form */
+
+.tracking__lookup {
+  display: block;
+  margin-block-start: 2rem;
+}
+
+/*
+  Wraps on a narrow screen and sits on one line once there is room. The number
+  field takes the slack, because it is the field that holds a long value.
+*/
+.tracking__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.2rem;
+}
+
+.tracking__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.tracking__field--grow {
+  flex: 2 1 20rem;
+}
+
+.tracking__label {
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.tracking__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.8rem;
+  padding: 0 1.4rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.2);
+  border-radius: 0.8rem;
+  background-color: rgb(var(--color-background));
+  font-family: inherit;
+  font-size: 1.4rem;
+  color: rgb(var(--color-foreground));
+  appearance: none;
+}
+
+.tracking__input:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: -0.1rem;
+}
+
+/* The select keeps its own caret, since its native one is switched off above. */
+.tracking__select {
+  position: relative;
+}
+
+.tracking__caret {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 1.4rem;
+  width: 1.2rem;
+  height: 0.72rem;
+  transform: translateY(-50%);
+  color: rgba(var(--color-foreground), 0.6);
+  pointer-events: none;
+}
+
+.tracking__select .tracking__input {
+  padding-inline-end: 3.6rem;
+}
+
+.tracking__submit {
+  flex: 0 0 auto;
+  min-height: 4.8rem;
+  padding: 0 2.4rem;
+  border: 0.1rem solid rgb(var(--color-foreground));
+  border-radius: 999px;
+  background-color: rgb(var(--color-foreground));
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: rgb(var(--color-background));
+  cursor: pointer;
+  transition: opacity var(--duration-short, 100ms) ease;
+}
+
+.tracking__submit:hover {
+  opacity: 0.88;
+}
+
+.tracking__submit:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.3rem;
+}
+
+.tracking__note {
+  margin: 1.2rem 0 0;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+/* ----------------------------------------------------------------- Routes */
+
+.tracking__routes {
+  display: grid;
+  gap: 2rem;
+  margin: 3.2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .tracking__routes {
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  }
+}
+
+.tracking__route {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.tracking__route-title {
+  margin: 0;
+  font-family: var(--font-body-family);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.tracking__route-text {
+  margin-block-start: 0.6rem;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.tracking__route-text > *:first-child {
+  margin-top: 0;
+}
+
+.tracking__route-text > *:last-child {
+  margin-bottom: 0;
+}
+
+.tracking__route-link {
+  margin-block-start: auto;
+  padding-block-start: 1.2rem;
+  font-size: 1.3rem;
+  color: rgb(var(--color-foreground));
+  text-underline-offset: 0.3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tracking__submit {
+    transition: none;
+  }
+}

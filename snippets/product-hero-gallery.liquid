@@ -106,6 +106,7 @@
 
 {{ 'slick.css' | asset_url | stylesheet_tag }}
 {{ 'section-product-hero-gallery.css' | asset_url | stylesheet_tag }}
+{{ 'component-accordion-item.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 
 <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
@@ -566,8 +567,8 @@
             The details sit behind an accordion rather than running down the
             page: on desktop the purchase controls are what the panel is for,
             and a long description pushed everything else out of view.
-            snippets/phg-accordion.liquid is a plain <details> row, so it needs
-            no script and stays keyboard operable.
+            snippets/accordion-item.liquid is a plain <details> row, so it
+            needs no script and stays keyboard operable.
           {%- endcomment -%}
           {%- liquid
             assign details_group = 'phg-details-' | append: section.id
@@ -597,21 +598,21 @@
             endif
           -%}
           {%- if has_details -%}
-          <div class="phg-accordion">
-            {%- render 'phg-accordion',
+          <div class="accordion phg-accordion">
+            {%- render 'accordion-item',
               id: details_id,
               group: details_group,
               title: details_title,
               content: description_row,
               open: phg_details_open
             -%}
-            {%- render 'phg-accordion',
+            {%- render 'accordion-item',
               id: shipping_id,
               group: details_group,
               title: phg_shipping_title,
               content: shipping_content
             -%}
-            {%- render 'phg-accordion',
+            {%- render 'accordion-item',
               id: care_id,
               group: details_group,
               title: phg_care_title,

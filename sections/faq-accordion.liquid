@@ -1,0 +1,258 @@
+{% comment %}
+  FAQ accordion — questions grouped under optional headings.
+
+  Each question is a section block, so the merchant writes, reorders and removes
+  them in the Theme Editor. A block of type `group` starts a new heading, and
+  every question after it belongs to that group until the next one — which is
+  how one flat list of blocks produces a grouped page.
+
+  The rows are the shared accordion component, so this section owns no open and
+  close behaviour of its own and needs no script.
+
+  Used by the FAQs page, and equally by Shipping, Returns and Care where a
+  question-and-answer shape suits the content better than prose.
+{% endcomment %}
+
+{{ 'component-accordion-item.css' | asset_url | stylesheet_tag }}
+{{ 'section-faq-accordion.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign renderable = 0
+  for block in section.blocks
+    if block.type == 'question' and block.settings.question != blank and block.settings.answer != blank
+      assign renderable = renderable | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if renderable > 0 -%}
+  {%- style -%}
+    #Faq-{{ section.id }} {
+      --faq-width: {{ section.settings.content_width }}px;
+      --faq-measure: {{ section.settings.text_width }}px;
+      --faq-heading-size: {{ section.settings.heading_size }}px;
+      --faq-padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      --faq-padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      #Faq-{{ section.id }} {
+        --faq-padding-top: {{ section.settings.padding_top }}px;
+        --faq-padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="Faq-{{ section.id }}"
+    class="faq color-{{ section.settings.color_scheme }} gradient{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="faq__inner">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="faq__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- liquid
+        comment
+          One accordion group name per section, so opening a question closes
+          whichever was open — the list stays as long as its questions rather
+          than as long as its answers.
+        endcomment
+        assign group_name = ''
+        if section.settings.one_at_a_time
+          assign group_name = 'faq-' | append: section.id
+        endif
+
+        assign open_index = 0
+        if section.settings.open_first
+          assign open_index = 1
+        endif
+      -%}
+
+      {%- comment -%}
+        One flat list, with group headings sitting between the rows as siblings.
+        Nesting a container per group would mean opening and closing a div from
+        inside a loop, which cannot be kept balanced for every arrangement of
+        blocks a merchant might build.
+      {%- endcomment -%}
+      <div class="accordion faq__set">
+        {%- assign question_index = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'group' -%}
+              {%- if block.settings.title != blank -%}
+                <h3 class="faq__group-title" {{ block.shopify_attributes }}>
+                  {{- block.settings.title | escape -}}
+                </h3>
+              {%- endif -%}
+
+            {%- when 'question' -%}
+              {%- if block.settings.question == blank or block.settings.answer == blank -%}
+                {%- continue -%}
+              {%- endif -%}
+
+              {%- liquid
+                assign question_index = question_index | plus: 1
+                assign row_id = 'Faq-' | append: section.id | append: '-' | append: question_index
+                assign row_open = false
+                if question_index == open_index
+                  assign row_open = true
+                endif
+              -%}
+
+              <div class="faq__row" {{ block.shopify_attributes }}>
+                {%- render 'accordion-item',
+                  id: row_id,
+                  group: group_name,
+                  title: block.settings.question,
+                  content: block.settings.answer,
+                  open: row_open
+                -%}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "FAQ accordion",
+  "tag": "section",
+  "class": "section section--faq",
+  "max_blocks": 40,
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "How long does delivery take?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Answer the question here, in as much detail as a shopper needs to stop worrying about it.</p>"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "Group heading",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Orders & delivery",
+          "info": "Every question after this heading belongs to it, until the next heading."
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "one_at_a_time",
+      "label": "Open one question at a time",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Start with the first question open",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "text_width",
+      "min": 480,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "label": "Text width",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1800
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ accordion",
+      "blocks": [
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        },
+        {
+          "type": "question"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

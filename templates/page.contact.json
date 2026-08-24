@@ -1,25 +1,92 @@
 {
   "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "We are here",
+        "heading": "",
+        "intro": "<p>Questions about an order, a yarn, or a piece you would like made differently — write to us and a person will answer, usually within two working days.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 32
+      }
+    },
     "main": {
       "type": "main-page",
       "settings": {
-        "padding_top": 36,
-        "padding_bottom": 36
+        "padding_top": 8,
+        "padding_bottom": 32
+      }
+    },
+    "columns": {
+      "type": "info-columns",
+      "blocks": {
+        "col-1": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Email",
+            "title": "Write to us",
+            "text": "<p>The surest way to reach us. Include your order number if you have one.</p>",
+            "link": "mailto:hello@example.com",
+            "link_text": "hello@example.com"
+          }
+        },
+        "col-2": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Hours",
+            "title": "When we reply",
+            "text": "<p>Monday to Friday, 10am to 6pm IST. Messages sent over the weekend are answered on Monday.</p>"
+          }
+        },
+        "col-3": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Orders",
+            "title": "Already ordered?",
+            "text": "<p>Tracking, changes and returns are usually faster to sort out from your order page.</p>",
+            "link": "/pages/track-your-order",
+            "link_text": "Track your order"
+          }
+        }
+      },
+      "block_order": [
+        "col-1",
+        "col-2",
+        "col-3"
+      ],
+      "settings": {
+        "heading": "",
+        "show_cards": true,
+        "color_scheme": "scheme-1",
+        "columns_desktop": 3,
+        "gap": 20,
+        "heading_size": 32,
+        "content_width": 1800,
+        "padding_top": 24,
+        "padding_bottom": 32
       }
     },
     "form": {
       "type": "contact-form",
       "settings": {
-        "heading": "",
+        "heading": "Send us a message",
         "heading_size": "h1",
         "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
+        "padding_top": 24,
+        "padding_bottom": 64
       }
     }
   },
   "order": [
+    "hero",
     "main",
+    "columns",
     "form"
   ]
 }

@@ -1,0 +1,105 @@
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "Track your order",
+        "heading": "",
+        "intro": "<p>Enter the tracking number from your shipping confirmation, and we will take you straight to the carrier.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 32
+      }
+    },
+    "tracking": {
+      "type": "order-tracking",
+      "blocks": {
+        "carrier-1": {
+          "type": "carrier",
+          "settings": {
+            "name": "India Post",
+            "url": "https://www.indiapost.gov.in/_layouts/15/DOP.Portal.Tracking/TrackConsignment.aspx",
+            "parameter": "trackingId"
+          }
+        },
+        "carrier-2": {
+          "type": "carrier",
+          "settings": {
+            "name": "Delhivery",
+            "url": "https://www.delhivery.com/tracking",
+            "parameter": "trackingId"
+          }
+        },
+        "route-1": {
+          "type": "route",
+          "settings": {
+            "title": "Check your email",
+            "text": "<p>Every shipping confirmation carries a tracking link. Search your inbox for the order number, and check the spam folder while you are there.</p>",
+            "use_account_url": false,
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "route-2": {
+          "type": "route",
+          "settings": {
+            "title": "Use your account",
+            "text": "<p>If you ordered while signed in, every order and its tracking link is on your account page.</p>",
+            "use_account_url": true,
+            "link": "",
+            "link_text": "Go to your account"
+          }
+        },
+        "route-3": {
+          "type": "route",
+          "settings": {
+            "title": "Still nothing?",
+            "text": "<p>If tracking has not moved for four working days, tell us the order number and we will chase the carrier ourselves.</p>",
+            "use_account_url": false,
+            "link": "/pages/contact",
+            "link_text": "Contact us"
+          }
+        }
+      },
+      "block_order": [
+        "carrier-1",
+        "carrier-2",
+        "route-1",
+        "route-2",
+        "route-3"
+      ],
+      "settings": {
+        "heading": "Track your parcel",
+        "intro": "<p>Enter the tracking number from your shipping confirmation email and we will take you straight to the carrier.</p>",
+        "carrier_label": "Carrier",
+        "number_label": "Tracking number",
+        "number_placeholder": "e.g. EX123456789IN",
+        "button_label": "Track",
+        "form_note": "Tracking can take up to 24 hours to appear after your parcel is collected.",
+        "color_scheme": "scheme-1",
+        "heading_size": 28,
+        "text_width": 760,
+        "content_width": 1800,
+        "padding_top": 24,
+        "padding_bottom": 64
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 32
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "tracking",
+    "main"
+  ]
+}

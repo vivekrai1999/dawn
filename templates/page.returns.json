@@ -1,0 +1,152 @@
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "Returns & exchanges",
+        "heading": "",
+        "intro": "<p>If a piece is not right, we will make it right. Here is what you can return, by when, and how to start.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 32
+      }
+    },
+    "columns": {
+      "type": "info-columns",
+      "blocks": {
+        "col-1": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Window",
+            "title": "7 days to decide",
+            "text": "<p>Tell us within 7 days of delivery and we will arrange a return or an exchange.</p>"
+          }
+        },
+        "col-2": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Condition",
+            "title": "Unused, with tags",
+            "text": "<p>Pieces must come back unused and in their original packaging, with any tags still attached.</p>"
+          }
+        },
+        "col-3": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Start",
+            "title": "How to begin",
+            "text": "<p>Send us your order number and a photograph if something arrived damaged.</p>",
+            "link": "/pages/contact",
+            "link_text": "Start a return"
+          }
+        }
+      },
+      "block_order": [
+        "col-1",
+        "col-2",
+        "col-3"
+      ],
+      "settings": {
+        "heading": "",
+        "show_cards": true,
+        "color_scheme": "scheme-1",
+        "columns_desktop": 3,
+        "gap": 20,
+        "heading_size": 32,
+        "content_width": 1800,
+        "padding_top": 24,
+        "padding_bottom": 32
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 8,
+        "padding_bottom": 32
+      }
+    },
+    "faq": {
+      "type": "faq-accordion",
+      "blocks": {
+        "group-1": {
+          "type": "group",
+          "settings": {
+            "title": "Returns"
+          }
+        },
+        "q-1": {
+          "type": "question",
+          "settings": {
+            "question": "How do I start a return?",
+            "answer": "<p>Write to us with your order number within 7 days of delivery. We reply with a return address and the next step; do not send anything back before you hear from us.</p>"
+          }
+        },
+        "q-2": {
+          "type": "question",
+          "settings": {
+            "question": "Who pays the return postage?",
+            "answer": "<p>We cover it when a piece arrived damaged, faulty or wrong. For a change of mind, return postage is yours.</p>"
+          }
+        },
+        "q-3": {
+          "type": "question",
+          "settings": {
+            "question": "When is my refund paid?",
+            "answer": "<p>Within 5 to 7 working days of the parcel reaching us and passing a quick check, back to the method you paid with.</p>"
+          }
+        },
+        "group-2": {
+          "type": "group",
+          "settings": {
+            "title": "Exchanges"
+          }
+        },
+        "q-4": {
+          "type": "question",
+          "settings": {
+            "question": "Can I exchange for a different colour or size?",
+            "answer": "<p>Yes, subject to availability. If the piece you want is made to order, expect the usual 7 to 10 working days once your return arrives.</p>"
+          }
+        },
+        "q-5": {
+          "type": "question",
+          "settings": {
+            "question": "What cannot be returned?",
+            "answer": "<p>Custom and personalised pieces, gift cards, and anything that has been used or washed. This does not affect your rights if an item is faulty.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "group-1",
+        "q-1",
+        "q-2",
+        "q-3",
+        "group-2",
+        "q-4",
+        "q-5"
+      ],
+      "settings": {
+        "heading": "Common questions",
+        "one_at_a_time": true,
+        "open_first": false,
+        "color_scheme": "scheme-1",
+        "heading_size": 32,
+        "text_width": 760,
+        "content_width": 1800,
+        "padding_top": 32,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "columns",
+    "main",
+    "faq"
+  ]
+}

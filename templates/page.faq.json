@@ -1,0 +1,135 @@
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "FAQs",
+        "heading": "",
+        "intro": "<p>The questions we are asked most. If yours is not here, write to us — we would rather answer twice than leave you guessing.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 32
+      }
+    },
+    "faq": {
+      "type": "faq-accordion",
+      "blocks": {
+        "group-1": {
+          "type": "group",
+          "settings": {
+            "title": "Orders & delivery"
+          }
+        },
+        "q-1": {
+          "type": "question",
+          "settings": {
+            "question": "How long until my order arrives?",
+            "answer": "<p>In-stock pieces are dispatched in 2 to 3 working days and arrive within 3 to 8 working days depending on where you are. Made-to-order pieces take 7 to 10 working days before dispatch.</p>"
+          }
+        },
+        "q-2": {
+          "type": "question",
+          "settings": {
+            "question": "Can I track my parcel?",
+            "answer": "<p>Yes. Your shipping confirmation email carries a tracking link, and you can also enter the number on our tracking page.</p>"
+          }
+        },
+        "q-3": {
+          "type": "question",
+          "settings": {
+            "question": "Do you ship internationally?",
+            "answer": "<p>We do. Delivery usually takes 10 to 21 working days, and any customs duty is payable by the recipient.</p>"
+          }
+        },
+        "group-2": {
+          "type": "group",
+          "settings": {
+            "title": "Products"
+          }
+        },
+        "q-4": {
+          "type": "question",
+          "settings": {
+            "question": "Is everything really handmade?",
+            "answer": "<p>Yes — every piece is hooked by hand by artisans in India. That is also why two pieces of the same design are never quite identical.</p>"
+          }
+        },
+        "q-5": {
+          "type": "question",
+          "settings": {
+            "question": "What are your pieces made from?",
+            "answer": "<p>Mostly cotton, wool and jute. The exact fibre is listed on each product page.</p>"
+          }
+        },
+        "q-6": {
+          "type": "question",
+          "settings": {
+            "question": "Can I order something custom?",
+            "answer": "<p>Often, yes. Tell us what you have in mind and we will say whether we can make it, what it would cost and how long it would take.</p>"
+          }
+        },
+        "group-3": {
+          "type": "group",
+          "settings": {
+            "title": "Returns & care"
+          }
+        },
+        "q-7": {
+          "type": "question",
+          "settings": {
+            "question": "What is your returns policy?",
+            "answer": "<p>Unused pieces can be returned or exchanged within 7 days of delivery. Our returns page covers the detail.</p>"
+          }
+        },
+        "q-8": {
+          "type": "question",
+          "settings": {
+            "question": "How should I wash my piece?",
+            "answer": "<p>By hand, in cold water, with a mild detergent, then dried flat in the shade. Our care page has the full instructions.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "group-1",
+        "q-1",
+        "q-2",
+        "q-3",
+        "group-2",
+        "q-4",
+        "q-5",
+        "q-6",
+        "group-3",
+        "q-7",
+        "q-8"
+      ],
+      "settings": {
+        "heading": "",
+        "one_at_a_time": true,
+        "open_first": false,
+        "color_scheme": "scheme-1",
+        "heading_size": 32,
+        "text_width": 760,
+        "content_width": 1800,
+        "padding_top": 32,
+        "padding_bottom": 64
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 48
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "faq",
+    "main"
+  ]
+}

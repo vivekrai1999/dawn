@@ -644,97 +644,12 @@
 /* --------------------------------------------------------------- Accordion */
 
 /*
-  snippets/phg-accordion.liquid. Rows are <details> elements, so open/close,
-  focus and keyboard operation are the browser's; everything below is skin.
+  The rows themselves are the shared component — snippets/accordion-item.liquid
+  and assets/component-accordion-item.css. Only where the set sits inside this
+  panel belongs here.
 */
 .phg-accordion {
   margin-block-start: 2.4rem;
-  border-block-start: 0.1rem solid rgba(var(--color-foreground), 0.12);
-}
-
-.phg-accordion__row {
-  border-block-end: 0.1rem solid rgba(var(--color-foreground), 0.12);
-}
-
-.phg-accordion__summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.6rem;
-  padding-block: 1.6rem;
-  font-size: 1.4rem;
-  line-height: 1.4;
-  color: rgb(var(--color-foreground));
-  cursor: pointer;
-  /* The row is the whole control, so the UA's disclosure triangle is dropped
-     in favour of the chevron on the right. */
-  list-style: none;
-}
-
-.phg-accordion__summary::-webkit-details-marker,
-.phg-accordion__summary::marker {
-  display: none;
-  content: '';
-}
-
-.phg-accordion__summary:focus-visible {
-  outline: 0.2rem solid rgb(var(--color-foreground));
-  outline-offset: -0.2rem;
-}
-
-.phg-accordion__title {
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
-/*
-  The chevron is laid out by the summary's flex row. base.css absolutely
-  positions any .icon-caret inside a <summary> — that is how Dawn's own
-  accordions place theirs — which would pull this one out of the row and pin it
-  1.5rem from the right edge, so that is undone here.
-
-  The box matches the asset's 10:6 viewBox rather than being square, so the
-  glyph is not letterboxed and the open state rotates about its real centre.
-*/
-.phg-accordion__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 1.2rem;
-  height: 0.72rem;
-  color: rgba(var(--color-foreground), 0.7);
-  transition: transform var(--duration-short, 100ms) ease;
-}
-
-.phg-accordion__summary .icon-caret {
-  position: static;
-  top: auto;
-  right: auto;
-  width: 100%;
-  height: 100%;
-}
-
-.phg-accordion__row[open] .phg-accordion__icon {
-  transform: rotate(180deg);
-}
-
-.phg-accordion__panel {
-  padding-block-end: 1.6rem;
-}
-
-.phg-accordion__content {
-  font-size: 1.4rem;
-  line-height: 1.6;
-  color: rgba(var(--color-foreground), 0.8);
-}
-
-.phg-accordion__content > *:first-child {
-  margin-top: 0;
-}
-
-.phg-accordion__content > *:last-child {
-  margin-bottom: 0;
 }
 
 /* ------------------------------------------------------- Sticky purchase bar */
@@ -1245,7 +1160,6 @@
   .phg-gallery__arrow,
   .phg-bar__inner,
   .hg-dropdown__caret,
-  .phg-accordion__icon,
   .phg-mini,
   .phg-mini__add,
   .phg-options__swatch {

@@ -1,0 +1,66 @@
+/*
+  Page hero — sections/page-hero.liquid.
+
+  The container is the one the rest of the store uses: the same max-width token
+  and the same --header-gutter as product-showcase and the process section, so
+  a content page lines up on the margins the homepage set.
+*/
+
+.page-hero {
+  padding-block: var(--page-hero-padding-top) var(--page-hero-padding-bottom);
+}
+
+.page-hero__inner {
+  box-sizing: border-box;
+  max-width: var(--page-hero-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+.page-hero--center .page-hero__inner {
+  text-align: center;
+}
+
+.page-hero__eyebrow {
+  margin: 0 0 1.2rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.page-hero__heading {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2.8rem, 4vw, var(--page-hero-heading-size));
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: rgb(var(--color-foreground));
+}
+
+/*
+  Prose is capped independently of the container: the section can run the full
+  width of the store while a paragraph inside it stays at a readable measure.
+*/
+.page-hero__intro {
+  max-width: var(--page-hero-measure);
+  margin-block-start: 1.6rem;
+  font-size: var(--page-hero-body-size);
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.page-hero--center .page-hero__intro {
+  margin-inline: auto;
+}
+
+.page-hero__intro > *:first-child {
+  margin-top: 0;
+}
+
+.page-hero__intro > *:last-child {
+  margin-bottom: 0;
+}

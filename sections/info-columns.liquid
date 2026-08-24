@@ -1,0 +1,229 @@
+{% comment %}
+  Info columns — a row of short, titled notes.
+
+  Used at the top of Shipping, Returns and Care to answer the three or four
+  questions a shopper has before they are willing to read anything longer:
+  how long, how much, what if it goes wrong.
+
+  Each column is a section block. A column may carry an optional link, which is
+  how Shipping points at Returns, Returns points at Contact, and so on.
+{% endcomment %}
+
+{{ 'section-info-columns.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign columns = section.blocks | where: 'type', 'column'
+
+  assign renderable = 0
+  for block in columns
+    if block.settings.title != blank or block.settings.text != blank
+      assign renderable = renderable | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if renderable > 0 -%}
+  {%- style -%}
+    #InfoColumns-{{ section.id }} {
+      --info-width: {{ section.settings.content_width }}px;
+      --info-columns: {{ section.settings.columns_desktop }};
+      --info-gap: {{ section.settings.gap }}px;
+      --info-heading-size: {{ section.settings.heading_size }}px;
+      --info-padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      --info-padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      #InfoColumns-{{ section.id }} {
+        --info-padding-top: {{ section.settings.padding_top }}px;
+        --info-padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="InfoColumns-{{ section.id }}"
+    class="info-columns color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_cards %} info-columns--cards{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="info-columns__inner">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="info-columns__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      <ul class="info-columns__grid" role="list">
+        {%- for block in columns -%}
+          {%- if block.settings.title == blank and block.settings.text == blank -%}
+            {%- continue -%}
+          {%- endif -%}
+
+          <li class="info-columns__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.eyebrow != blank -%}
+              <p class="info-columns__eyebrow">{{ block.settings.eyebrow | escape }}</p>
+            {%- endif -%}
+
+            {%- if block.settings.title != blank -%}
+              <h3 class="info-columns__title">{{ block.settings.title | escape }}</h3>
+            {%- endif -%}
+
+            {%- if block.settings.text != blank -%}
+              <div class="info-columns__text rte">{{ block.settings.text }}</div>
+            {%- endif -%}
+
+            {%- if block.settings.link != blank and block.settings.link_text != blank -%}
+              <a class="info-columns__link link" href="{{ block.settings.link }}">
+                {{- block.settings.link_text | escape -}}
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Info columns",
+  "tag": "section",
+  "class": "section section--info-columns",
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Eyebrow"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Dispatch time"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Say what happens, and by when. A shopper reading this wants a number, not a promise.</p>"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link label",
+          "info": "The link is shown only when it has a label."
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cards",
+      "label": "Show each column as a card",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between columns",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 56,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1800
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Info columns",
+      "blocks": [
+        {
+          "type": "column"
+        },
+        {
+          "type": "column"
+        },
+        {
+          "type": "column"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,21 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-policy",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 15,
+        "text_width": 760,
+        "content_width": 1800,
+        "show_contact_note": true,
+        "contact_note": "<p>Still not sure where you stand? <a href=\"/pages/contact\">Get in touch</a> and a person will answer.</p>",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

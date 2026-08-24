@@ -1,0 +1,128 @@
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "Shipping & delivery",
+        "heading": "",
+        "intro": "<p>Everything is made by hand, so dispatch takes a little longer than a warehouse would. Here is exactly how long, and what it costs.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 32
+      }
+    },
+    "columns": {
+      "type": "info-columns",
+      "blocks": {
+        "col-1": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Dispatch",
+            "title": "Made, then sent",
+            "text": "<p>In-stock pieces leave us in 2 to 3 working days. Made-to-order pieces take 7 to 10.</p>"
+          }
+        },
+        "col-2": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "India",
+            "title": "Delivery times",
+            "text": "<p>Metro cities in 3 to 5 working days, elsewhere in 5 to 8, once dispatched.</p>"
+          }
+        },
+        "col-3": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Cost",
+            "title": "Shipping charges",
+            "text": "<p>Free above the order value shown at checkout. Below it, a flat rate is added before you pay.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "col-1",
+        "col-2",
+        "col-3"
+      ],
+      "settings": {
+        "heading": "",
+        "show_cards": true,
+        "color_scheme": "scheme-1",
+        "columns_desktop": 3,
+        "gap": 20,
+        "heading_size": 32,
+        "content_width": 1800,
+        "padding_top": 24,
+        "padding_bottom": 32
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 8,
+        "padding_bottom": 32
+      }
+    },
+    "faq": {
+      "type": "faq-accordion",
+      "blocks": {
+        "q-1": {
+          "type": "question",
+          "settings": {
+            "question": "When will my order be dispatched?",
+            "answer": "<p>In-stock pieces leave us within 2 to 3 working days. Anything made to order takes 7 to 10 working days, and we write to you if a piece needs longer.</p>"
+          }
+        },
+        "q-2": {
+          "type": "question",
+          "settings": {
+            "question": "Do you ship outside India?",
+            "answer": "<p>Yes. International delivery usually takes 10 to 21 working days depending on the destination, and any customs duty is payable by the recipient.</p>"
+          }
+        },
+        "q-3": {
+          "type": "question",
+          "settings": {
+            "question": "Can I change my delivery address?",
+            "answer": "<p>If the order has not been dispatched, yes — contact us with your order number as soon as you can. Once a parcel is with the carrier the address is fixed.</p>"
+          }
+        },
+        "q-4": {
+          "type": "question",
+          "settings": {
+            "question": "My tracking has not updated. Is something wrong?",
+            "answer": "<p>Tracking can take up to 24 hours to show movement after collection, and rural routes sometimes scan only at the destination. If nothing has changed after four working days, write to us.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q-1",
+        "q-2",
+        "q-3",
+        "q-4"
+      ],
+      "settings": {
+        "heading": "Common questions",
+        "one_at_a_time": true,
+        "open_first": false,
+        "color_scheme": "scheme-1",
+        "heading_size": 32,
+        "text_width": 760,
+        "content_width": 1800,
+        "padding_top": 32,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "columns",
+    "main",
+    "faq"
+  ]
+}

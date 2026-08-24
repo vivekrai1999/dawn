@@ -1,0 +1,128 @@
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "Care instructions",
+        "heading": "",
+        "intro": "<p>Hand-worked cotton, wool and jute last for years when they are looked after. It takes very little.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 64,
+        "padding_bottom": 32
+      }
+    },
+    "columns": {
+      "type": "info-columns",
+      "blocks": {
+        "col-1": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Washing",
+            "title": "Cold water, by hand",
+            "text": "<p>Wash alone in cold water with a mild detergent. No bleach, no wringing.</p>"
+          }
+        },
+        "col-2": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Drying",
+            "title": "Flat, in the shade",
+            "text": "<p>Press between towels and dry flat, out of direct sun. Hanging stretches the stitches.</p>"
+          }
+        },
+        "col-3": {
+          "type": "column",
+          "settings": {
+            "eyebrow": "Storing",
+            "title": "Folded, somewhere dry",
+            "text": "<p>Fold rather than hang, and keep wool somewhere dry with a cedar block for company.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "col-1",
+        "col-2",
+        "col-3"
+      ],
+      "settings": {
+        "heading": "",
+        "show_cards": true,
+        "color_scheme": "scheme-1",
+        "columns_desktop": 3,
+        "gap": 20,
+        "heading_size": 32,
+        "content_width": 1800,
+        "padding_top": 24,
+        "padding_bottom": 32
+      }
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 8,
+        "padding_bottom": 32
+      }
+    },
+    "faq": {
+      "type": "faq-accordion",
+      "blocks": {
+        "q-1": {
+          "type": "question",
+          "settings": {
+            "question": "Can I machine wash my piece?",
+            "answer": "<p>We do not recommend it. If you must, use a mesh laundry bag on the gentlest cold cycle and accept that the stitches will soften faster than they would by hand.</p>"
+          }
+        },
+        "q-2": {
+          "type": "question",
+          "settings": {
+            "question": "How do I get a stain out?",
+            "answer": "<p>Blot, do not rub, with cold water and a little mild detergent, working from the outside of the mark inwards. Let it dry flat before deciding whether to repeat.</p>"
+          }
+        },
+        "q-3": {
+          "type": "question",
+          "settings": {
+            "question": "My piece has lost its shape. Can I fix it?",
+            "answer": "<p>Usually. Wet it, press the water out between towels, then reshape it by hand on a flat surface and leave it to dry there.</p>"
+          }
+        },
+        "q-4": {
+          "type": "question",
+          "settings": {
+            "question": "A stitch has come loose. What now?",
+            "answer": "<p>Do not pull it. Send us a photograph and we will tell you whether it is a two-minute fix at home or something to send back to us.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q-1",
+        "q-2",
+        "q-3",
+        "q-4"
+      ],
+      "settings": {
+        "heading": "Looking after your piece",
+        "one_at_a_time": true,
+        "open_first": false,
+        "color_scheme": "scheme-1",
+        "heading_size": 32,
+        "text_width": 760,
+        "content_width": 1800,
+        "padding_top": 32,
+        "padding_bottom": 64
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "columns",
+    "main",
+    "faq"
+  ]
+}

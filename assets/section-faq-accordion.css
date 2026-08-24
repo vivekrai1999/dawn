@@ -1,0 +1,58 @@
+/*
+  FAQ accordion — sections/faq-accordion.liquid.
+
+  The rows are the shared component (assets/component-accordion-item.css); this
+  file places the set on the page and styles the group headings between rows.
+*/
+
+.faq {
+  padding-block: var(--faq-padding-top) var(--faq-padding-bottom);
+}
+
+.faq__inner {
+  box-sizing: border-box;
+  max-width: var(--faq-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+.faq__heading {
+  margin: 0 0 2.4rem;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2.2rem, 3vw, var(--faq-heading-size));
+  line-height: 1.2;
+  color: rgb(var(--color-foreground));
+}
+
+/*
+  Questions are prose, so the set is capped at a readable measure even though
+  the section itself runs the full width of the store.
+*/
+.faq__set {
+  max-width: var(--faq-measure);
+}
+
+/*
+  A heading between rows is what separates one group from the next. The row
+  above it already draws a line, so the break is made with space rather than a
+  second rule.
+*/
+.faq__group-title {
+  margin: 3.2rem 0 0;
+  padding-block-end: 0.8rem;
+  font-family: var(--font-body-family);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+/* The first heading opens the list, so it needs no space above it. */
+.faq__group-title:first-child {
+  margin-block-start: 0;
+  padding-block-start: 1.6rem;
+}

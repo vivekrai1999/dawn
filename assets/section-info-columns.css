@@ -1,0 +1,100 @@
+/*
+  Info columns — sections/info-columns.liquid.
+
+  A row of short notes, optionally drawn as cards. The card treatment matches
+  the step cards of the process section: a hairline border and a 1.2rem radius,
+  so the two read as the same family.
+*/
+
+.info-columns {
+  padding-block: var(--info-padding-top) var(--info-padding-bottom);
+}
+
+.info-columns__inner {
+  box-sizing: border-box;
+  max-width: var(--info-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+.info-columns__heading {
+  margin: 0 0 2.4rem;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2.2rem, 3vw, var(--info-heading-size));
+  line-height: 1.2;
+  color: rgb(var(--color-foreground));
+}
+
+.info-columns__grid {
+  display: grid;
+  gap: var(--info-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .info-columns__grid {
+    grid-template-columns: repeat(var(--info-columns), minmax(0, 1fr));
+  }
+}
+
+.info-columns__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.info-columns--cards .info-columns__item {
+  padding: 2rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  border-radius: 1.2rem;
+}
+
+.info-columns__eyebrow {
+  margin: 0 0 0.8rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.55);
+}
+
+.info-columns__title {
+  margin: 0;
+  font-family: var(--font-body-family);
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgb(var(--color-foreground));
+}
+
+.info-columns__text {
+  margin-block-start: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.info-columns__text > *:first-child {
+  margin-top: 0;
+}
+
+.info-columns__text > *:last-child {
+  margin-bottom: 0;
+}
+
+/*
+  Pushed to the bottom of its column, so a row of cards has its links on one
+  line however unevenly the text above them runs.
+*/
+.info-columns__link {
+  margin-block-start: auto;
+  padding-block-start: 1.2rem;
+  font-size: 1.3rem;
+  color: rgb(var(--color-foreground));
+  text-underline-offset: 0.3rem;
+}

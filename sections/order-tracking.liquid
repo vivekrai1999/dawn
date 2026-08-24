@@ -1,0 +1,391 @@
+{% comment %}
+  Order tracking — how a shopper finds out where their parcel is.
+
+  A note on what this can and cannot do. Shopify has no storefront endpoint that
+  looks up an order from a tracking number, and none that identifies a guest
+  order without the customer being signed in — so a page that appeared to search
+  the store's own orders would be a pretence. What this section does instead is
+  the three things that genuinely work:
+
+    1. Hands the tracking number to the carrier, who does have that lookup. The
+       form posts straight to the carrier's own tracking page, so it works with
+       no JavaScript at all; the carrier picker below only rewrites where the
+       form is going.
+    2. Points customers with an account at their order history, which carries
+       Shopify's own tracking links.
+    3. Says plainly where to find the link in the emails already sent, and how
+       to reach a human when none of that helped.
+
+  Carriers are section blocks, so the merchant adds whichever they ship with.
+{% endcomment %}
+
+{{ 'section-order-tracking.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign carriers = section.blocks | where: 'type', 'carrier'
+
+  comment
+    A carrier needs somewhere to send the number and a name for the field it
+    arrives in; without both, the form would submit into nothing.
+  endcomment
+  assign usable = 0
+  for block in carriers
+    if block.settings.url != blank and block.settings.parameter != blank
+      assign usable = usable | plus: 1
+    endif
+  endfor
+
+  comment
+    The form is built for the first usable carrier server-side, so it is already
+    pointed somewhere real before any script runs.
+  endcomment
+  assign first_carrier = null
+  for block in carriers
+    if block.settings.url != blank and block.settings.parameter != blank
+      assign first_carrier = block
+      break
+    endif
+  endfor
+-%}
+
+{%- style -%}
+  #OrderTracking-{{ section.id }} {
+    --tracking-width: {{ section.settings.content_width }}px;
+    --tracking-measure: {{ section.settings.text_width }}px;
+    --tracking-heading-size: {{ section.settings.heading_size }}px;
+    --tracking-padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    --tracking-padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    #OrderTracking-{{ section.id }} {
+      --tracking-padding-top: {{ section.settings.padding_top }}px;
+      --tracking-padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  id="OrderTracking-{{ section.id }}"
+  class="tracking color-{{ section.settings.color_scheme }} gradient{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+>
+  <div class="tracking__inner">
+    {%- if usable > 0 -%}
+      <div class="tracking__panel">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="tracking__heading" id="TrackingHeading-{{ section.id }}">
+            {{- section.settings.heading | escape -}}
+          </h2>
+        {%- endif -%}
+
+        {%- if section.settings.intro != blank -%}
+          <div class="tracking__intro rte">{{ section.settings.intro }}</div>
+        {%- endif -%}
+
+        <order-tracking class="tracking__lookup">
+          {%- comment -%}
+            A plain GET form to the carrier's own tracking page. `target` opens
+            the carrier in its own tab so the shopper does not lose the store.
+          {%- endcomment -%}
+          <form
+            action="{{ first_carrier.settings.url }}"
+            method="get"
+            target="_blank"
+            rel="noopener"
+            class="tracking__form"
+            data-tracking-form
+            {% if section.settings.heading != blank %}
+              aria-labelledby="TrackingHeading-{{ section.id }}"
+            {% endif %}
+          >
+            {%- if usable > 1 -%}
+              <div class="tracking__field">
+                <label class="tracking__label" for="TrackingCarrier-{{ section.id }}">
+                  {{ section.settings.carrier_label | escape }}
+                </label>
+                <div class="tracking__select">
+                  <select
+                    id="TrackingCarrier-{{ section.id }}"
+                    class="tracking__input"
+                    data-tracking-carrier
+                  >
+                    {%- for block in carriers -%}
+                      {%- if block.settings.url == blank or block.settings.parameter == blank -%}
+                        {%- continue -%}
+                      {%- endif -%}
+                      <option
+                        value="{{ block.settings.url }}"
+                        data-parameter="{{ block.settings.parameter }}"
+                      >
+                        {{- block.settings.name | default: block.settings.url | escape -}}
+                      </option>
+                    {%- endfor -%}
+                  </select>
+                  <span class="tracking__caret svg-wrapper" aria-hidden="true">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                </div>
+              </div>
+            {%- endif -%}
+
+            <div class="tracking__field tracking__field--grow">
+              <label class="tracking__label" for="TrackingNumber-{{ section.id }}">
+                {{ section.settings.number_label | escape }}
+              </label>
+              <input
+                id="TrackingNumber-{{ section.id }}"
+                class="tracking__input"
+                type="text"
+                name="{{ first_carrier.settings.parameter }}"
+                inputmode="latin"
+                autocomplete="off"
+                spellcheck="false"
+                required
+                placeholder="{{ section.settings.number_placeholder | escape }}"
+                data-tracking-number
+              >
+            </div>
+
+            <button type="submit" class="tracking__submit">
+              {{ section.settings.button_label | escape }}
+            </button>
+          </form>
+        </order-tracking>
+
+        {%- if section.settings.form_note != blank -%}
+          <p class="tracking__note">{{ section.settings.form_note | escape }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      The routes that do not need a tracking number at all.
+    {%- endcomment -%}
+    {%- assign routes_blocks = section.blocks | where: 'type', 'route' -%}
+    {%- if routes_blocks.size > 0 -%}
+      <ul class="tracking__routes" role="list">
+        {%- for block in routes_blocks -%}
+          {%- if block.settings.title == blank -%}
+            {%- continue -%}
+          {%- endif -%}
+
+          <li class="tracking__route" {{ block.shopify_attributes }}>
+            <h3 class="tracking__route-title">{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}
+              <div class="tracking__route-text rte">{{ block.settings.text }}</div>
+            {%- endif -%}
+            {%- if block.settings.link_text != blank -%}
+              {%- liquid
+                assign route_url = block.settings.link
+                if route_url == blank and block.settings.use_account_url
+                  assign route_url = routes.account_url
+                endif
+              -%}
+              {%- if route_url != blank -%}
+                <a class="tracking__route-link link" href="{{ route_url }}">
+                  {{- block.settings.link_text | escape -}}
+                </a>
+              {%- endif -%}
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if usable > 1 -%}
+  <script src="{{ 'order-tracking.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Order tracking",
+  "tag": "section",
+  "class": "section section--tracking",
+  "max_blocks": 10,
+  "blocks": [
+    {
+      "type": "carrier",
+      "name": "Carrier",
+      "settings": [
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Carrier name",
+          "default": "India Post"
+        },
+        {
+          "type": "text",
+          "id": "url",
+          "label": "Tracking page URL",
+          "info": "The carrier's tracking page, without the number. Example: https://www.indiapost.gov.in/_layouts/15/DOP.Portal.Tracking/TrackConsignment.aspx"
+        },
+        {
+          "type": "text",
+          "id": "parameter",
+          "label": "Query parameter",
+          "info": "The name the carrier's page expects the number under. Look at their tracking URL: in ?trackingId=123 the parameter is trackingId.",
+          "default": "trackingId"
+        }
+      ]
+    },
+    {
+      "type": "route",
+      "name": "Other way to track",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Check your email"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Every shipping confirmation carries a tracking link. Search your inbox for the order number, and check the spam folder while you are there.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_account_url",
+          "label": "Link to the customer account page",
+          "info": "Overridden by the link below if one is set.",
+          "default": false
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link label"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Track your parcel"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Intro",
+      "default": "<p>Enter the tracking number from your shipping confirmation email and we will take you straight to the carrier.</p>"
+    },
+    {
+      "type": "text",
+      "id": "carrier_label",
+      "label": "Carrier field label",
+      "default": "Carrier"
+    },
+    {
+      "type": "text",
+      "id": "number_label",
+      "label": "Number field label",
+      "default": "Tracking number"
+    },
+    {
+      "type": "text",
+      "id": "number_placeholder",
+      "label": "Number field placeholder",
+      "default": "e.g. EX123456789IN"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Track"
+    },
+    {
+      "type": "text",
+      "id": "form_note",
+      "label": "Note under the form",
+      "default": "Tracking can take up to 24 hours to appear after your parcel is collected."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "text_width",
+      "min": 480,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "label": "Text width",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1800
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "Order tracking",
+      "blocks": [
+        {
+          "type": "carrier"
+        },
+        {
+          "type": "route"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
