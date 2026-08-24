@@ -257,7 +257,7 @@
         "card_aspect_ratio": 75,
         "header_gap": 40,
         "controls_gap": 40,
-        "padding_top": 80,
+        "padding_top": 40,
         "padding_bottom": 80,
         "background_color": "#fff7f1",
         "background_image_opacity": 30,
