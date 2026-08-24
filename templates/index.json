@@ -79,7 +79,11 @@
           }
         }
       },
-      "block_order": ["slide-1", "slide-2", "slide-3"],
+      "block_order": [
+        "slide-1",
+        "slide-2",
+        "slide-3"
+      ],
       "settings": {
         "color_scheme": "scheme-1",
         "full_width": true,
@@ -151,7 +155,7 @@
         "card_pxyP7q": {
           "type": "card",
           "settings": {
-            "image": "shopify://shop_images/person-stands-on-rocks-poking-out-of-the-ocean-shoreline.jpg",
+            "image": "shopify://shop_images/crochet-bear-baby-booties.jpg",
             "focal_point": "center",
             "eyebrow": "Amigurumi",
             "title": "Soft toys hooked by hand",
@@ -166,7 +170,7 @@
         "card_kndUaY": {
           "type": "card",
           "settings": {
-            "image": "shopify://shop_images/OnePlus_10_Pro_Crimson_Stone_c7a095e4-7c6f-4671-81e6-731fd576239b.png",
+            "image": "shopify://shop_images/crochet-baby-bonnet.jpg",
             "focal_point": "center",
             "eyebrow": "Baby blankets",
             "title": "Warmth for the little ones",
@@ -181,7 +185,7 @@
         "card_cWikz8": {
           "type": "card",
           "settings": {
-            "image": "shopify://shop_images/Vivo_V25_Pro_Stargazer_1e44b03a-9951-49d7-bf10-dbba5b46f64b.png",
+            "image": "shopify://shop_images/crochet-fox-soft-toy.jpg",
             "focal_point": "center",
             "eyebrow": "Home decor",
             "title": "Doilies, runners and coasters",
@@ -196,7 +200,7 @@
         "card_KBmDK3": {
           "type": "card",
           "settings": {
-            "image": "shopify://shop_images/OnePlus_10_Pro_Heat_sink_0db79477-568b-4386-ae10-bc922c848751.png",
+            "image": "shopify://shop_images/merino-wool-blend-yarn.jpg",
             "focal_point": "center",
             "eyebrow": "Yarn and hooks",
             "title": "Everything your project needs",
@@ -211,7 +215,7 @@
         "card_hkfgtK": {
           "type": "card",
           "settings": {
-            "image": "shopify://shop_images/OnePlus_10_Pro_Chroma_Rush_7e78257e-9166-4b95-9ec6-2a144dfc032d.png",
+            "image": "shopify://shop_images/crochet-cloud-baby-blanket.jpg",
             "focal_point": "center",
             "eyebrow": "Festive gifting",
             "title": "Handmade presents for every occasion",
@@ -224,7 +228,13 @@
           }
         }
       },
-      "block_order": ["card_pxyP7q", "card_kndUaY", "card_cWikz8", "card_KBmDK3", "card_hkfgtK"],
+      "block_order": [
+        "card_pxyP7q",
+        "card_kndUaY",
+        "card_cWikz8",
+        "card_KBmDK3",
+        "card_hkfgtK"
+      ],
       "name": "Editorial card slider",
       "settings": {
         "heading": "",
@@ -245,26 +255,26 @@
         "controls_gap": 40,
         "padding_top": 80,
         "padding_bottom": 80,
-        "background_color": "#FFF7F1",
+        "background_color": "#fff7f1",
         "background_image_opacity": 30,
         "texture_opacity": 8,
-        "texture_color": "#9E6168",
+        "texture_color": "#9e6168",
         "text_color": "#786158",
-        "heading_color": "#4E3B34",
-        "watermark_color": "#E7CFC9",
+        "heading_color": "#4e3b34",
+        "watermark_color": "#e7cfc9",
         "watermark_size": 17,
         "watermark_offset": 40,
-        "card_background": "#F7DFDA",
+        "card_background": "#f7dfda",
         "card_text_color": "#ffffff",
         "card_text_alignment": "center",
         "overlay_opacity": 65,
-        "overlay_color": "#3A282C",
+        "overlay_color": "#3a282c",
         "card_radius": 4,
         "card_padding": 24,
         "card_shadow": 24,
         "card_lift": "soft",
         "card_shadow_opacity": 14,
-        "card_shadow_color": "#4E3B34",
+        "card_shadow_color": "#4e3b34",
         "card_tilt": 150,
         "curve_depth": 12,
         "heading_font_size": 36,
@@ -280,9 +290,9 @@
         "show_arrows": true,
         "show_dots": false,
         "arrow_size": 52,
-        "arrow_background": "#FFF7F1",
-        "arrow_color": "#9E6168",
-        "arrow_border_color": "#9E6168"
+        "arrow_background": "#fff7f1",
+        "arrow_color": "#9e6168",
+        "arrow_border_color": "#9e6168"
       }
     },
     "product_showcase_TDakeE": {
