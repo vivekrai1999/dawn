@@ -132,8 +132,8 @@
         "columns_mobile": 2,
         "grid_gap": 24,
         "content_width": 1800,
-        "padding_top": 64,
-        "padding_bottom": 64,
+        "padding_top": 40,
+        "padding_bottom": 40,
         "enable_carousel": true,
         "show_navigation": true,
         "image_ratio": "square",
@@ -385,7 +385,7 @@
         "grid_gap": 24,
         "content_width": 1800,
         "padding_top": 40,
-        "padding_bottom": 64,
+        "padding_bottom": 40,
         "enable_carousel": true,
         "show_navigation": true,
         "image_ratio": "square",
@@ -512,6 +512,74 @@
         "color_scheme": "",
         "background_tint": 3
       }
+    },
+    "process_XrVAUC": {
+      "type": "process",
+      "blocks": {
+        "step_g9tUUP": {
+          "type": "step",
+          "settings": {
+            "title": "It Starts With the Yarn",
+            "description": "<p>We carefully select soft, beautiful yarns in colors and textures that bring each design to life. Every material is chosen with comfort, quality, and character in mind.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_cyuumvcyuumvcyuu.png",
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "step_WCgxiy": {
+          "type": "step",
+          "settings": {
+            "title": "Stitched by Hand",
+            "description": "<p>Then the magic begins. Each piece is carefully crocheted by hand, one stitch at a time, turning simple strands of yarn into something special.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_jjkagljjkagljjka.png",
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "step_nLy9aq": {
+          "type": "step",
+          "settings": {
+            "title": "Made With Care",
+            "description": "<p>Once the final stitch is complete, every piece is carefully finished, checked, and prepared to make sure it looks and feels just right.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_vpj87vvpj87vvpj8.png",
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "step_txXbJq": {
+          "type": "step",
+          "settings": {
+            "title": "Packed With Love",
+            "description": "<p>Your finished piece is carefully wrapped and packed, ready to leave our hands and become a little part of your world.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_4x63ms4x63ms4x63.png",
+            "link": "",
+            "link_text": ""
+          }
+        }
+      },
+      "block_order": [
+        "step_g9tUUP",
+        "step_WCgxiy",
+        "step_nLy9aq",
+        "step_txXbJq"
+      ],
+      "name": "Process",
+      "settings": {
+        "heading": "It Starts With the Yarn",
+        "heading_alignment": "left",
+        "subheading": "<p>We carefully select soft, beautiful yarns in colors and textures that bring each design to life. Every material is chosen with comfort, quality, and character in mind.<br/><br/></p>",
+        "heading_size": 40,
+        "body_size": 15,
+        "color_scheme": "",
+        "image_ratio": "1 / 1",
+        "image_fit": "cover",
+        "list_width": 400,
+        "content_width": 1800,
+        "autoplay": true,
+        "autoplay_duration": 4000,
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
     }
   },
   "order": [
@@ -520,6 +588,7 @@
     "brands_marquee_EiAtf7",
     "editorial_card_slider_7gBFWw",
     "product_showcase_TDakeE",
-    "reviews_marquee_kWRrBF"
+    "reviews_marquee_kWRrBF",
+    "process_XrVAUC"
   ]
 }
