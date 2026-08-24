@@ -1,0 +1,80 @@
+/*
+  Page content — sections/page-content.liquid.
+
+  Merchant-written HTML from admin, so it is styled by element rather than by
+  class: there are no classes in it to hook.
+*/
+
+.page-content {
+  padding-block: var(--page-content-padding-top) var(--page-content-padding-bottom);
+}
+
+.page-content__inner {
+  box-sizing: border-box;
+  max-width: var(--page-content-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+/*
+  The block is capped at a reading measure and sits at the start of the
+  container — left on a left-to-right store — rather than being centred in it.
+*/
+.page-content__body {
+  max-width: var(--page-content-measure);
+  margin-inline: 0;
+  font-size: var(--page-content-size);
+  line-height: 1.7;
+  text-align: start;
+  color: rgba(var(--color-foreground), 0.8);
+}
+
+.page-content__body > *:first-child {
+  margin-top: 0;
+}
+
+.page-content__body > *:last-child {
+  margin-bottom: 0;
+}
+
+.page-content__body h2,
+.page-content__body h3,
+.page-content__body h4 {
+  margin: 2.8rem 0 1.2rem;
+  font-family: var(--font-body-family);
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgb(var(--color-foreground));
+}
+
+.page-content__body h2 {
+  font-size: 1.9rem;
+}
+
+.page-content__body h3 {
+  font-size: 1.6rem;
+}
+
+.page-content__body h4 {
+  font-size: 1.4rem;
+}
+
+.page-content__body p,
+.page-content__body ul,
+.page-content__body ol {
+  margin: 0 0 1.6rem;
+}
+
+.page-content__body ul,
+.page-content__body ol {
+  padding-inline-start: 2rem;
+}
+
+.page-content__body li {
+  margin-block-end: 0.6rem;
+}
+
+.page-content__body a {
+  color: rgb(var(--color-foreground));
+  text-underline-offset: 0.3rem;
+}

@@ -120,8 +120,12 @@
       }
     },
     "main": {
-      "type": "main-page",
+      "type": "page-content",
       "settings": {
+        "color_scheme": "scheme-1",
+        "body_size": 15,
+        "text_width": 760,
+        "content_width": 1800,
         "padding_top": 0,
         "padding_bottom": 48
       }

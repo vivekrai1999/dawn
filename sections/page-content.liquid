@@ -1,0 +1,120 @@
+{% comment %}
+  Page content — the page's own body text from admin, and nothing else.
+
+  Dawn's main-page section renders the page title as an <h1> before its content.
+  On these templates the title is already the <h1> in sections/page-hero.liquid,
+  so main-page would put the same words on the page twice — two <h1>s saying the
+  same thing, which is both a visible duplicate and a broken document outline.
+
+  This renders the body alone, in the same container and at the same reading
+  measure as the rest of the page.
+{% endcomment %}
+
+{{ 'section-page-content.css' | asset_url | stylesheet_tag }}
+
+{%- if page.content != blank -%}
+  {%- style -%}
+    #PageContent-{{ section.id }} {
+      --page-content-width: {{ section.settings.content_width }}px;
+      --page-content-measure: {{ section.settings.text_width }}px;
+      --page-content-size: {{ section.settings.body_size }}px;
+      --page-content-padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      --page-content-padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      #PageContent-{{ section.id }} {
+        --page-content-padding-top: {{ section.settings.padding_top }}px;
+        --page-content-padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="PageContent-{{ section.id }}"
+    class="page-content color-{{ section.settings.color_scheme }} gradient{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="page-content__inner">
+      <div class="page-content__body rte">{{ page.content }}</div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Page content",
+  "tag": "section",
+  "class": "section section--page-content",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows the page's own content from admin. The title is rendered by the Page hero section above."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "body_size",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "label": "Body size",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "text_width",
+      "min": 480,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "label": "Text width",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1800
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page content"
+    }
+  ]
+}
+{% endschema %}

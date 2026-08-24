@@ -290,6 +290,16 @@
 
     {{ 'lenis.css' | asset_url | stylesheet_tag }}
     {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    {%- comment -%}
+      Shop policies are rendered by Shopify, not by a theme template — there is
+      no `policy` template type — so their markup arrives with Shopify's own
+      centred default styling. This restyles it to match the store, and is asked
+      for only on those URLs so no other page pays for it.
+    {%- endcomment -%}
+    {%- if request.path contains '/policies/' -%}
+      {{ 'component-shopify-policy.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
     <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
 
     {%- if settings.cart_type == 'drawer' -%}
