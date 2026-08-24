@@ -565,9 +565,9 @@
       ],
       "name": "Process",
       "settings": {
-        "heading": "FROM YARN TO SOMETHING YOU'LL LOVE",
+        "heading": "From Yarn to You",
         "heading_alignment": "left",
-        "subheading": "<p>Every piece has a story. Follow the journey from carefully chosen yarn to a handmade creation, crafted stitch by stitch with love.</p>",
+        "subheading": "<p>See how every piece goes from a simple strand of yarn to something handmade with love.</p>",
         "heading_size": 40,
         "body_size": 15,
         "color_scheme": "",
