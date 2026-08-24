@@ -15,7 +15,8 @@
         "slide-1": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/laxmi.webp",
+            "image": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_05_35_PM.png",
+            "image_mobile": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_06_33_PM.png",
             "image_position": "center",
             "eyebrow": "Handmade in India",
             "heading": "Crochet made with care",
@@ -37,7 +38,8 @@
         "slide-2": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/banner_4_1.webp",
+            "image": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_09_46_PM.png",
+            "image_mobile": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_10_53_PM.png",
             "image_position": "center",
             "eyebrow": "New this week",
             "heading": "Amigurumi for little ones",
@@ -59,7 +61,8 @@
         "slide-3": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/laxmi.webp",
+            "image": "shopify://shop_images/Gemini_Generated_Image_19wsgc19wsgc19ws.png",
+            "image_mobile": "shopify://shop_images/Gemini_Generated_Image_oozgkaoozgkaoozg.png",
             "image_position": "center",
             "eyebrow": "Festive edit",
             "heading": "Gifts worth keeping",
@@ -93,8 +96,9 @@
         "height_mobile": 55,
         "content_width": 600,
         "content_gutter": 72,
+        "mobile_media_only": true,
         "mobile_content_position": "bottom",
-        "show_scrim": true,
+        "show_scrim": false,
         "scrim_strength": 45,
         "heading_size": 72,
         "eyebrow_size": 13,
@@ -105,7 +109,7 @@
         "autoplay": true,
         "autoplay_speed": 4,
         "pause_on_hover": true,
-        "show_arrows": true,
+        "show_arrows": false,
         "arrow_style": "outline",
         "pagination": "dots",
         "margin_top": 0,
