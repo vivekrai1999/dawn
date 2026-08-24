@@ -1,0 +1,757 @@
+{% comment %}
+  Product hero gallery — the shared presentation for the storefront's product
+  page: an edge-to-edge looping image gallery, a product information panel and
+  a sticky purchase bar that docks at the end of the section.
+
+  Rendered by sections/product-hero-gallery.liquid, and by
+  sections/main-product.liquid when its Hero gallery layout is switched on, so
+  the two can never drift apart.
+
+  Must be rendered inside a <product-info> element, which is the caller's — it
+  is what the theme's variant swap, cart and checkout behaviour hangs off, and
+  it carries the section padding and colour scheme.
+
+  Accepts (all optional except product):
+  - product: {Object} the product to render.
+  - slides_desktop / slides_tablet / slides_mobile: {Number} images per view.
+  - gallery_ratio: {String} aspect-ratio for every slide, e.g. '4 / 5'.
+  - gallery_max_height: {Number} share of viewport height the gallery may take.
+  - slide_gap: {Number} px between slides.
+  - full_bleed: {Boolean} break the gallery out to the viewport width.
+  - autoplay / autoplay_speed / transition_speed: {Boolean|Number} carousel motion.
+  - show_arrows / show_dots: {Boolean} gallery chrome.
+  - show_sku / show_description / show_dynamic_checkout: {Boolean} info panel.
+  - details_open: {Boolean} render the details accordion already expanded.
+  - shipping_title / shipping_content: {String} an extra accordion row.
+  - care_title / care_content: {String} an extra accordion row.
+  - info_width / sticky_bar_width: {Number} px.
+  - show_sticky_bar: {Boolean} render the desktop purchase bar.
+  - padding_top / padding_bottom: {Number} px.
+
+  Usage:
+  {% render 'product-hero-gallery', product: product, slides_desktop: 3 %}
+{% endcomment %}
+
+{%- liquid
+  comment
+    Every setting has a default here, so a caller can pass as few or as many as
+    it exposes to merchants and the section still renders completely.
+  endcomment
+  assign phg_slides_desktop = slides_desktop | default: 3
+  assign phg_slides_tablet = slides_tablet | default: 2
+  assign phg_slides_mobile = slides_mobile | default: 1.15
+  assign phg_gallery_ratio = gallery_ratio | default: '4 / 5'
+  assign phg_gallery_max_height = gallery_max_height | default: 90
+  assign phg_slide_gap = slide_gap | default: 4
+  assign phg_autoplay_speed = autoplay_speed | default: 4000
+  assign phg_transition_speed = transition_speed | default: 600
+  assign phg_info_width = info_width | default: 640
+  assign phg_bar_width = sticky_bar_width | default: 1720
+
+  comment
+    `default` treats false as empty, so booleans are read as "unset means on"
+    (or off) rather than filtered.
+  endcomment
+  assign phg_full_bleed = true
+  if full_bleed == false
+    assign phg_full_bleed = false
+  endif
+  assign phg_autoplay = true
+  if autoplay == false
+    assign phg_autoplay = false
+  endif
+  assign phg_show_sticky_bar = true
+  if show_sticky_bar == false
+    assign phg_show_sticky_bar = false
+  endif
+  assign phg_show_sku = true
+  if show_sku == false
+    assign phg_show_sku = false
+  endif
+  assign phg_show_description = true
+  if show_description == false
+    assign phg_show_description = false
+  endif
+  assign phg_show_dynamic_checkout = true
+  if show_dynamic_checkout == false
+    assign phg_show_dynamic_checkout = false
+  endif
+  assign phg_show_arrows = false
+  if show_arrows == true
+    assign phg_show_arrows = true
+  endif
+  assign phg_show_dots = false
+  if show_dots == true
+    assign phg_show_dots = true
+  endif
+  comment
+    Closed by default: the reference page leads with the purchase controls, and
+    an open panel would push them down the page.
+  endcomment
+  assign phg_details_open = false
+  if details_open == true
+    assign phg_details_open = true
+  endif
+
+  comment
+    The two standing rows next to the description. A row renders only when it
+    has both a label and a body, so clearing either one removes it.
+  endcomment
+  assign phg_shipping_title = shipping_title | default: 'International Shipping Available'
+  assign phg_care_title = care_title | default: 'Customer Care'
+
+  assign phg_padding_top = padding_top | default: 0
+  assign phg_padding_bottom = padding_bottom | default: 24
+-%}
+
+{{ 'slick.css' | asset_url | stylesheet_tag }}
+{{ 'section-product-hero-gallery.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+<script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- comment -%}
+  Slick 1.8.1 requires jQuery. Both are already vendored for the hero carousel,
+  so this section adds no new dependency; identical script URLs are deduped by
+  the browser.
+{%- endcomment -%}
+<script src="{{ 'jquery.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'slick.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-hero-gallery.js' | asset_url }}" defer="defer"></script>
+{%- if request.design_mode -%}
+  <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- liquid
+  assign product_form_id = 'product-form-' | append: section.id
+  assign variant = product.selected_or_first_available_variant
+
+  comment
+    Gallery source. Images only — this gallery is a photographic presentation,
+    and a video or 3D model would need a player, which the reference design has
+    no place for. Everything falls back to the product's featured image, then to
+    a placeholder, so the layout never collapses.
+  endcomment
+  assign gallery_media = product.media | where: 'media_type', 'image'
+  assign source_count = gallery_media.size
+
+  comment
+    Slick needs more slides than it shows before infinite mode can loop without
+    a visible jump, and the design wants a full row whatever the catalogue has.
+    Two full rows plus one is the smallest count that satisfies both, and never
+    fewer than five so the loop stays smooth on the widest breakpoint.
+  endcomment
+  assign per_view = phg_slides_desktop | ceil
+  assign minimum_slides = per_view | times: 2 | plus: 1
+  if minimum_slides < 5
+    assign minimum_slides = 5
+  endif
+
+  comment
+    Repeat the real images until there are enough slides. Ceiling division:
+    (minimum + count - 1) / count. The product's own media list is never
+    mutated — this only controls how many times the loop below runs.
+  endcomment
+  assign repeat_count = 1
+  if source_count > 0
+    assign repeat_count = minimum_slides | plus: source_count | minus: 1 | divided_by: source_count
+  endif
+  if repeat_count < 1
+    assign repeat_count = 1
+  endif
+
+  assign featured_media_id = variant.featured_media.id
+-%}
+
+{%- capture gallery_sizes -%}
+  (min-width: 990px) {{ 100.0 | divided_by: phg_slides_desktop | round: 1 }}vw,
+  (min-width: 750px) {{ 100.0 | divided_by: phg_slides_tablet | round: 1 }}vw,
+  {{ 100.0 | divided_by: phg_slides_mobile | round: 1 }}vw
+{%- endcapture -%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    /* Drives the pre-Slick fallback row; Slick sizes the slides itself once it
+       initialises. */
+    --phg-slides: {{ phg_slides_mobile }};
+    --phg-slide-ratio: {{ phg_gallery_ratio }};
+    --phg-slide-gap: {{ phg_slide_gap }}px;
+    --phg-gallery-max-height: {{ phg_gallery_max_height }}svh;
+    --phg-info-width: {{ phg_info_width }}px;
+    --phg-bar-width: {{ phg_bar_width }}px;
+    --phg-padding-top: {{ phg_padding_top | times: 0.75 | round: 0 }}px;
+    --phg-padding-bottom: {{ phg_padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} {
+      --phg-slides: {{ phg_slides_tablet }};
+      --phg-padding-top: {{ phg_padding_top }}px;
+      --phg-padding-bottom: {{ phg_padding_bottom }}px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    #shopify-section-{{ section.id }} {
+      --phg-slides: {{ phg_slides_desktop }};
+    }
+  }
+{%- endstyle -%}
+
+<div class="phg{% if phg_full_bleed %} phg--full-bleed{% endif %}{% if phg_show_sticky_bar %} phg--has-bar{% endif %}">
+  <product-component view-event-payload="{{ product | standard_event_data: 'view', context: 'page' | escape }}">
+    <product-hero-gallery
+      class="phg__stage"
+      data-slides-desktop="{{ phg_slides_desktop }}"
+      data-slides-tablet="{{ phg_slides_tablet }}"
+      data-slides-mobile="{{ phg_slides_mobile }}"
+      data-infinite="true"
+      data-autoplay="{{ phg_autoplay }}"
+      data-autoplay-speed="{{ phg_autoplay_speed }}"
+      data-speed="{{ phg_transition_speed }}"
+      data-arrows="{{ phg_show_arrows }}"
+      data-dots="{{ phg_show_dots }}"
+      data-repeated="{{ repeat_count }}"
+      data-slide-label="{{ 'products.product.media.gallery_viewer' | t | escape }}"
+      data-quantity-label="{{ 'products.product.quantity.label' | t | escape }}"
+    >
+      {%- comment -%} ------------------------------------------- Gallery {%- endcomment -%}
+      <div class="phg-gallery">
+        <div class="phg-gallery__track" data-gallery-track>
+          {%- if source_count > 0 -%}
+            {%- assign slide_index = 0 -%}
+            {%- for repeat in (1..repeat_count) -%}
+              {%- for media in gallery_media -%}
+                {%- liquid
+                  assign is_original = false
+                  if repeat == 1
+                    assign is_original = true
+                  endif
+
+                  comment
+                    Only the first pass carries the variant flag, so the
+                    gallery always jumps to a real image rather than one of
+                    its repeats.
+                  endcomment
+                  assign is_variant_featured = false
+                  if is_original and featured_media_id != blank and media.id == featured_media_id
+                    assign is_variant_featured = true
+                  endif
+
+                  assign loading_attr = 'lazy'
+                  if slide_index < per_view
+                    assign loading_attr = 'eager'
+                  endif
+                -%}
+                <div
+                  class="phg-gallery__slide"
+                  data-gallery-slide
+                  data-gallery-index="{{ slide_index }}"
+                  data-media-id="{{ media.id }}"
+                  {% if is_variant_featured %}
+                    data-variant-featured="true"
+                  {% endif %}
+                  {% unless is_original %}
+                    data-gallery-repeat="true"
+                    aria-hidden="true"
+                  {% endunless %}
+                >
+                  {{
+                    media.preview_image
+                    | image_url: width: 1946
+                    | image_tag:
+                      loading: loading_attr,
+                      fetchpriority: 'auto',
+                      class: 'phg-gallery__image',
+                      widths: '375, 550, 750, 1100, 1500, 1780, 2000',
+                      sizes: gallery_sizes,
+                      alt: media.alt
+                  }}
+                </div>
+                {%- assign slide_index = slide_index | plus: 1 -%}
+              {%- endfor -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- comment -%}
+              No media at all: keep the same slide box so the page's shape
+              is unchanged, using the theme's own placeholder.
+            {%- endcomment -%}
+            {%- for i in (1..minimum_slides) -%}
+              <div class="phg-gallery__slide" data-gallery-slide data-gallery-index="{{ forloop.index0 }}">
+                {{ 'product-apparel-1' | placeholder_svg_tag: 'phg-gallery__image phg-gallery__image--placeholder' }}
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+
+        {%- if phg_show_arrows -%}
+          <button
+            type="button"
+            class="phg-gallery__arrow phg-gallery__arrow--prev"
+            data-gallery-prev
+            aria-label="{{ 'general.slider.previous_slide' | t }}"
+          >
+            <span class="svg-wrapper">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+          </button>
+          <button
+            type="button"
+            class="phg-gallery__arrow phg-gallery__arrow--next"
+            data-gallery-next
+            aria-label="{{ 'general.slider.next_slide' | t }}"
+          >
+            <span class="svg-wrapper">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+          </button>
+        {%- endif -%}
+
+        {%- if phg_show_dots -%}
+          <div class="phg-gallery__dots" data-gallery-dots></div>
+        {%- endif -%}
+
+        <p class="visually-hidden" data-gallery-live aria-live="polite"></p>
+      </div>
+
+      {%- comment -%} -------------------------------------- Product info {%- endcomment -%}
+      <div class="phg-info">
+        <div class="phg-info__inner" data-phg-info>
+          {%- comment -%}
+            Everything the floating bar also carries lives in one box, so the
+            desktop rule that stands it down is a single selector. It stays in
+            the DOM and in the form: the bar's controls write to these inputs
+            and its buttons click these buttons.
+          {%- endcomment -%}
+          <div class="phg-info__purchase">
+          {%- if phg_show_sku -%}
+            <p class="phg-info__sku" id="Sku-{{ section.id }}" role="status" data-phg-sku-source>
+              <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span>
+              {{ variant.sku }}
+            </p>
+          {%- endif -%}
+
+          <h1 class="phg-info__title">{{ product.title | escape }}</h1>
+
+          <div class="phg-info__price" id="price-{{ section.id }}" role="status" data-phg-price-source>
+            {%- render 'price', product: product, use_variant: true, show_badges: false, price_class: '' -%}
+          </div>
+
+          {%- unless product.has_only_default_variant -%}
+            <variant-selects
+              id="variant-selects-{{ section.id }}"
+              class="phg-options"
+              data-section="{{ section.id }}"
+              data-product-handle="{{ product.handle }}"
+              data-product-title="{{ product.title | escape }}"
+              data-product-id="{{ product.id }}"
+              data-currency-code="{{ cart.currency.iso_code }}"
+              {% # theme-check-disable %}
+              data-selected-price-amount="{{ variant.price | default: 0 | money_amount | escape }}"
+              {% # theme-check-enable %}
+            >
+              {%- for option in product.options_with_values -%}
+                {%- liquid
+                  comment
+                    A colour circle only means something when Shopify has a
+                    swatch for every value; otherwise the option is drawn as
+                    labelled pills, which carries the same information.
+                  endcomment
+                  assign swatch_count = option.values | map: 'swatch' | compact | size
+                  assign use_swatches = false
+                  if swatch_count == option.values.size
+                    assign use_swatches = true
+                  endif
+                -%}
+                <fieldset
+                  class="phg-options__group product-form__input"
+                  data-phg-option-group
+                  data-option-name="{{ option.name | escape }}"
+                >
+                  <legend class="phg-options__label">
+                    <span class="phg-options__name">{{ option.name }}</span>
+                    <span class="phg-options__divider" aria-hidden="true">|</span>
+                    <span class="phg-options__value" data-selected-value>{{ option.selected_value }}</span>
+                  </legend>
+
+                  <div
+                    class="phg-options__values{% if use_swatches %} phg-options__values--swatch{% endif %}"
+                    data-phg-radio-group
+                  >
+                    {%- for value in option.values -%}
+                      {%- liquid
+                        assign input_id = 'PhgOption-' | append: section.id | append: '-' | append: option.position | append: '-' | append: forloop.index0
+                        assign input_name = option.name | append: '-' | append: option.position
+
+                        assign swatch_style = ''
+                        if value.swatch.image
+                          assign swatch_image = value.swatch.image | image_url: width: 100
+                          assign swatch_style = 'background-image:url(' | append: swatch_image | append: ')'
+                        elsif value.swatch.color
+                          assign swatch_style = 'background-color:rgb(' | append: value.swatch.color.rgb | append: ')'
+                        endif
+                      -%}
+                      <input
+                        type="radio"
+                        class="phg-options__input{% unless value.available %} phg-options__input--unavailable{% endunless %}"
+                        id="{{ input_id }}"
+                        name="{{ input_name | escape }}"
+                        value="{{ value | escape }}"
+                        form="{{ product_form_id }}"
+                        {% if value.selected %}
+                          checked
+                        {% endif %}
+                        data-product-url="{{ value.product_url }}"
+                        data-option-value-id="{{ value.id }}"
+                        data-option-name="{{ option.name | escape }}"
+                      >
+                      <label
+                        class="phg-options__swatch{% unless use_swatches %} phg-options__pill{% endunless %}"
+                        for="{{ input_id }}"
+                        {% if use_swatches and swatch_style != blank %}
+                          style="{{ swatch_style }}"
+                        {% endif %}
+                      >
+                        {%- if use_swatches -%}
+                          <span class="visually-hidden">{{ value }}</span>
+                        {%- else -%}
+                          {{ value }}
+                        {%- endif -%}
+                        {%- unless value.available -%}
+                          <span class="visually-hidden">
+                            {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+                          </span>
+                        {%- endunless -%}
+                      </label>
+                    {%- endfor -%}
+                  </div>
+                </fieldset>
+              {%- endfor -%}
+
+              <script type="application/json" data-selected-variant>
+                {{ variant | json }}
+              </script>
+            </variant-selects>
+          {%- endunless -%}
+
+          {%- comment -%}
+            Custom stepper markup. The <quantity-input> element and the
+            .quantity__* / Quantity-Form-* hooks stay because they are what
+            enforces the shop's own quantity rules — minimums, increments
+            and per-order maximums come back from the cart, and the theme
+            reads and rewrites exactly these nodes when they change.
+          {%- endcomment -%}
+          {% # theme-check-disable %}
+          {%- assign cart_qty = cart | item_count_for_variant: variant.id -%}
+          {% # theme-check-enable %}
+          <div class="phg-quantity product-form__quantity" id="Quantity-Form-{{ section.id }}">
+            <span class="visually-hidden" id="quantity-label-{{ section.id }}">
+              {%- if cart_qty > 0 -%}
+                {{- 'products.product.quantity.in_cart_aria_label' | t: quantity: cart_qty -}}
+              {%- else -%}
+                {{- 'products.product.quantity.label' | t -}}
+              {%- endif -%}
+            </span>
+            <label
+              class="phg-quantity__label quantity__label"
+              for="Quantity-{{ section.id }}"
+              aria-labelledby="quantity-label-{{ section.id }}"
+            >
+              <span aria-hidden="true">{{ 'products.product.quantity.label' | t }}</span>
+              <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}" aria-hidden="true">
+                {%- render 'loading-spinner' -%}
+                <span>({{ 'products.product.quantity.in_cart_html' | t: quantity: cart_qty }})</span>
+              </span>
+            </label>
+            <quantity-input class="phg-quantity__control">
+              <button
+                class="phg-quantity__button quantity__button"
+                name="minus"
+                type="button"
+              >
+                <span class="visually-hidden">
+                  {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
+                </span>
+                <span class="svg-wrapper">{{- 'icon-minus.svg' | inline_asset_content -}}</span>
+              </button>
+              <input
+                class="phg-quantity__input quantity__input"
+                type="number"
+                name="quantity"
+                id="Quantity-{{ section.id }}"
+                data-cart-quantity="{{ cart_qty }}"
+                data-min="{{ variant.quantity_rule.min }}"
+                min="{{ variant.quantity_rule.min }}"
+                {% if variant.quantity_rule.max != null %}
+                  data-max="{{ variant.quantity_rule.max }}"
+                  max="{{ variant.quantity_rule.max }}"
+                {% endif %}
+                step="{{ variant.quantity_rule.increment }}"
+                value="{{ variant.quantity_rule.min }}"
+                form="{{ product_form_id }}"
+              >
+              <button
+                class="phg-quantity__button quantity__button"
+                name="plus"
+                type="button"
+              >
+                <span class="visually-hidden">
+                  {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
+                </span>
+                <span class="svg-wrapper">{{- 'icon-plus.svg' | inline_asset_content -}}</span>
+              </button>
+            </quantity-input>
+            <div class="phg-quantity__rules quantity__rules" id="Quantity-Rules-{{ section.id }}"></div>
+          </div>
+
+          {%- comment -%}
+            <product-form> wraps the buy buttons and nothing else, exactly as it
+            does in Dawn: it treats the first .loading__spinner and the first
+            [type=submit] inside itself as the ones belonging to Add to cart,
+            and the quantity block above has a spinner of its own.
+          {%- endcomment -%}
+          <product-form class="phg__form-wrapper" data-hide-errors="false" data-section-id="{{ section.id }}">
+            <div class="phg__form-error" role="alert" hidden>
+              <span class="svg-wrapper">{{- 'icon-error.svg' | inline_asset_content -}}</span>
+              <span class="product-form__error-message"></span>
+            </div>
+
+            {%- form 'product',
+              product,
+              id: product_form_id,
+              class: 'phg__form',
+              novalidate: 'novalidate',
+              data-type: 'add-to-cart-form'
+            -%}
+              <input
+                type="hidden"
+                name="id"
+                value="{{ variant.id }}"
+                {% if variant.available == false or variant == null %}
+                  disabled
+                {% endif %}
+                class="product-variant-id"
+              >
+
+              <div class="phg-actions">
+                <button
+                  id="ProductSubmitButton-{{ section.id }}"
+                  type="submit"
+                  name="add"
+                  class="phg-button phg-button--primary"
+                  data-phg-submit
+                  {% if variant.available == false or variant == null %}
+                    disabled
+                  {% endif %}
+                >
+                  <span class="phg-button__label">
+                    {%- if variant == null -%}
+                      {{ 'products.product.unavailable' | t }}
+                    {%- elsif variant.available == false -%}
+                      {{ 'products.product.sold_out' | t }}
+                    {%- else -%}
+                      {{ 'products.product.add_to_cart' | t }}
+                    {%- endif -%}
+                  </span>
+                  {%- render 'loading-spinner' -%}
+                </button>
+
+                {%- if phg_show_dynamic_checkout -%}
+                  <div class="phg-actions__dynamic" data-phg-dynamic-checkout>
+                    {{ form | payment_button }}
+                  </div>
+                {%- endif -%}
+              </div>
+            {%- endform -%}
+          </product-form>
+          </div>
+
+          {%- comment -%}
+            The details sit behind an accordion rather than running down the
+            page: on desktop the purchase controls are what the panel is for,
+            and a long description pushed everything else out of view.
+            snippets/phg-accordion.liquid is a plain <details> row, so it needs
+            no script and stays keyboard operable.
+          {%- endcomment -%}
+          {%- liquid
+            assign details_group = 'phg-details-' | append: section.id
+            assign details_id = 'PhgDetails-' | append: section.id
+            assign shipping_id = 'PhgShipping-' | append: section.id
+            assign care_id = 'PhgCare-' | append: section.id
+            assign details_title = 'products.product.description' | t
+
+            assign description_row = ''
+            if phg_show_description
+              assign description_row = product.description
+            endif
+
+            comment
+              The wrapper draws the rules between rows, so it is only worth
+              rendering when at least one row has both a label and a body.
+            endcomment
+            assign has_details = false
+            if description_row != blank
+              assign has_details = true
+            endif
+            if phg_shipping_title != blank and shipping_content != blank
+              assign has_details = true
+            endif
+            if phg_care_title != blank and care_content != blank
+              assign has_details = true
+            endif
+          -%}
+          {%- if has_details -%}
+          <div class="phg-accordion">
+            {%- render 'phg-accordion',
+              id: details_id,
+              group: details_group,
+              title: details_title,
+              content: description_row,
+              open: phg_details_open
+            -%}
+            {%- render 'phg-accordion',
+              id: shipping_id,
+              group: details_group,
+              title: phg_shipping_title,
+              content: shipping_content
+            -%}
+            {%- render 'phg-accordion',
+              id: care_id,
+              group: details_group,
+              title: phg_care_title,
+              content: care_content
+            -%}
+          </div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- comment -%} ---------------------------------- Sticky purchase bar {%- endcomment -%}
+      {%- if phg_show_sticky_bar -%}
+        <span class="phg-bar__sentinel" data-gallery-sentinel aria-hidden="true"></span>
+        <div class="phg-bar" data-gallery-bar>
+          <div class="phg-bar__inner">
+            <div class="phg-bar__summary">
+              <div class="phg-bar__thumb">
+                {%- if source_count > 0 -%}
+                  <img
+                    src="{{ gallery_media.first.preview_image | image_url: width: 200 }}"
+                    srcset="
+                      {{ gallery_media.first.preview_image | image_url: width: 100 }} 100w,
+                      {{ gallery_media.first.preview_image | image_url: width: 200 }} 200w
+                    "
+                    sizes="64px"
+                    width="64"
+                    height="64"
+                    loading="lazy"
+                    alt=""
+                    class="phg-bar__thumb-image"
+                    data-phg-bar-thumb
+                  >
+                {%- endif -%}
+              </div>
+              <div class="phg-bar__text">
+                {%- if phg_show_sku -%}
+                  <p class="phg-bar__sku" data-phg-bar-sku>{{ variant.sku }}</p>
+                {%- endif -%}
+                <p class="phg-bar__title">{{ product.title | escape }}</p>
+                <div class="phg-bar__price" data-phg-bar-price>
+                  {%- render 'price', product: product, use_variant: true, show_badges: false, price_class: '' -%}
+                </div>
+              </div>
+            </div>
+
+            {%- comment -%}
+              The bar's Colour and Quantity controls are built by
+              product-hero-gallery.js from the real inputs above and write
+              straight back to them, so there is no second copy of the
+              selection to drift out of step. These slots stay empty — and
+              the bar stays valid — if the script never runs.
+            {%- endcomment -%}
+            <div class="phg-bar__controls" data-phg-bar-controls></div>
+
+            <div class="phg-bar__actions">
+              <button type="button" class="phg-button phg-button--primary phg-bar__add" data-phg-bar-add>
+                <span class="phg-button__label">{{ 'products.product.add_to_cart' | t }}</span>
+              </button>
+              {%- comment -%}
+                Shopify owns the dynamic checkout button, including its
+                wording in each language, so the bar's twin takes its label
+                from the real button rather than inventing one. It stays
+                hidden until that button exists.
+              {%- endcomment -%}
+              {%- if phg_show_dynamic_checkout -%}
+                <button type="button" class="phg-button phg-button--primary phg-bar__buy" data-phg-bar-buy hidden>
+                  <span class="phg-button__label"></span>
+                </button>
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+
+        {%- comment -%}
+          The bar is sticky, so it leaves with the section. This widget takes
+          over from there: a compact card in the corner that keeps the product
+          and its Add to cart within reach for the rest of the page.
+
+          It mirrors the same sources the bar does and clicks the same button,
+          so it is a third view of one state rather than another copy of it.
+          Hidden until product-hero-gallery.js sees the section leave the
+          viewport, and dismissible.
+        {%- endcomment -%}
+        <aside
+          class="phg-mini"
+          data-phg-mini
+          aria-label="{{ product.title | escape }}"
+        >
+          <div class="phg-mini__thumb">
+            {%- if source_count > 0 -%}
+              <img
+                src="{{ gallery_media.first.preview_image | image_url: width: 200 }}"
+                srcset="
+                  {{ gallery_media.first.preview_image | image_url: width: 120 }} 120w,
+                  {{ gallery_media.first.preview_image | image_url: width: 240 }} 240w
+                "
+                sizes="60px"
+                width="60"
+                height="60"
+                loading="lazy"
+                alt=""
+                class="phg-mini__thumb-image"
+                data-phg-mini-thumb
+              >
+            {%- endif -%}
+          </div>
+
+          <div class="phg-mini__text">
+            <p class="phg-mini__title">{{ product.title | escape }}</p>
+            {%- unless product.has_only_default_variant -%}
+              <p class="phg-mini__variant" data-phg-mini-variant>{{ variant.title }}</p>
+            {%- endunless -%}
+            <div class="phg-mini__price" data-phg-mini-price>
+              {%- render 'price', product: product, use_variant: true, show_badges: false, price_class: '' -%}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="phg-mini__close"
+            data-phg-mini-close
+            aria-label="{{ 'accessibility.close' | t }}"
+          >
+            <span class="svg-wrapper" aria-hidden="true">
+              {{- 'icon-close.svg' | inline_asset_content -}}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="phg-mini__add"
+            data-phg-mini-add
+            aria-label="{{ 'products.product.add_to_cart' | t }}"
+          >
+            <span class="svg-wrapper" aria-hidden="true">
+              {{- 'icon-bag.svg' | inline_asset_content -}}
+            </span>
+          </button>
+        </aside>
+      {%- endif -%}
+    </product-hero-gallery>
+  </product-component>
+</div>

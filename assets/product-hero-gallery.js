@@ -31,6 +31,7 @@ class HeroGalleryDropdown {
   constructor(source, labelText) {
     this.source = source;
     this.labelText = labelText;
+    this.isRadioGroup = !!(source.matches && source.matches('[data-phg-radio-group]'));
     this.open = false;
 
     this.onDocumentClick = this.handleDocumentClick.bind(this);
@@ -45,6 +46,19 @@ class HeroGalleryDropdown {
 
   /* Options come from the native control, so they always agree with the form. */
   readOptions() {
+    /*
+      A radio group — the section's own colour swatches. Every value stays
+      selectable, exactly as it is in the swatch row: the theme resolves the
+      nearest available variant from whatever combination is chosen.
+    */
+    if (this.isRadioGroup) {
+      return Array.from(this.source.querySelectorAll('input[type="radio"]')).map((input) => ({
+        value: input.value,
+        label: input.value,
+        disabled: false,
+      }));
+    }
+
     if (this.source.tagName === 'SELECT') {
       return Array.from(this.source.options).map((o) => ({
         value: o.value,
@@ -131,8 +145,15 @@ class HeroGalleryDropdown {
     });
   }
 
+  /* The one place that knows how to read whichever control backs this menu. */
+  get currentValue() {
+    if (!this.isRadioGroup) return String(this.source.value);
+    const checked = this.source.querySelector('input[type="radio"]:checked');
+    return checked ? String(checked.value) : '';
+  }
+
   syncValue() {
-    const value = String(this.source.value);
+    const value = this.currentValue;
     this.valueEl.textContent = value;
 
     this.panel.querySelectorAll('.hg-dropdown__option').forEach((li) => {
@@ -148,8 +169,20 @@ class HeroGalleryDropdown {
     real user interaction with the original control.
   */
   select(value) {
-    this.source.value = value;
-    this.source.dispatchEvent(new Event('change', { bubbles: true }));
+    if (this.isRadioGroup) {
+      const input = Array.from(this.source.querySelectorAll('input[type="radio"]')).find(
+        (radio) => radio.value === value
+      );
+      if (!input) return;
+      input.checked = true;
+      // Bubbles out of the radio exactly as a click on the swatch would, so
+      // <variant-selects> runs its normal variant change from here.
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    } else {
+      this.source.value = value;
+      this.source.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
     this.syncValue();
     this.close(true);
   }
@@ -237,6 +270,8 @@ if (!customElements.get('product-hero-gallery')) {
       this.bar = this.querySelector('[data-gallery-bar]');
       this.counter = this.querySelector('[data-gallery-counter-current]');
       this.liveRegion = this.querySelector('[data-gallery-live]');
+      this.dropdowns = [];
+      this.observers = [];
 
       this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
       this.onMotionChange = this.handleReducedMotion.bind(this);
@@ -258,6 +293,7 @@ if (!customElements.get('product-hero-gallery')) {
       if (!jq || !jq.fn || !jq.fn.slick) {
         this.classList.add('product-hero-gallery--unslicked');
         this.observeBar();
+        this.initBar();
         this.bindEvents();
         return;
       }
@@ -271,6 +307,7 @@ if (!customElements.get('product-hero-gallery')) {
       this.syncPosition(0);
 
       this.observeBar();
+      this.initBar();
       this.bindEvents();
     }
 
@@ -312,6 +349,12 @@ if (!customElements.get('product-hero-gallery')) {
         speed: reduce ? 1 : parseInt(data.speed, 10) || 500,
         slidesToShow: desktop,
         slidesToScroll: 1,
+        /*
+          Slick's default rows:1 wraps every slide in two generated divs. With
+          rows:0 it leaves the authored markup alone, so the section's own slide
+          element is the one Slick sizes — which is what the stylesheet targets.
+        */
+        rows: 0,
         swipeToSlide: true,
         draggable: true,
         touchThreshold: 12,
@@ -351,6 +394,246 @@ if (!customElements.get('product-hero-gallery')) {
 
       const label = this.dataset.slideLabel || 'Image';
       this.liveRegion.textContent = label + ' ' + current + ' of ' + this.slides.length;
+    }
+
+    /* ------------------------------------------------------- Sticky bar */
+
+    /*
+      The bar is a view of the purchase form, never a second copy of it. Its
+      controls write to the real inputs, its price and SKU are mirrored from the
+      elements the theme already re-renders on variant change, and its buttons
+      forward to the real Add to cart and dynamic checkout buttons. Nothing in
+      here holds product state of its own, so the two cannot drift apart.
+    */
+    initBar() {
+      if (!this.bar) return;
+
+      this.barControls = this.querySelector('[data-phg-bar-controls]');
+
+      this.buildBarControls();
+      this.mirrorBarState();
+      this.watchForRerender();
+      this.bindBarActions();
+      this.initMini();
+    }
+
+    /*
+      The corner widget that takes over once the sticky bar has scrolled away
+      with its section. It owns no product state either: the same mirrors feed
+      it, and its button clicks the page's one Add to cart.
+    */
+    initMini() {
+      this.mini = this.querySelector('[data-phg-mini]');
+      if (!this.mini) return;
+
+      this.miniDismissed = false;
+
+      const price = this.querySelector('[data-phg-price-source]');
+      const miniPrice = this.querySelector('[data-phg-mini-price]');
+      this.mirror(price, miniPrice, () => {
+        miniPrice.innerHTML = price.innerHTML;
+        miniPrice.hidden = price.classList.contains('hidden');
+      });
+
+      const submit = this.querySelector('[data-phg-submit]');
+      const miniAdd = this.querySelector('[data-phg-mini-add]');
+      this.mirror(submit, miniAdd, () => {
+        const busy = submit.getAttribute('aria-disabled') === 'true';
+        miniAdd.disabled = submit.hasAttribute('disabled');
+        miniAdd.setAttribute('aria-disabled', busy ? 'true' : 'false');
+        miniAdd.classList.toggle('loading', submit.classList.contains('loading'));
+      });
+
+      if (submit && miniAdd) {
+        this.onMiniAdd = (event) => {
+          event.preventDefault();
+          if (miniAdd.disabled || miniAdd.getAttribute('aria-disabled') === 'true') return;
+          submit.click();
+        };
+        miniAdd.addEventListener('click', this.onMiniAdd);
+        this.miniAdd = miniAdd;
+      }
+
+      const close = this.querySelector('[data-phg-mini-close]');
+      if (close) {
+        // Dismissal lasts for this page view: reappearing after a shopper has
+        // closed it would be nagging, not helpful.
+        this.onMiniClose = () => {
+          this.miniDismissed = true;
+          this.mini.classList.remove('is-visible');
+        };
+        close.addEventListener('click', this.onMiniClose);
+        this.miniClose = close;
+      }
+
+      this.syncMiniVariant();
+      this.observeMini();
+    }
+
+    /*
+      The widget names the selection the way the swatch legend does, read back
+      from whichever inputs are currently checked — so it survives the theme
+      replacing <variant-selects> wholesale on every variant change.
+    */
+    syncMiniVariant() {
+      const target = this.querySelector('[data-phg-mini-variant]');
+      if (!target) return;
+
+      const values = Array.from(this.querySelectorAll('[data-phg-radio-group] input:checked')).map(
+        (input) => input.value
+      );
+      if (values.length) target.textContent = values.join(' / ');
+    }
+
+    /*
+      Shows the widget exactly when the section — and with it the sticky bar,
+      which is sticky inside that section — has left the viewport.
+    */
+    observeMini() {
+      if (!('IntersectionObserver' in window)) return;
+
+      this.miniObserver = new IntersectionObserver(
+        ([entry]) => {
+          const show = !entry.isIntersecting && !this.miniDismissed;
+          this.mini.classList.toggle('is-visible', show);
+        },
+        { threshold: 0 }
+      );
+      this.miniObserver.observe(this);
+      this.observers.push(this.miniObserver);
+    }
+
+    buildBarControls() {
+      if (!this.barControls) return;
+
+      this.dropdowns.forEach((dropdown) => dropdown.destroy());
+      this.dropdowns = [];
+      this.barControls.textContent = '';
+
+      this.querySelectorAll('[data-phg-option-group]').forEach((group) => {
+        const radios = group.querySelector('[data-phg-radio-group]');
+        if (!radios) return;
+        this.addDropdown(radios, group.dataset.optionName || '');
+      });
+
+      const quantity = this.querySelector('.quantity__input');
+      if (quantity) this.addDropdown(quantity, this.dataset.quantityLabel || 'Quantity');
+    }
+
+    addDropdown(source, label) {
+      const dropdown = new HeroGalleryDropdown(source, label);
+      this.barControls.appendChild(dropdown.el);
+      this.dropdowns.push(dropdown);
+    }
+
+    /* Copies a source node into its counterpart in the bar, and keeps copying. */
+    mirror(source, target, apply) {
+      if (!source || !target) return;
+      apply();
+      const observer = new MutationObserver(apply);
+      observer.observe(source, { childList: true, subtree: true, characterData: true, attributes: true });
+      this.observers.push(observer);
+    }
+
+    mirrorBarState() {
+      const price = this.querySelector('[data-phg-price-source]');
+      const barPrice = this.querySelector('[data-phg-bar-price]');
+      this.mirror(price, barPrice, () => {
+        barPrice.innerHTML = price.innerHTML;
+        barPrice.hidden = price.classList.contains('hidden');
+      });
+
+      const sku = this.querySelector('[data-phg-sku-source]');
+      const barSku = this.querySelector('[data-phg-bar-sku]');
+      this.mirror(sku, barSku, () => {
+        barSku.innerHTML = sku.innerHTML;
+        barSku.hidden = sku.classList.contains('hidden');
+      });
+
+      /*
+        Availability and the in-flight state belong to the real submit button;
+        the bar button only reflects them, so a sold-out variant or an
+        add-to-cart already in progress cannot be worked around from here.
+      */
+      const submit = this.querySelector('[data-phg-submit]');
+      const barAdd = this.querySelector('[data-phg-bar-add]');
+      this.mirror(submit, barAdd, () => {
+        const label = submit.querySelector('span');
+        const barLabel = barAdd.querySelector('.phg-button__label');
+        if (label && barLabel) barLabel.textContent = label.textContent.trim();
+
+        const busy = submit.getAttribute('aria-disabled') === 'true';
+        barAdd.disabled = submit.hasAttribute('disabled');
+        barAdd.setAttribute('aria-disabled', busy ? 'true' : 'false');
+        barAdd.classList.toggle('loading', submit.classList.contains('loading'));
+      });
+    }
+
+    /*
+      Dawn replaces the whole <variant-selects> element when a variant changes,
+      which detaches the radio groups the colour menu was built from. Rebuild
+      the menus once their source has left the document.
+    */
+    watchForRerender() {
+      const info = this.querySelector('[data-phg-info]');
+      if (!info || !('MutationObserver' in window)) return;
+
+      const observer = new MutationObserver(() => {
+        const stale = this.dropdowns.some((dropdown) => !this.contains(dropdown.source));
+        if (stale) this.buildBarControls();
+        this.syncMiniVariant();
+      });
+      observer.observe(info, { childList: true, subtree: true });
+      this.observers.push(observer);
+    }
+
+    bindBarActions() {
+      const submit = this.querySelector('[data-phg-submit]');
+      const barAdd = this.querySelector('[data-phg-bar-add]');
+      if (submit && barAdd) {
+        this.onBarAdd = (event) => {
+          event.preventDefault();
+          // Guard the repeat click: the real button is already mid-request.
+          if (barAdd.disabled || barAdd.getAttribute('aria-disabled') === 'true') return;
+          submit.click();
+        };
+        barAdd.addEventListener('click', this.onBarAdd);
+        this.barAdd = barAdd;
+      }
+
+      const barBuy = this.querySelector('[data-phg-bar-buy]');
+      const checkout = this.querySelector('[data-phg-dynamic-checkout]');
+      if (!barBuy || !checkout) return;
+
+      /*
+        Shopify renders the dynamic checkout button itself, and not always by
+        the time this runs. The bar Buy it now stays hidden until the real
+        button exists, and then only forwards the click to it — the checkout
+        path is entirely the platform's.
+      */
+      const findReal = () => checkout.querySelector('.shopify-payment-button__button');
+      const reveal = () => {
+        const real = findReal();
+        barBuy.hidden = !real;
+        if (!real) return;
+
+        // The platform's own wording, in the shopper's own language.
+        const label = barBuy.querySelector('.phg-button__label');
+        const text = real.textContent.trim();
+        if (label && text && label.textContent !== text) label.textContent = text;
+      };
+      reveal();
+
+      const observer = new MutationObserver(reveal);
+      observer.observe(checkout, { childList: true, subtree: true });
+      this.observers.push(observer);
+
+      this.onBarBuy = () => {
+        const real = findReal();
+        if (real) real.click();
+      };
+      barBuy.addEventListener('click', this.onBarBuy);
+      this.barBuy = barBuy;
     }
 
     /*
@@ -399,8 +682,18 @@ if (!customElements.get('product-hero-gallery')) {
       window.requestAnimationFrame(() => {
         const active = this.querySelector('[data-gallery-slide][data-variant-featured="true"]');
         if (!active) return;
+
         const index = parseInt(active.dataset.galleryIndex, 10);
         if (Number.isFinite(index)) this.$track.slick('slickGoTo', index);
+
+        // Both thumbnails follow the gallery, so all three views agree.
+        const image = active.querySelector('img');
+        if (!image) return;
+
+        this.querySelectorAll('[data-phg-bar-thumb], [data-phg-mini-thumb]').forEach((thumb) => {
+          thumb.srcset = image.srcset || '';
+          thumb.src = image.currentSrc || image.src;
+        });
       });
     }
 
@@ -447,6 +740,17 @@ if (!customElements.get('product-hero-gallery')) {
       if (this.reducedMotion && this.reducedMotion.removeEventListener) {
         this.reducedMotion.removeEventListener('change', this.onMotionChange);
       }
+
+      if (this.barAdd && this.onBarAdd) this.barAdd.removeEventListener('click', this.onBarAdd);
+      if (this.barBuy && this.onBarBuy) this.barBuy.removeEventListener('click', this.onBarBuy);
+      if (this.miniAdd && this.onMiniAdd) this.miniAdd.removeEventListener('click', this.onMiniAdd);
+      if (this.miniClose && this.onMiniClose) this.miniClose.removeEventListener('click', this.onMiniClose);
+
+      (this.dropdowns || []).forEach((dropdown) => dropdown.destroy());
+      this.dropdowns = [];
+
+      (this.observers || []).forEach((observer) => observer.disconnect());
+      this.observers = [];
       this.removeEventListener('change', this.onVariantChange);
       this.removeEventListener('shopify:block:select', this.onBlockSelect);
 

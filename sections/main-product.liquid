@@ -1,14 +1,28 @@
+{%- comment -%}
+  Two layouts share this section. The hero gallery is a separate presentation
+  of the same product — see snippets/product-hero-gallery.liquid — and it
+  brings its own gallery, information panel and purchase bar, so none of the
+  blocks below are rendered while it is on.
+{%- endcomment -%}
+{%- assign use_hero_gallery = section.settings.product_layout | default: 'hero_gallery' -%}
+{%- if use_hero_gallery == 'hero_gallery' -%}
+  {%- assign use_hero_gallery = true -%}
+{%- else -%}
+  {%- assign use_hero_gallery = false -%}
+{%- endif -%}
+
 <product-info
   id="MainProduct-{{ section.id }}"
-  class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
+  class="{% unless use_hero_gallery %}section-{{ section.id }}-padding {% endunless %}gradient color-{{ section.settings.color_scheme }}"
   data-section="{{ section.id }}"
   data-product-id="{{ product.id }}"
   data-update-url="true"
   data-url="{{ product.url }}"
-  {% if section.settings.image_zoom == 'hover' %}
+  {% if section.settings.image_zoom == 'hover' and use_hero_gallery == false %}
     data-zoom-on-hover
   {% endif %}
 >
+  {%- unless use_hero_gallery -%}
   {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
   {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
   {{ 'component-price.css' | asset_url | stylesheet_tag }}
@@ -21,6 +35,7 @@
     {{ 'component-swatch-input.css' | asset_url | stylesheet_tag }}
     {{ 'component-swatch.css' | asset_url | stylesheet_tag }}
   {% endunless %}
+  {%- endunless -%}
   {%- if product.quantity_price_breaks_configured? -%}
     {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
@@ -72,6 +87,25 @@
     >
   {%- endif -%}
 
+  {%- if use_hero_gallery -%}
+    {%- render 'product-hero-gallery',
+      product: product,
+      shipping_title: section.settings.hero_shipping_title,
+      shipping_content: section.settings.hero_shipping_content,
+      care_title: section.settings.hero_care_title,
+      care_content: section.settings.hero_care_content,
+      slides_desktop: section.settings.hero_slides_desktop,
+      slides_tablet: section.settings.hero_slides_tablet,
+      slides_mobile: section.settings.hero_slides_mobile,
+      gallery_ratio: section.settings.hero_gallery_ratio,
+      slide_gap: section.settings.hero_slide_gap,
+      autoplay: section.settings.hero_autoplay,
+      show_sticky_bar: section.settings.hero_sticky_bar,
+      show_description: section.settings.hero_show_description,
+      padding_top: section.settings.padding_top,
+      padding_bottom: section.settings.padding_bottom
+    -%}
+  {%- else -%}
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <product-component view-event-payload="{{ product | standard_event_data: 'view', context: 'page' | escape }}">
     <div class="page-width">
@@ -749,11 +783,17 @@
         endif
       -%}
 
-      <script type="application/ld+json">
-        {{ product | structured_data }}
-      </script>
     </div>
   </product-component>
+  {%- endif -%}
+
+  {%- comment -%}
+    Structured data describes the product, not the layout, so it is emitted
+    outside the branch — both layouts must keep it.
+  {%- endcomment -%}
+  <script type="application/ld+json">
+    {{ product | structured_data }}
+  </script>
 </product-info>
 
 {% schema %}
@@ -2151,6 +2191,23 @@
   ],
   "settings": [
     {
+      "type": "select",
+      "id": "product_layout",
+      "label": "Layout",
+      "info": "The hero gallery replaces the media, blocks and buy buttons below with a full-width looping gallery and a sticky purchase bar.",
+      "options": [
+        {
+          "value": "hero_gallery",
+          "label": "Hero gallery"
+        },
+        {
+          "value": "default",
+          "label": "Default"
+        }
+      ],
+      "default": "hero_gallery"
+    },
+    {
       "type": "checkbox",
       "id": "enable_sticky_info",
       "default": true,
@@ -2299,6 +2356,120 @@
       "id": "enable_video_looping",
       "default": false,
       "label": "t:sections.main-product.settings.enable_video_looping.label"
+    },
+    {
+      "type": "header",
+      "content": "Hero gallery layout"
+    },
+    {
+      "type": "range",
+      "id": "hero_slides_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 0.1,
+      "label": "Images visible (desktop)",
+      "info": "A fractional value lets the next image peek in at the edge.",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "hero_slides_tablet",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "label": "Images visible (tablet)",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "hero_slides_mobile",
+      "min": 1,
+      "max": 2,
+      "step": 0.1,
+      "label": "Images visible (mobile)",
+      "default": 1.2
+    },
+    {
+      "type": "select",
+      "id": "hero_gallery_ratio",
+      "label": "Image shape",
+      "options": [
+        {
+          "value": "4 / 5",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Tall portrait (3:4)"
+        },
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "range",
+      "id": "hero_slide_gap",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Gap between images",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "hero_autoplay",
+      "label": "Auto-advance",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hero_sticky_bar",
+      "label": "Show sticky purchase bar",
+      "info": "Shown from tablet up.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "hero_show_description",
+      "label": "Show description",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Hero gallery details"
+    },
+    {
+      "type": "text",
+      "id": "hero_shipping_title",
+      "label": "Shipping row title",
+      "default": "International Shipping Available"
+    },
+    {
+      "type": "richtext",
+      "id": "hero_shipping_content",
+      "label": "Shipping row content",
+      "info": "Leave the title or the content blank to remove the row.",
+      "default": "<p>We ship worldwide. Delivery estimates and any duties or taxes are shown at checkout.</p>"
+    },
+    {
+      "type": "text",
+      "id": "hero_care_title",
+      "label": "Care row title",
+      "default": "Customer Care"
+    },
+    {
+      "type": "richtext",
+      "id": "hero_care_content",
+      "label": "Care row content",
+      "default": "<p>Questions about an order or a product? Get in touch and we'll come back to you within two working days.</p>"
     },
     {
       "type": "header",

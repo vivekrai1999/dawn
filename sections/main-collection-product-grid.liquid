@@ -22,6 +22,19 @@
     }
   {%- endstyle -%}
 {%- endif -%}
+{%- comment -%}
+  The rows need more air between them than the columns do: cards butt up
+  against the next row's image with only the name and price between, and the
+  theme's global grid spacing is tuned for cards that carry their own border.
+  Overridden on this grid alone rather than in the theme's spacing settings,
+  which every other grid in the store reads.
+{%- endcomment -%}
+{%- style -%}
+  #shopify-section-{{ section.id }} .product-grid {
+    --grid-mobile-vertical-spacing: 3.2rem;
+    --grid-desktop-vertical-spacing: 5.6rem;
+  }
+{%- endstyle -%}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 
 {% if section.settings.image_shape == 'blob' %}

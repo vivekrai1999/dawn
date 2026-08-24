@@ -1,0 +1,293 @@
+{% comment %}
+  theme-check-disable ExcessiveSettingsCount
+
+  Product hero gallery — a standalone product section.
+
+  The layout itself lives in snippets/product-hero-gallery.liquid, which
+  sections/main-product.liquid also renders when its Hero gallery layout is
+  switched on. This file is the merchant-facing surface: the settings, and the
+  <product-info> element the snippet has to sit inside.
+{% endcomment %}
+
+<product-info
+  id="ProductHero-{{ section.id }}"
+  class="color-{{ section.settings.color_scheme }} gradient"
+  data-section="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-update-url="true"
+  data-url="{{ product.url }}"
+>
+  {%- render 'product-hero-gallery',
+    product: product,
+    shipping_title: section.settings.shipping_title,
+    shipping_content: section.settings.shipping_content,
+    care_title: section.settings.care_title,
+    care_content: section.settings.care_content,
+    slides_desktop: section.settings.slides_desktop,
+    slides_tablet: section.settings.slides_tablet,
+    slides_mobile: section.settings.slides_mobile,
+    gallery_ratio: section.settings.gallery_ratio,
+    gallery_max_height: section.settings.gallery_max_height,
+    slide_gap: section.settings.slide_gap,
+    full_bleed: section.settings.full_bleed,
+    autoplay: section.settings.autoplay,
+    autoplay_speed: section.settings.autoplay_speed,
+    transition_speed: section.settings.transition_speed,
+    show_arrows: section.settings.show_arrows,
+    show_dots: section.settings.show_dots,
+    show_sku: section.settings.show_sku,
+    show_description: section.settings.show_description,
+    show_dynamic_checkout: section.settings.show_dynamic_checkout,
+    info_width: section.settings.info_width,
+    show_sticky_bar: section.settings.show_sticky_bar,
+    sticky_bar_width: section.settings.sticky_bar_width,
+    padding_top: section.settings.padding_top,
+    padding_bottom: section.settings.padding_bottom
+  -%}
+</product-info>
+
+{% schema %}
+{
+  "name": "Product hero gallery",
+  "tag": "section",
+  "class": "section section--product-hero",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Gallery"
+    },
+    {
+      "type": "range",
+      "id": "slides_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 0.1,
+      "label": "Images visible (desktop)",
+      "info": "A fractional value lets the next image peek in at the edge.",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "slides_tablet",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "label": "Images visible (tablet)",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "slides_mobile",
+      "min": 1,
+      "max": 2,
+      "step": 0.1,
+      "label": "Images visible (mobile)",
+      "default": 1.2
+    },
+    {
+      "type": "select",
+      "id": "gallery_ratio",
+      "label": "Image shape",
+      "options": [
+        {
+          "value": "4 / 5",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Tall portrait (3:4)"
+        },
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 3",
+          "label": "Landscape (4:3)"
+        }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "range",
+      "id": "gallery_max_height",
+      "min": 40,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Maximum gallery height",
+      "info": "Share of the viewport height the gallery may occupy.",
+      "default": 90
+    },
+    {
+      "type": "range",
+      "id": "slide_gap",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Gap between images",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "full_bleed",
+      "label": "Full width gallery",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-advance",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 2000,
+      "max": 8000,
+      "step": 500,
+      "unit": "ms",
+      "label": "Time between advances",
+      "default": 4000
+    },
+    {
+      "type": "range",
+      "id": "transition_speed",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "label": "Transition speed",
+      "default": 600
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Product information"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sku",
+      "label": "Show SKU",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show description",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dynamic_checkout",
+      "label": "t:sections.main-product.blocks.buy_buttons.settings.show_dynamic_checkout.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "info_width",
+      "min": 400,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Information width",
+      "default": 640
+    },
+    {
+      "type": "header",
+      "content": "Product details"
+    },
+    {
+      "type": "text",
+      "id": "shipping_title",
+      "label": "Shipping row title",
+      "default": "International Shipping Available"
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_content",
+      "label": "Shipping row content",
+      "info": "Leave the title or the content blank to remove the row.",
+      "default": "<p>We ship worldwide. Delivery estimates and any duties or taxes are shown at checkout.</p>"
+    },
+    {
+      "type": "text",
+      "id": "care_title",
+      "label": "Care row title",
+      "default": "Customer Care"
+    },
+    {
+      "type": "richtext",
+      "id": "care_content",
+      "label": "Care row content",
+      "default": "<p>Questions about an order or a product? Get in touch and we'll come back to you within two working days.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Sticky purchase bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sticky_bar",
+      "label": "Show sticky purchase bar",
+      "info": "Shown from tablet up; on mobile the buttons in the information panel are used instead.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "sticky_bar_width",
+      "min": 800,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Bar width",
+      "default": 1720
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 24
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,1267 @@
+/*
+  Product hero gallery — sections/product-hero-gallery.liquid.
+
+  Every rule is scoped under .phg (the section root) or a .phg-* block class, so
+  nothing here can reach another section. Where Dawn class names appear
+  (.quantity__button, .price, .shopify-payment-button__button) they are always
+  qualified by a .phg-* ancestor: those elements are the theme's behaviour
+  hooks, and this file restyles them only inside this section.
+
+  Tokens (--phg-*) are emitted per instance by the section's {% style %} block.
+*/
+
+.phg {
+  display: block;
+  padding-block: var(--phg-padding-top) var(--phg-padding-bottom);
+  /* The gallery is edge to edge; nothing in the section may widen the page. */
+  overflow-x: clip;
+}
+
+.phg__form-wrapper,
+.phg__form,
+.phg__stage {
+  display: block;
+}
+
+.phg__form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0 0 1.2rem;
+  color: rgb(var(--color-error, 227 42 42));
+  font-size: 1.4rem;
+}
+
+.phg__form-error[hidden] {
+  display: none;
+}
+
+.phg__form-error .svg-wrapper {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* ------------------------------------------------------------------ Gallery */
+
+.phg-gallery {
+  position: relative;
+  /*
+    Full-bleed: the section sits inside the theme's page flow, so the gallery
+    breaks out to the viewport width rather than the theme widening the page.
+  */
+  width: 100%;
+}
+
+.phg--full-bleed .phg-gallery {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/*
+  Pre-Slick layout. Until the library initialises — and permanently if it fails
+  to load — the track is a scroll-snap row, so the images are still browsable.
+  Slick replaces this with its own flex row on the same element.
+*/
+.phg-gallery__track {
+  display: flex;
+  gap: var(--phg-slide-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.phg-gallery__track::-webkit-scrollbar {
+  display: none;
+}
+
+.phg-gallery__slide {
+  flex: 0 0 calc(100% / var(--phg-slides, 1.15));
+  scroll-snap-align: start;
+  /*
+    One shared box for every slide keeps the row even whatever the source
+    images measure, and stops the gallery from swallowing tall viewports.
+  */
+  aspect-ratio: var(--phg-slide-ratio);
+  max-height: var(--phg-gallery-max-height);
+  overflow: hidden;
+}
+
+.phg-gallery__image,
+.phg-gallery__image--placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.phg-gallery__image--placeholder {
+  background-color: rgba(var(--color-foreground), 0.04);
+  fill: rgba(var(--color-foreground), 0.12);
+}
+
+/*
+  Once Slick owns the track it sets each slide's width itself, and the gap is
+  drawn as an inline border so the panels stay flush with the viewport edges —
+  a margin would leave a stripe of page background at both ends.
+*/
+.phg-gallery__track.slick-initialized {
+  display: block;
+  overflow: visible;
+}
+
+.phg-gallery__track.slick-initialized .slick-track {
+  display: flex;
+  align-items: stretch;
+}
+
+.phg-gallery__track.slick-initialized .phg-gallery__slide {
+  /* Slick writes the width inline; the slide only has to accept it. */
+  flex: 0 0 auto;
+  /*
+    Flex items default to min-width:auto and would refuse to shrink to the width
+    Slick assigns, pushing the row wider than the viewport.
+  */
+  min-width: 0;
+  height: auto;
+  border-inline-end: var(--phg-slide-gap) solid rgb(var(--color-background));
+  box-sizing: border-box;
+}
+
+/* Arrows sit over the gallery and stay out of the way, per the reference. */
+.phg-gallery__arrow {
+  position: absolute;
+  inset-block-start: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+  box-shadow: 0 0.2rem 1.2rem rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity var(--duration-short, 100ms) ease;
+}
+
+.phg-gallery__arrow:hover {
+  opacity: 1;
+}
+
+.phg-gallery__arrow:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+.phg-gallery__arrow--prev {
+  inset-inline-start: 1.6rem;
+}
+
+.phg-gallery__arrow--next {
+  inset-inline-end: 1.6rem;
+}
+
+.phg-gallery__arrow--prev .svg-wrapper {
+  transform: rotate(180deg);
+}
+
+.phg-gallery__arrow .svg-wrapper {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.phg-gallery__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phg-gallery__dots li {
+  display: block;
+}
+
+.phg-gallery__dots button {
+  display: block;
+  width: 0.8rem;
+  height: 0.8rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgba(var(--color-foreground), 0.25);
+  font-size: 0;
+  cursor: pointer;
+}
+
+.phg-gallery__dots .slick-active button {
+  background-color: rgb(var(--color-foreground));
+}
+
+/* --------------------------------------------------------- Product information */
+
+.phg-info {
+  padding-inline: 1.6rem;
+}
+
+.phg-info__inner {
+  box-sizing: border-box;
+  max-width: var(--phg-info-width);
+  margin-inline: auto;
+  padding-block: 2rem 3.2rem;
+}
+
+.phg-info__sku {
+  margin: 0 0 0.8rem;
+  /* A long SKU wraps rather than pushing the panel wide. */
+  overflow-wrap: anywhere;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.phg-info__sku.hidden,
+.phg-info__price.hidden {
+  display: none;
+}
+
+.phg-info__title {
+  margin: 0 0 1rem;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 2.2rem;
+  line-height: 1.25;
+  letter-spacing: 0;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-info__price {
+  margin: 0 0 2.4rem;
+}
+
+/*
+  Dawn's price snippet renders the current price, the compare-at price and the
+  sold-out badge. Only its typography is restyled here — the markup, and the
+  store's own currency formatting, are left alone.
+*/
+.phg-info__price .price,
+.phg-bar__price .price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 1.5rem;
+  line-height: 1.4;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-info__price .price__container,
+.phg-bar__price .price__container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.phg-info__price .price-item--regular,
+.phg-info__price .price-item--sale,
+.phg-bar__price .price-item--regular,
+.phg-bar__price .price-item--sale {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* De-emphasised, struck through, and absent entirely when there is no sale. */
+.phg-info__price .price__sale .price-item--regular,
+.phg-bar__price .price__sale .price-item--regular {
+  font-weight: 400;
+  color: rgba(var(--color-foreground), 0.55);
+  text-decoration: line-through;
+}
+
+.phg-info__price .price__badge-sale,
+.phg-info__price .price__badge-sold-out,
+.phg-bar__price .price__badge-sale,
+.phg-bar__price .price__badge-sold-out,
+.phg-bar__price .price__availability {
+  display: none;
+}
+
+/* -------------------------------------------------------------- Option swatches */
+
+.phg-options {
+  display: block;
+}
+
+.phg-options__group {
+  margin: 0 0 2rem;
+  padding: 0;
+  border: 0;
+}
+
+.phg-options__label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  font-size: 1.3rem;
+  line-height: 1.4;
+}
+
+.phg-options__name {
+  color: rgb(var(--color-foreground));
+}
+
+.phg-options__divider,
+.phg-options__value {
+  color: rgba(var(--color-foreground), 0.55);
+}
+
+.phg-options__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+/*
+  The radio itself is the accessible control and stays in the form; the label
+  is what the shopper sees. It is positioned, not display:none, so that focus
+  can be forwarded to the label and screen readers still reach the input.
+*/
+.phg-options__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.phg-options__swatch {
+  display: block;
+  box-sizing: border-box;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.25);
+  border-radius: 50%;
+  background-position: center;
+  background-size: cover;
+  cursor: pointer;
+  transition: box-shadow var(--duration-short, 100ms) ease, border-color var(--duration-short, 100ms) ease;
+}
+
+/* Selection reads as a ring, which stays visible on white and on dark swatches. */
+.phg-options__input:checked + .phg-options__swatch {
+  border-color: rgb(var(--color-background));
+  box-shadow: 0 0 0 0.2rem rgb(var(--color-foreground));
+}
+
+.phg-options__input:focus-visible + .phg-options__swatch {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.3rem;
+}
+
+/*
+  Sold-out values stay selectable — Dawn resolves the closest available variant
+  from the selection — so they are dimmed and struck rather than disabled.
+*/
+.phg-options__input--unavailable + .phg-options__swatch {
+  opacity: 0.4;
+}
+
+.phg-options__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  min-height: 4rem;
+  padding: 0.6rem 1.6rem;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 1.4rem;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-options__input:checked + .phg-options__pill {
+  border-color: rgb(var(--color-foreground));
+  background-color: rgb(var(--color-foreground));
+  box-shadow: none;
+  color: rgb(var(--color-background));
+}
+
+.phg-options__input--unavailable + .phg-options__pill {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+/* -------------------------------------------------------------- Quantity stepper */
+
+.phg-quantity {
+  margin: 0 0 2.4rem;
+}
+
+.phg-quantity__label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.8rem;
+  font-size: 1.3rem;
+  color: rgb(var(--color-foreground));
+}
+
+/* The theme's "(n in cart)" note, kept quiet next to the label. */
+.phg-quantity__label .quantity__rules-cart {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.phg-quantity__label .loading__spinner {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.phg-quantity__control {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 12.8rem;
+  height: 4.8rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.2);
+  border-radius: 0.8rem;
+  background-color: rgb(var(--color-background));
+}
+
+/*
+  Dawn's .quantity__button carries the theme's own sizing; inside this section
+  the stepper is drawn to the reference instead.
+*/
+.phg-quantity__control .phg-quantity__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 4.4rem;
+  width: 4.4rem;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+}
+
+.phg-quantity__control .phg-quantity__button .svg-wrapper {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.phg-quantity__control .phg-quantity__button.disabled,
+.phg-quantity__control .phg-quantity__button[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.phg-quantity__control .phg-quantity__button:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: -0.2rem;
+}
+
+.phg-quantity__control .phg-quantity__input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+  font-size: 1.4rem;
+  color: rgb(var(--color-foreground));
+  /* No spinner, so the value never shifts the two buttons apart. */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.phg-quantity__control .phg-quantity__input::-webkit-outer-spin-button,
+.phg-quantity__control .phg-quantity__input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.phg-quantity__rules {
+  margin-block-start: 0.6rem;
+  font-size: 1.2rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.phg-quantity__rules:empty,
+.phg-quantity__rules.hidden {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- Buy buttons */
+
+.phg-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  align-items: stretch;
+}
+
+/*
+  With no dynamic checkout button the single Add to cart takes the full row
+  rather than leaving a gap where the second button would have been.
+*/
+.phg-actions > :only-child {
+  grid-column: 1 / -1;
+}
+
+.phg-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.8rem;
+  padding: 0.8rem 2rem;
+  border: 0.1rem solid rgb(var(--color-foreground));
+  border-radius: 999px;
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity var(--duration-short, 100ms) ease, transform var(--duration-short, 100ms) ease;
+}
+
+.phg-button:hover:not([disabled]):not(.loading) {
+  opacity: 0.88;
+}
+
+.phg-button:active:not([disabled]):not(.loading) {
+  transform: scale(0.99);
+}
+
+.phg-button:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.3rem;
+}
+
+.phg-button[disabled],
+.phg-button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/*
+  Dawn's product-form drives the in-flight state: it adds .loading to the
+  button and removes .hidden from the spinner it rendered. Visibility is left
+  to that class; only placement and the label swap belong here.
+*/
+.phg-button .loading__spinner {
+  position: absolute;
+  inset: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  margin: auto;
+}
+
+.phg-button.loading .phg-button__label {
+  visibility: hidden;
+}
+
+.phg-button .svg-wrapper,
+.phg-button .spinner {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+/*
+  Shopify renders the dynamic checkout button; only its skin is changed so the
+  checkout behaviour behind it is untouched.
+*/
+.phg-actions__dynamic {
+  display: flex;
+}
+
+.phg-actions__dynamic .shopify-payment-button {
+  width: 100%;
+}
+
+.phg-actions__dynamic .shopify-payment-button__button--unbranded,
+.phg-bar__actions .shopify-payment-button__button--unbranded {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 4.8rem;
+  padding: 0.8rem 2rem;
+  border: 0.1rem solid rgb(var(--color-foreground));
+  border-radius: 999px;
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.phg-actions__dynamic .shopify-payment-button__button--unbranded:hover:not([disabled]) {
+  background-color: rgb(var(--color-foreground));
+  opacity: 0.88;
+}
+
+.phg-actions__dynamic .shopify-payment-button__more-options {
+  display: none;
+}
+
+/* --------------------------------------------------------------- Accordion */
+
+/*
+  snippets/phg-accordion.liquid. Rows are <details> elements, so open/close,
+  focus and keyboard operation are the browser's; everything below is skin.
+*/
+.phg-accordion {
+  margin-block-start: 2.4rem;
+  border-block-start: 0.1rem solid rgba(var(--color-foreground), 0.12);
+}
+
+.phg-accordion__row {
+  border-block-end: 0.1rem solid rgba(var(--color-foreground), 0.12);
+}
+
+.phg-accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding-block: 1.6rem;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  /* The row is the whole control, so the UA's disclosure triangle is dropped
+     in favour of the chevron on the right. */
+  list-style: none;
+}
+
+.phg-accordion__summary::-webkit-details-marker,
+.phg-accordion__summary::marker {
+  display: none;
+  content: '';
+}
+
+.phg-accordion__summary:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: -0.2rem;
+}
+
+.phg-accordion__title {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/*
+  The chevron is laid out by the summary's flex row. base.css absolutely
+  positions any .icon-caret inside a <summary> — that is how Dawn's own
+  accordions place theirs — which would pull this one out of the row and pin it
+  1.5rem from the right edge, so that is undone here.
+
+  The box matches the asset's 10:6 viewBox rather than being square, so the
+  glyph is not letterboxed and the open state rotates about its real centre.
+*/
+.phg-accordion__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 0.72rem;
+  color: rgba(var(--color-foreground), 0.7);
+  transition: transform var(--duration-short, 100ms) ease;
+}
+
+.phg-accordion__summary .icon-caret {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.phg-accordion__row[open] .phg-accordion__icon {
+  transform: rotate(180deg);
+}
+
+.phg-accordion__panel {
+  padding-block-end: 1.6rem;
+}
+
+.phg-accordion__content {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.8);
+}
+
+.phg-accordion__content > *:first-child {
+  margin-top: 0;
+}
+
+.phg-accordion__content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------- Sticky purchase bar */
+
+/*
+  The bar is the last thing in the section and sticks to the bottom of the
+  viewport for as long as the section is on screen, then comes to rest at its
+  own place in the flow — the "docked" state the sentinel above it reports.
+*/
+.phg-bar {
+  display: none;
+}
+
+.phg-bar__sentinel {
+  display: block;
+  width: 100%;
+  height: 1px;
+}
+
+@media screen and (min-width: 990px) {
+  .phg-bar {
+    position: sticky;
+    inset-block-end: 2rem;
+    z-index: 4;
+    display: block;
+    padding-inline: 1.6rem;
+    pointer-events: none;
+  }
+
+  .phg-bar__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 2.4rem;
+    box-sizing: border-box;
+    max-width: var(--phg-bar-width);
+    margin-inline: auto;
+    padding: 1.2rem 1.2rem 1.2rem 1.2rem;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    border-radius: 0.8rem;
+    background-color: rgb(var(--color-background));
+    box-shadow: 0 0.6rem 2.4rem rgba(0, 0, 0, 0.12);
+    pointer-events: auto;
+    transition: box-shadow var(--duration-default, 200ms) ease;
+  }
+
+  /* Resting at the end of the section, the lift is no longer meaningful. */
+  .phg-bar.is-docked .phg-bar__inner {
+    box-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.06);
+  }
+}
+
+.phg-bar__summary {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  min-width: 0;
+}
+
+.phg-bar__thumb {
+  flex: 0 0 auto;
+  width: 6.4rem;
+  height: 6.4rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background-color: rgba(var(--color-foreground), 0.04);
+}
+
+.phg-bar__thumb-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phg-bar__text {
+  min-width: 0;
+}
+
+.phg-bar__sku {
+  margin: 0 0 0.2rem;
+  overflow: hidden;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.phg-bar__title {
+  margin: 0 0 0.2rem;
+  overflow: hidden;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-bar__price .price {
+  font-size: 1.4rem;
+}
+
+.phg-bar__controls {
+  display: flex;
+  align-items: stretch;
+}
+
+.phg-bar__controls:empty {
+  display: none;
+}
+
+.phg-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.phg-bar__actions .phg-button {
+  width: auto;
+  min-width: 14rem;
+  min-height: 5.2rem;
+}
+
+/* ------------------------------------------------------- Floating mini widget */
+
+/*
+  Takes over from the sticky bar once the section has scrolled away. Fixed to
+  the corner of the viewport, above the page but below anything modal.
+
+  Hidden with visibility rather than display, so the card can fade and slide in
+  and out, and so it is out of the tab order while it is not on screen.
+*/
+.phg-mini {
+  position: fixed;
+  inset-block-end: 2rem;
+  inset-inline-end: 2rem;
+  z-index: 3;
+  /*
+    Explicit areas rather than a plain row: the close and the add button each
+    own a cell in the third column — close pinned to the top, add to the
+    bottom — so the two can never sit on top of one another whatever the title
+    or price wraps to.
+  */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'thumb text close'
+    'thumb text add';
+  align-items: center;
+  column-gap: 1.6rem;
+  row-gap: 0.8rem;
+  box-sizing: border-box;
+  width: min(44rem, calc(100vw - 4rem));
+  padding: 1.6rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  border-radius: 1.4rem;
+  background-color: rgb(var(--color-background));
+  box-shadow: 0 0.8rem 3rem rgba(0, 0, 0, 0.16);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(1.2rem);
+  transition: opacity var(--duration-default, 200ms) ease, transform var(--duration-default, 200ms) ease,
+    visibility var(--duration-default, 200ms);
+}
+
+.phg-mini.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.phg-mini__thumb {
+  grid-area: thumb;
+  align-self: center;
+  width: 7.2rem;
+  height: 7.2rem;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  background-color: rgba(var(--color-foreground), 0.04);
+}
+
+.phg-mini__thumb-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phg-mini__text {
+  grid-area: text;
+  align-self: center;
+  min-width: 0;
+}
+
+.phg-mini__title {
+  margin: 0;
+  overflow: hidden;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-mini__variant {
+  margin: 0.2rem 0 0;
+  overflow: hidden;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.phg-mini__price {
+  margin-block-start: 0.4rem;
+}
+
+.phg-mini__price .price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-mini__price .price__container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.phg-mini__price .price-item--regular,
+.phg-mini__price .price-item--sale {
+  font-weight: 600;
+}
+
+.phg-mini__price .price__sale .price-item--regular {
+  font-weight: 400;
+  color: rgba(var(--color-foreground), 0.55);
+  text-decoration: line-through;
+}
+
+.phg-mini__price .price__badge-sale,
+.phg-mini__price .price__badge-sold-out,
+.phg-mini__price .price__availability {
+  display: none;
+}
+
+.phg-mini__close {
+  grid-area: close;
+  justify-self: end;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(var(--color-foreground), 0.7);
+  cursor: pointer;
+}
+
+.phg-mini__close:hover {
+  background-color: rgba(var(--color-foreground), 0.06);
+  color: rgb(var(--color-foreground));
+}
+
+.phg-mini__close:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+.phg-mini__close .svg-wrapper {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.phg-mini__add {
+  grid-area: add;
+  justify-self: end;
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.2rem;
+  height: 5.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  cursor: pointer;
+  transition: transform var(--duration-short, 100ms) ease, opacity var(--duration-short, 100ms) ease;
+}
+
+.phg-mini__add:hover:not([disabled]):not([aria-disabled='true']) {
+  transform: scale(1.06);
+}
+
+.phg-mini__add:active:not([disabled]):not([aria-disabled='true']) {
+  transform: scale(0.94);
+}
+
+.phg-mini__add:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.3rem;
+}
+
+.phg-mini__add[disabled],
+.phg-mini__add[aria-disabled='true'],
+.phg-mini__add.loading {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.phg-mini__add .svg-wrapper {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+@media screen and (max-width: 749px) {
+  .phg-mini {
+    inset-inline: 1.2rem;
+    inset-block-end: 1.2rem;
+    width: auto;
+    padding: 1.2rem;
+    column-gap: 1.2rem;
+  }
+
+  .phg-mini__thumb {
+    width: 6.4rem;
+    height: 6.4rem;
+  }
+}
+
+/* ------------------------------------------- Sticky bar dropdowns (built in JS) */
+
+.hg-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-inline: 2.4rem;
+  border-inline-start: 0.1rem solid rgba(var(--color-foreground), 0.12);
+}
+
+.hg-dropdown:last-child {
+  border-inline-end: 0.1rem solid rgba(var(--color-foreground), 0.12);
+}
+
+.hg-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 1.4rem;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hg-dropdown__trigger:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.4rem;
+}
+
+.hg-dropdown__value {
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.hg-dropdown__value:empty {
+  display: none;
+}
+
+.hg-dropdown__caret {
+  width: 1rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+  transition: transform var(--duration-short, 100ms) ease;
+}
+
+.hg-dropdown.is-open .hg-dropdown__caret {
+  transform: rotate(180deg);
+}
+
+.hg-dropdown__panel {
+  position: absolute;
+  inset-block-end: calc(100% + 0.8rem);
+  inset-inline-start: 1.6rem;
+  z-index: 5;
+  min-width: 14rem;
+  max-height: 28rem;
+  margin: 0;
+  padding: 0.6rem;
+  overflow-y: auto;
+  list-style: none;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  border-radius: 0.8rem;
+  background-color: rgb(var(--color-background));
+  box-shadow: 0 0.6rem 2.4rem rgba(0, 0, 0, 0.14);
+}
+
+.hg-dropdown__panel[hidden] {
+  display: none;
+}
+
+.hg-dropdown__option {
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+}
+
+.hg-dropdown__option:hover,
+.hg-dropdown__option:focus-visible {
+  background-color: rgba(var(--color-foreground), 0.06);
+  outline: none;
+}
+
+.hg-dropdown__option.is-selected {
+  font-weight: 600;
+}
+
+.hg-dropdown__option.is-disabled {
+  opacity: 0.4;
+  cursor: default;
+  text-decoration: line-through;
+}
+
+/* ------------------------------------------------------------------ Breakpoints */
+
+@media screen and (min-width: 750px) {
+  .phg-info__inner {
+    padding-block: 3.2rem 4rem;
+  }
+
+  .phg-info__title {
+    font-size: 2.8rem;
+  }
+
+  .phg-info__price .price {
+    font-size: 1.7rem;
+  }
+
+  .phg-actions {
+    grid-template-columns: minmax(0, 22rem) minmax(0, 22rem);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .phg-info__inner {
+    padding-block: 4rem 4.8rem;
+  }
+
+  /*
+    The floating bar carries the SKU, title, price, colour, quantity and both
+    buy buttons on desktop, so the panel's copies would be a second set of the
+    same controls. They are hidden with visibility rather than display:none:
+    the elements stay laid out, which keeps Shopify's dynamic checkout button
+    working and lets the bar click them, while visibility takes them out of the
+    tab order and the accessibility tree so nothing is focusable but invisible.
+
+    Only while the bar is actually rendered — with it switched off, this is the
+    only way to buy the product.
+  */
+  .phg--has-bar .phg-info__purchase {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /*
+    With the purchase block stood down the panel is the accordion alone, so it
+    takes the page's own measure instead of the narrow reading column the
+    purchase controls wanted. .phg-info's 1.6rem gutter is the bar's gutter, so
+    the rows line up edge to edge with the floating bar above them.
+  */
+  .phg--has-bar .phg-info__inner {
+    max-width: var(--phg-bar-width);
+  }
+
+  .phg--has-bar .phg-accordion {
+    margin-block-start: 0;
+  }
+}
+
+/* -------------------------------------------------------------- Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .phg-button,
+  .phg-gallery__arrow,
+  .phg-bar__inner,
+  .hg-dropdown__caret,
+  .phg-accordion__icon,
+  .phg-mini,
+  .phg-mini__add,
+  .phg-options__swatch {
+    transition: none;
+  }
+
+  .phg-mini {
+    transform: none;
+  }
+
+  .phg-mini__add:hover,
+  .phg-mini__add:active {
+    transform: none;
+  }
+
+  .phg-button:active:not([disabled]) {
+    transform: none;
+  }
+}

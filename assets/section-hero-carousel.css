@@ -25,12 +25,19 @@
 }
 
 /*
-  svh tracks the mobile URL bar without the jumpiness of vh, with vh as the
-  fallback for engines that lack it.
+  The slide reserves its own height. It has to: the media inside it is
+  absolutely positioned, so without this the slide would have nothing to give it
+  height but the text on top of it — and a slide with its text hidden would
+  collapse to nothing.
+
+  svh is the unit, so the box tracks the mobile URL bar without the jumpiness of
+  vh. The value comes straight from the section's own token; a custom property
+  cannot be multiplied by a unit, which is what silently voided this rule
+  before.
 */
 .hero-carousel.hero-carousel--height-protected .hero-carousel__slide {
   position: relative;
-  min-height: var(--hero-min-height);
+  min-height: var(--hero-height-mobile);
   display: grid;
   grid-template-rows: minmax(min-content, 1fr);
 }
@@ -442,6 +449,23 @@
 /* ------------------------------------------------------------------ Mobile */
 
 @media screen and (max-width: 749px) {
+  /*
+    Image only. A phone-sized frame leaves little room for a headline, two
+    buttons and a pair of arrows without covering the photograph they sit on,
+    so the slide is shown as the picture it is.
+
+    The pagination stays: on a touch screen the dots are what says there is more
+    to see, and swipe is the gesture that moves the carousel — the arrows are
+    the pointer affordance, and they are the part that goes.
+
+    The rules below still apply when a merchant turns this off, which is why
+    they are left in place rather than deleted.
+  */
+  .hero-carousel--bare-mobile .hero-carousel__content,
+  .hero-carousel--bare-mobile .hero-carousel__arrow {
+    display: none;
+  }
+
   .hero-carousel__content {
     /* Never lets copy run into the screen edge. */
     padding-inline: max(1.6rem, calc(var(--hero-gutter) / 3));

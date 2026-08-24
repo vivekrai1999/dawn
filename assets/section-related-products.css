@@ -1,7 +1,26 @@
+/*
+  Related products — sections/related-products.liquid.
+
+  The section renders the product-showcase layout, so the shell, the carousel
+  controls and the card variant all come from section-product-showcase.css and
+  component-card-showcase.css. Only what is specific to the recommendations
+  element lives here.
+*/
+
+/*
+  <product-recommendations> is an unknown element to the UA, so it is inline by
+  default and the showcase's block padding would not apply.
+*/
 .related-products {
   display: block;
 }
 
-.related-products__heading {
-  margin: 0 0 3rem;
+/*
+  The list items keep Dawn's .grid__item class — global.js looks for it when the
+  fetched recommendations come back — but its flex sizing would fight the
+  showcase's grid tracks, so it is neutralised inside this section.
+*/
+.related-products .product-showcase__item {
+  width: auto;
+  max-width: none;
 }
