@@ -153,6 +153,74 @@
         "button_icon_color": "#ffffff"
       }
     },
+    "brands_marquee_EiAtf7": {
+      "type": "brands-marquee",
+      "blocks": {
+        "logo_Dc3GqU": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Microsoft-Logo.png",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_iHcgzU": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/linkedin-logo-png-transparent.png",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_H7DGnf": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Paytm_Logo__standalone__svg.webp",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_BX44eY": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/google-logo-transparent.png",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_YXJyEb": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/PhonePe_Logo.svg",
+            "name": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "logo_Dc3GqU",
+        "logo_iHcgzU",
+        "logo_H7DGnf",
+        "logo_BX44eY",
+        "logo_YXJyEb"
+      ],
+      "name": "Brands marquee",
+      "settings": {
+        "heading": "",
+        "heading_size": 13,
+        "color_scheme": "",
+        "logo_height": 28,
+        "gap": 64,
+        "grayscale": false,
+        "logo_opacity": 95,
+        "speed": 40,
+        "direction": "left",
+        "pause_on_hover": true,
+        "edge_fade": 64,
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
     "editorial_card_slider_7gBFWw": {
       "type": "editorial-card-slider",
       "blocks": {
@@ -258,7 +326,7 @@
         "header_gap": 40,
         "controls_gap": 40,
         "padding_top": 40,
-        "padding_bottom": 80,
+        "padding_bottom": 40,
         "background_color": "#fff7f1",
         "background_image_opacity": 30,
         "texture_opacity": 8,
@@ -449,6 +517,7 @@
   "order": [
     "hero_carousel",
     "product_showcase",
+    "brands_marquee_EiAtf7",
     "editorial_card_slider_7gBFWw",
     "product_showcase_TDakeE",
     "reviews_marquee_kWRrBF"
