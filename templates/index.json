@@ -15,7 +15,8 @@
         "slide-1": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/laxmi.webp",
+            "image": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_05_35_PM.png",
+            "image_mobile": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_06_33_PM.png",
             "image_position": "center",
             "eyebrow": "Handmade in India",
             "heading": "Crochet made with care",
@@ -37,7 +38,8 @@
         "slide-2": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/banner_4_1.webp",
+            "image": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_09_46_PM.png",
+            "image_mobile": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_10_53_PM.png",
             "image_position": "center",
             "eyebrow": "New this week",
             "heading": "Amigurumi for little ones",
@@ -59,7 +61,8 @@
         "slide-3": {
           "type": "slide",
           "settings": {
-            "image": "shopify://shop_images/laxmi.webp",
+            "image": "shopify://shop_images/Gemini_Generated_Image_19wsgc19wsgc19ws.png",
+            "image_mobile": "shopify://shop_images/Gemini_Generated_Image_oozgkaoozgkaoozg.png",
             "image_position": "center",
             "eyebrow": "Festive edit",
             "heading": "Gifts worth keeping",
@@ -93,8 +96,9 @@
         "height_mobile": 55,
         "content_width": 600,
         "content_gutter": 72,
+        "mobile_media_only": true,
         "mobile_content_position": "bottom",
-        "show_scrim": true,
+        "show_scrim": false,
         "scrim_strength": 45,
         "heading_size": 72,
         "eyebrow_size": 13,
@@ -105,7 +109,7 @@
         "autoplay": true,
         "autoplay_speed": 4,
         "pause_on_hover": true,
-        "show_arrows": true,
+        "show_arrows": false,
         "arrow_style": "outline",
         "pagination": "dots",
         "margin_top": 0,
@@ -128,8 +132,8 @@
         "columns_mobile": 2,
         "grid_gap": 24,
         "content_width": 1800,
-        "padding_top": 64,
-        "padding_bottom": 64,
+        "padding_top": 40,
+        "padding_bottom": 40,
         "enable_carousel": true,
         "show_navigation": true,
         "image_ratio": "square",
@@ -147,6 +151,74 @@
         "card_price_color": "#786158",
         "button_background_color": "#9e6168",
         "button_icon_color": "#ffffff"
+      }
+    },
+    "brands_marquee_EiAtf7": {
+      "type": "brands-marquee",
+      "blocks": {
+        "logo_Dc3GqU": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Microsoft-Logo.png",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_iHcgzU": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/linkedin-logo-png-transparent.png",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_H7DGnf": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Paytm_Logo__standalone__svg.webp",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_BX44eY": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/google-logo-transparent.png",
+            "name": "",
+            "link": ""
+          }
+        },
+        "logo_YXJyEb": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/PhonePe_Logo.svg",
+            "name": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "logo_Dc3GqU",
+        "logo_iHcgzU",
+        "logo_H7DGnf",
+        "logo_BX44eY",
+        "logo_YXJyEb"
+      ],
+      "name": "Brands marquee",
+      "settings": {
+        "heading": "",
+        "heading_size": 13,
+        "color_scheme": "",
+        "logo_height": 28,
+        "gap": 64,
+        "grayscale": false,
+        "logo_opacity": 95,
+        "speed": 40,
+        "direction": "left",
+        "pause_on_hover": true,
+        "edge_fade": 64,
+        "padding_top": 40,
+        "padding_bottom": 40
       }
     },
     "editorial_card_slider_7gBFWw": {
@@ -253,8 +325,8 @@
         "card_aspect_ratio": 75,
         "header_gap": 40,
         "controls_gap": 40,
-        "padding_top": 80,
-        "padding_bottom": 80,
+        "padding_top": 40,
+        "padding_bottom": 40,
         "background_color": "#fff7f1",
         "background_image_opacity": 30,
         "texture_opacity": 8,
@@ -312,8 +384,8 @@
         "columns_mobile": 2,
         "grid_gap": 24,
         "content_width": 1800,
-        "padding_top": 64,
-        "padding_bottom": 64,
+        "padding_top": 40,
+        "padding_bottom": 40,
         "enable_carousel": true,
         "show_navigation": true,
         "image_ratio": "square",
@@ -440,13 +512,83 @@
         "color_scheme": "",
         "background_tint": 3
       }
+    },
+    "process_XrVAUC": {
+      "type": "process",
+      "blocks": {
+        "step_g9tUUP": {
+          "type": "step",
+          "settings": {
+            "title": "It Starts With the Yarn",
+            "description": "<p>We carefully select soft, beautiful yarns in colors and textures that bring each design to life. Every material is chosen with comfort, quality, and character in mind.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_cyuumvcyuumvcyuu.png",
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "step_WCgxiy": {
+          "type": "step",
+          "settings": {
+            "title": "Stitched by Hand",
+            "description": "<p>Then the magic begins. Each piece is carefully crocheted by hand, one stitch at a time, turning simple strands of yarn into something special.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_jjkagljjkagljjka.png",
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "step_nLy9aq": {
+          "type": "step",
+          "settings": {
+            "title": "Made With Care",
+            "description": "<p>Once the final stitch is complete, every piece is carefully finished, checked, and prepared to make sure it looks and feels just right.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_vpj87vvpj87vvpj8.png",
+            "link": "",
+            "link_text": ""
+          }
+        },
+        "step_txXbJq": {
+          "type": "step",
+          "settings": {
+            "title": "Packed With Love",
+            "description": "<p>Your finished piece is carefully wrapped and packed, ready to leave our hands and become a little part of your world.<br/><br/></p>",
+            "image": "shopify://shop_images/Gemini_Generated_Image_4x63ms4x63ms4x63.png",
+            "link": "",
+            "link_text": ""
+          }
+        }
+      },
+      "block_order": [
+        "step_g9tUUP",
+        "step_WCgxiy",
+        "step_nLy9aq",
+        "step_txXbJq"
+      ],
+      "name": "Process",
+      "settings": {
+        "heading": "From Yarn to You",
+        "heading_alignment": "left",
+        "subheading": "<p>See how every piece goes from a simple strand of yarn to something handmade with love.</p>",
+        "heading_size": 40,
+        "body_size": 15,
+        "color_scheme": "",
+        "image_ratio": "1 / 1",
+        "image_fit": "cover",
+        "list_width": 400,
+        "content_width": 1800,
+        "autoplay": true,
+        "autoplay_duration": 4000,
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
     }
   },
   "order": [
     "hero_carousel",
     "product_showcase",
+    "brands_marquee_EiAtf7",
     "editorial_card_slider_7gBFWw",
     "product_showcase_TDakeE",
-    "reviews_marquee_kWRrBF"
+    "reviews_marquee_kWRrBF",
+    "process_XrVAUC"
   ]
 }
