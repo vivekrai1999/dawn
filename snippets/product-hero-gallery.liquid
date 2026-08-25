@@ -535,7 +535,7 @@
                   id="ProductSubmitButton-{{ section.id }}"
                   type="submit"
                   name="add"
-                  class="phg-button phg-button--primary"
+                  class="phg-button phg-button--secondary"
                   data-phg-submit
                   {% if variant.available == false or variant == null %}
                     disabled
@@ -668,7 +668,7 @@
             <div class="phg-bar__controls" data-phg-bar-controls></div>
 
             <div class="phg-bar__actions">
-              <button type="button" class="phg-button phg-button--primary phg-bar__add" data-phg-bar-add>
+              <button type="button" class="phg-button phg-button--secondary phg-bar__add" data-phg-bar-add>
                 <span class="phg-button__label">{{ 'products.product.add_to_cart' | t }}</span>
               </button>
               {%- comment -%}

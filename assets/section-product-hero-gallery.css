@@ -572,6 +572,33 @@
   outline-offset: 0.3rem;
 }
 
+/*
+  Secondary face for the bar's Add to cart: an outline pill that reads as a
+  step down from the solid Buy it now beside it, so the pair stays legible.
+*/
+.phg-button--secondary {
+  background-color: transparent;
+  color: rgb(var(--color-foreground));
+}
+
+.phg-button--secondary:hover:not([disabled]):not(.loading) {
+  opacity: 1;
+  background-color: rgba(var(--color-foreground), 0.06);
+}
+
+/*
+  With no dynamic checkout button beside it, a lone outline Add to cart reads
+  as weaker than the row's one action should — so it takes the solid face.
+*/
+.phg-actions .phg-button--secondary:only-child {
+  background-color: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+}
+
+.phg-actions .phg-button--secondary:only-child:hover:not([disabled]):not(.loading) {
+  background-color: rgb(var(--color-foreground));
+}
+
 .phg-button[disabled],
 .phg-button[aria-disabled='true'] {
   opacity: 0.4;
@@ -635,6 +662,19 @@
 .phg-actions__dynamic .shopify-payment-button__button--unbranded:hover:not([disabled]) {
   background-color: rgb(var(--color-foreground));
   opacity: 0.88;
+}
+
+/*
+  base.css paints Dawn's button border and shadow as :before/:after rings with
+  the theme's own radius — left alone they show as a hard-cornered box around
+  this pill-shaped button. The pill carries its own border, so they go.
+*/
+.phg-actions__dynamic .shopify-payment-button__button--unbranded::before,
+.phg-actions__dynamic .shopify-payment-button__button--unbranded::after,
+.phg-actions__dynamic .shopify-payment-button__button--unbranded:hover::after,
+.phg-bar__actions .shopify-payment-button__button--unbranded::before,
+.phg-bar__actions .shopify-payment-button__button--unbranded::after {
+  content: none;
 }
 
 .phg-actions__dynamic .shopify-payment-button__more-options {

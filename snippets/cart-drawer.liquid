@@ -49,19 +49,12 @@
           <div class="cart-drawer__warnings center{% if settings.cart_drawer_collection != blank %} cart-drawer__warnings--has-collection{% endif %}">
             <div class="cart-drawer__empty-content">
               <span class="cart__empty-icon" aria-hidden="true">
-                {{- 'icon-face-sad.svg' | inline_asset_content -}}
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 32 32" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><path fill="#263238" d="M17.5 13c.27 0 .5.23.5.5s-.23.5-.5.5-.5-.23-.5-.5.23-.5.5-.5M8.5 13c.27 0 .5.23.5.5s-.23.5-.5.5-.5-.23-.5-.5.23-.5.5-.5" opacity="1" data-original="#263238" class=""></path><path fill="#455a64" d="M23.43 23.901a.5.5 0 0 1-.354-.146l-2.216-2.216a.5.5 0 0 1 .707-.707l2.216 2.216a.5.5 0 0 1-.353.853" opacity="1" data-original="#455a64"></path><path fill="#455a64" d="M28.5 31c-.667 0-1.295-.26-1.768-.732l-3.5-3.5c-.472-.473-.732-1.1-.732-1.768s.26-1.295.732-1.768c.906-.906 2.629-.906 3.535 0l3.5 3.5c.473.473.733 1.1.733 1.768s-.26 1.295-.732 1.768S29.167 31 28.5 31M25 23.52a1.5 1.5 0 0 0-1.061.42c-.283.283-.439.66-.439 1.06s.156.777.439 1.061l3.5 3.5c.567.566 1.554.566 2.121 0 .284-.284.44-.661.44-1.061s-.156-.777-.439-1.061l-3.5-3.5A1.5 1.5 0 0 0 25 23.52M13 25C6.383 25 1 19.617 1 13S6.383 1 13 1s12 5.383 12 12-5.383 12-12 12m0-23C6.935 2 2 6.935 2 13s4.935 11 11 11 11-4.935 11-11S19.065 2 13 2" opacity="1" data-original="#455a64"></path><path fill="#455a64" d="M14 16.021a.5.5 0 0 1-.5-.5.5.5 0 0 0-1 0 .5.5 0 0 1-1 0c0-.827.673-1.5 1.5-1.5s1.5.673 1.5 1.5a.5.5 0 0 1-.5.5M17.5 14.5c-.542 0-1-.458-1-1s.458-1 1-1 1 .458 1 1-.458 1-1 1M8.5 14.5c-.542 0-1-.458-1-1s.458-1 1-1 1 .458 1 1-.458 1-1 1" opacity="1" data-original="#455a64"></path><path fill="#263238" d="M23.43 23.901a.5.5 0 0 1-.354-.146l-2.216-2.216a.5.5 0 0 1 .707-.707l2.216 2.216a.5.5 0 0 1-.353.853" opacity="1" data-original="#263238" class=""></path><path fill="#263238" d="M28.5 31c-.667 0-1.295-.26-1.768-.732l-3.5-3.5c-.472-.473-.732-1.1-.732-1.768s.26-1.295.732-1.768c.906-.906 2.629-.906 3.535 0l3.5 3.5c.473.473.733 1.1.733 1.768s-.26 1.295-.732 1.768S29.167 31 28.5 31M25 23.52a1.5 1.5 0 0 0-1.061.42c-.283.283-.439.66-.439 1.06s.156.777.439 1.061l3.5 3.5c.567.566 1.554.566 2.121 0 .284-.284.44-.661.44-1.061s-.156-.777-.439-1.061l-3.5-3.5A1.5 1.5 0 0 0 25 23.52M13 25C6.383 25 1 19.617 1 13S6.383 1 13 1s12 5.383 12 12-5.383 12-12 12m0-23C6.935 2 2 6.935 2 13s4.935 11 11 11 11-4.935 11-11S19.065 2 13 2" opacity="1" data-original="#263238" class=""></path><path fill="#263238" d="M14 16.021a.5.5 0 0 1-.5-.5.5.5 0 0 0-1 0 .5.5 0 0 1-1 0c0-.827.673-1.5 1.5-1.5s1.5.673 1.5 1.5a.5.5 0 0 1-.5.5M17.5 14.5c-.542 0-1-.458-1-1s.458-1 1-1 1 .458 1 1-.458 1-1 1M8.5 14.5c-.542 0-1-.458-1-1s.458-1 1-1 1 .458 1 1-.458 1-1 1" opacity="1" data-original="#263238" class=""></path></g></svg>
               </span>
               <h2 class="cart__empty-text">{{ 'sections.cart.empty' | t }}</h2>
               <a href="{{ routes.all_products_collection_url }}" class="cart__empty-link link">
                 {{ 'general.continue_shopping' | t }}
               </a>
-
-              {%- if shop.customer_accounts_enabled and customer == null -%}
-                <p class="cart__login-title h3">{{ 'sections.cart.login.title' | t }}</p>
-                <p class="cart__login-paragraph">
-                  {{ 'sections.cart.login.paragraph_html' | t: link: routes.account_login_url }}
-                </p>
-              {%- endif -%}
             </div>
           </div>
           {%- if settings.cart_drawer_collection != blank -%}

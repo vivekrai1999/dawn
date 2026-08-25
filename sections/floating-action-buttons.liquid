@@ -8,6 +8,21 @@
 {{ 'component-floating-action-buttons.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
+  assign has_form = false
+  for block in section.blocks
+    if block.settings.open_form and block.settings.enabled != false
+      assign has_form = true
+      break
+    endif
+  endfor
+-%}
+
+{%- if has_form -%}
+  <script src="{{ 'floating-action-buttons.js' | asset_url }}" defer="defer"></script>
+  {%- render 'floating-form-modal' -%}
+{%- endif -%}
+
+{%- liquid
   assign pos = section.settings.position
   assign stack = section.settings.stack_direction
 
@@ -60,6 +75,8 @@
   case section.settings.border_radius
     when 'circle'
       assign radius_class = 'floating-actions--radius-circle'
+    when 'pill'
+      assign radius_class = 'floating-actions--radius-pill'
     when 'rounded'
       assign radius_class = 'floating-actions--radius-rounded'
     when 'square'
@@ -115,6 +132,7 @@
     --fab-size: {{ section.settings.button_size }}px;
     --fab-icon-size: {{ section.settings.icon_size }}px;
     --fab-z: {{ section.settings.z_index }};
+    --fab-label-gap: {{ section.settings.label_gap }}px;
     --fab-offset-x: {{ section.settings.offset_x }}px;
     --fab-offset-y: {{ section.settings.offset_y }}px;
     {%- if section.settings.bg_color != blank -%}
@@ -137,7 +155,7 @@
 {%- if section.settings.enabled -%}
 <ul
   id="FloatingButtons-{{ section.id }}"
-  class="floating-actions color-{{ section.settings.color_scheme }} gradient {{ stack_class }} {{ pos_class }} {{ radius_class }} {{ visibility_class }}"
+  class="floating-actions color-{{ section.settings.color_scheme }} {{ stack_class }} {{ pos_class }} {{ radius_class }} {{ visibility_class }}"
   role="list"
   aria-label="{{ section.settings.aria_label | default: 'Floating buttons' | escape }}"
 >
@@ -186,6 +204,13 @@
           "id": "show_label",
           "label": "Show label text",
           "info": "Displays the label text next to the icon.",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "open_form",
+          "label": "Opens the contact form",
+          "info": "Button opens a modal with the section's form instead of following the URL.",
           "default": false
         },
         {
@@ -255,6 +280,34 @@
       "id": "show_on_mobile",
       "label": "Show on mobile",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Contact Form Modal"
+    },
+    {
+      "type": "text",
+      "id": "form_badge",
+      "label": "Badge",
+      "default": "Contact"
+    },
+    {
+      "type": "text",
+      "id": "form_title",
+      "label": "Heading",
+      "default": "Get In touch with us!"
+    },
+    {
+      "type": "text",
+      "id": "form_description",
+      "label": "Description",
+      "default": "Have questions or ideas? We'd love to hear from you. Reach out anytime and let's connect."
+    },
+    {
+      "type": "text",
+      "id": "form_panel_title",
+      "label": "Form panel title",
+      "default": "Contact Us"
     },
     {
       "type": "header",
@@ -357,12 +410,24 @@
       "default": 22
     },
     {
+      "type": "range",
+      "id": "label_gap",
+      "label": "Gap between icon and label",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 8,
+      "info": "Only applies to buttons with \"Show label text\" enabled."
+    },
+    {
       "type": "select",
       "id": "border_radius",
       "label": "Border radius",
       "default": "circle",
       "options": [
         { "value": "circle", "label": "Circle" },
+        { "value": "pill", "label": "Pill" },
         { "value": "rounded", "label": "Rounded" },
         { "value": "square", "label": "Square" }
       ]
@@ -403,6 +468,11 @@
       "type": "color",
       "id": "border_color",
       "label": "Border color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Floating buttons"
     }
   ]
 }

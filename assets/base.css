@@ -3,6 +3,16 @@ collection-component {
   display: block;
 }
 
+/*
+  Search and cart lock the page scroll by toggling .overflow-hidden on <body>,
+  which removes the scrollbar and lets the layout jump sideways by its width.
+  Reserving the gutter keeps the content column identical whether or not the
+  page can currently scroll.
+*/
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   --alpha-button-background: 1;
   --alpha-button-border: 1;

@@ -5,14 +5,24 @@
   assign icon_name = block.settings.icon | default: 'link'
 -%}
 <li class="floating-actions__item" {{ block.shopify_attributes }}>
-  <a
-    id="{{ btn_id }}"
-    class="floating-actions__button{% if block.settings.show_label %} floating-actions__button--labelled{% endif %}"
-    href="{{ block.settings.url | default: '#' }}"
-    aria-label="{{ a11y_label | escape }}"
-    data-fab-tooltip="{{ tooltip_label }}"
-    {%- if block.settings.new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}
-  >
+  {%- if block.settings.open_form -%}
+    <button
+      type="button"
+      id="{{ btn_id }}"
+      class="floating-actions__button{% if block.settings.show_label %} floating-actions__button--labelled{% endif %}"
+      aria-label="{{ a11y_label | escape }}"
+      data-fab-open-form
+      data-section-id="{{ section.id }}"
+    >
+  {%- else -%}
+    <a
+      id="{{ btn_id }}"
+      class="floating-actions__button{% if block.settings.show_label %} floating-actions__button--labelled{% endif %}"
+      href="{{ block.settings.url | default: '#' }}"
+      aria-label="{{ a11y_label | escape }}"
+      {%- if block.settings.new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}
+    >
+  {%- endif -%}
     {%- liquid
       assign icon_asset = 'icon-' | append: icon_name | append: '.svg'
     -%}
@@ -22,5 +32,9 @@
     {%- if block.settings.show_label and block.settings.label != blank -%}
       <span class="floating-actions__label">{{ block.settings.label | escape }}</span>
     {%- endif -%}
-  </a>
+  {%- if block.settings.open_form -%}
+    </button>
+  {%- else -%}
+    </a>
+  {%- endif -%}
 </li>

@@ -2,6 +2,45 @@ if (!customElements.get('quick-add-modal')) {
   customElements.define(
     'quick-add-modal',
     class QuickAddModal extends ModalDialog {
+      /*
+        Fetched product markup carries the section's <script src> tags. They
+        must never be re-executed by innerHTML injection: scripts inserted that
+        way run async and out of order (slick before jQuery), and re-running
+        product-hero-gallery.js redeclares its top-level classes. Each URL is
+        therefore loaded once, in document order, through this shared map.
+      */
+      static scriptPromises = new Map();
+
+      static ensureScript(url) {
+        const key = new URL(url, window.location.href).href;
+        let promise = QuickAddModal.scriptPromises.get(key);
+        if (!promise) {
+          promise = new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = url;
+            // Keeps execution in insertion order: jQuery before Slick.
+            script.async = false;
+            // Never block the modal on a failed asset; the gallery has a
+            // usable no-library fallback.
+            script.addEventListener('load', () => resolve(), { once: true });
+            script.addEventListener('error', () => resolve(), { once: true });
+            document.head.appendChild(script);
+          });
+          QuickAddModal.scriptPromises.set(key, promise);
+        }
+        return promise;
+      }
+
+      /* Detaches the fetched external scripts and waits until each has run. */
+      loadFetchedScripts(productElement) {
+        const sources = Array.from(productElement.querySelectorAll('script[src]')).map((script) => {
+          const url = script.getAttribute('src');
+          script.remove();
+          return QuickAddModal.ensureScript(url);
+        });
+        return Promise.all(sources);
+      }
+
       constructor() {
         super();
         this.modalContent = this.querySelector('[id^="QuickAddInfo-"]');
@@ -31,17 +70,21 @@ if (!customElements.get('quick-add-modal')) {
             const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
             const productElement = responseHTML.querySelector('product-info');
 
-            this.preprocessHTML(productElement);
-            HTMLUpdateUtility.setInnerHTML(this.modalContent, productElement.outerHTML);
+            // Load the section's assets once, in order, before the markup is
+            // injected — the injected copies of those tags must not run again.
+            return this.loadFetchedScripts(productElement).then(() => {
+              this.preprocessHTML(productElement);
+              HTMLUpdateUtility.setInnerHTML(this.modalContent, productElement.outerHTML);
 
-            if (window.Shopify && Shopify.PaymentButton) {
-              Shopify.PaymentButton.init();
-            }
-            if (window.ProductModel) window.ProductModel.loadShopifyXR();
+              if (window.Shopify && Shopify.PaymentButton) {
+                Shopify.PaymentButton.init();
+              }
+              if (window.ProductModel) window.ProductModel.loadShopifyXR();
 
-            this.modalContent.querySelector('product-component')?.dispatchViewEvent?.();
+              this.modalContent.querySelector('product-component')?.dispatchViewEvent?.();
 
-            super.show(opener);
+              super.show(opener);
+            });
           })
           .finally(() => {
             opener.removeAttribute('aria-disabled');
@@ -55,6 +98,9 @@ if (!customElements.get('quick-add-modal')) {
           if (classApplied.startsWith('color-') || classApplied === 'gradient')
             this.modalContent.classList.add(classApplied);
         });
+        // Variant re-renders fetch the section afresh; their script tags must
+        // be stripped too, or innerHTML injection would run them again.
+        productElement.querySelectorAll('script[src]').forEach((script) => script.remove());
         this.preventDuplicatedIDs(productElement);
         this.removeDOMElements(productElement);
         this.removeGalleryListSemantic(productElement);

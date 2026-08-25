@@ -15,6 +15,13 @@
 
   The tabs follow the ARIA authoring practice for a tab list: one tab in the tab
   order at a time, arrows to move between them, Home and End for the ends.
+
+  Autoplay never relies on paired enter/leave events to decide whether to run —
+  those can be missed (a focused element removed from the DOM never fires
+  focusout; a layout shift under a still cursor can skip pointerleave) and one
+  missed half pauses the section forever. Instead the timer keeps ticking and
+  each tick re-reads the live conditions: hover, focus, viewport presence and
+  reduced-motion. Nothing can get stuck.
 */
 if (!customElements.get('process-steps')) {
   class ProcessSteps extends HTMLElement {
@@ -31,22 +38,11 @@ if (!customElements.get('process-steps')) {
       this.autoplay = this.dataset.autoplay === 'true';
       this.duration = parseInt(this.dataset.autoplaySpeed, 10) || 4000;
       this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
+      this.offscreen = false;
       this.timer = null;
-      /*
-        Every reason the carousel might be held still, counted rather than kept
-        as one flag: a pointer resting on the section while it is scrolled out
-        of view must not resume when only one of those ends.
-      */
-      this.holds = new Set();
 
       this.onClick = this.handleClick.bind(this);
       this.onKeydown = this.handleKeydown.bind(this);
-      this.onEnter = () => this.hold('pointer');
-      this.onLeave = () => this.release('pointer');
-      this.onFocusIn = () => this.hold('focus');
-      this.onFocusOut = () => this.release('focus');
-      this.onMotionChange = this.handleMotionChange.bind(this);
 
       this.bindEvents();
       this.select(this.active, { focus: false });
@@ -58,14 +54,6 @@ if (!customElements.get('process-steps')) {
 
       this.removeEventListener('click', this.onClick);
       this.removeEventListener('keydown', this.onKeydown);
-      this.removeEventListener('pointerenter', this.onEnter);
-      this.removeEventListener('pointerleave', this.onLeave);
-      this.removeEventListener('focusin', this.onFocusIn);
-      this.removeEventListener('focusout', this.onFocusOut);
-
-      if (this.reducedMotion?.removeEventListener) {
-        this.reducedMotion.removeEventListener('change', this.onMotionChange);
-      }
 
       this.observer?.disconnect();
       this.observer = null;
@@ -75,32 +63,28 @@ if (!customElements.get('process-steps')) {
       this.addEventListener('click', this.onClick);
       this.addEventListener('keydown', this.onKeydown);
 
-      if (this.autoplay) {
-        // Hovering or tabbing into the section is a signal that it is being
-        // read; advancing under the reader is what makes these sections
-        // frustrating.
-        this.addEventListener('pointerenter', this.onEnter);
-        this.addEventListener('pointerleave', this.onLeave);
-        this.addEventListener('focusin', this.onFocusIn);
-        this.addEventListener('focusout', this.onFocusOut);
-
-        this.observeVisibility();
-      }
-
-      if (this.reducedMotion?.addEventListener) {
-        this.reducedMotion.addEventListener('change', this.onMotionChange);
+      // Only used as a live signal read on each tick, not as a pair of events.
+      if (this.autoplay && 'IntersectionObserver' in window) {
+        this.observer = new IntersectionObserver(
+          ([entry]) => (this.offscreen = !entry.isIntersecting),
+          { threshold: 0 }
+        );
+        this.observer.observe(this);
       }
     }
 
-    /* Nothing advances while the section is off screen. */
-    observeVisibility() {
-      if (!('IntersectionObserver' in window)) return;
-
-      this.observer = new IntersectionObserver(
-        ([entry]) => (entry.isIntersecting ? this.release('offscreen') : this.hold('offscreen')),
-        { threshold: 0 }
+    /*
+      Every reason to hold still, evaluated fresh each tick from the current
+      state of the world rather than remembered from past events.
+    */
+    isHeld() {
+      return (
+        !this.autoplay ||
+        this.reducedMotion.matches ||
+        this.offscreen ||
+        this.matches(':hover') ||
+        this.contains(document.activeElement)
       );
-      this.observer.observe(this);
     }
 
     handleClick(event) {
@@ -181,10 +165,16 @@ if (!customElements.get('process-steps')) {
     }
 
     start() {
-      if (!this.autoplay || this.reducedMotion.matches || this.holds.size) return;
       this.stop();
-      this.classList.remove('is-paused');
-      this.timer = window.setInterval(() => this.advance(), this.duration);
+      this.classList.toggle('is-paused', this.isHeld());
+      this.timer = window.setInterval(() => this.tick(), this.duration);
+    }
+
+    /* One beat of the clock: advance unless something asks to hold still. */
+    tick() {
+      const held = this.isHeld();
+      this.classList.toggle('is-paused', held);
+      if (!held) this.advance();
     }
 
     stop() {
@@ -195,27 +185,7 @@ if (!customElements.get('process-steps')) {
     }
 
     restart() {
-      this.stop();
       this.start();
-    }
-
-    hold(reason) {
-      this.holds.add(reason);
-      this.stop();
-    }
-
-    release(reason) {
-      this.holds.delete(reason);
-      this.start();
-    }
-
-    /* Honours a preference changed after load, without needing a reload. */
-    handleMotionChange() {
-      if (this.reducedMotion.matches) {
-        this.stop();
-      } else {
-        this.start();
-      }
     }
   }
 

@@ -54,6 +54,7 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   max-width: var(--page-width);
+  border-radius: 1.6rem;
   width: calc(100% - 3rem);
 }
 
@@ -61,7 +62,7 @@
   .quick-add-modal__content {
     --modal-height-offset: 10rem;
     margin-top: var(--modal-height-offset);
-    width: 80%;
+    width: 70%;
     max-height: calc(100% - var(--modal-height-offset) * 2);
     overflow-y: auto;
   }
@@ -74,7 +75,7 @@
 
 @media screen and (min-width: 990px) {
   .quick-add-modal__content {
-    width: 70%;
+    width: 60%;
   }
 }
 
@@ -403,4 +404,121 @@ quick-add-bulk .quantity__input {
 
 .quantity__input-disabled {
   pointer-events: none;
+}
+
+/* ---- Compact quick-add modal ----
+   Fit the product form inside the modal without scrolling, and keep the
+   add-to-cart button visible while variants are being selected. */
+
+/* Trim non-essential product content fetched into the modal */
+quick-add-modal .product__description,
+quick-add-modal .product__text,
+quick-add-modal share-button,
+quick-add-modal .product__view-details {
+  display: none !important;
+}
+
+/* Stop the media column from dictating the modal height */
+quick-add-modal .product-media-container.constrain-height {
+  --constrained-min-height: 320px;
+}
+
+/* Pin the buy buttons to the bottom of the modal while scrolling variants */
+quick-add-modal .product-form__buttons {
+  position: sticky;
+  bottom: -2.5rem;
+  z-index: 2;
+  margin: 0;
+  padding-top: 1.2rem;
+  background-color: rgb(var(--color-background));
+}
+
+quick-add-modal .product-form__error-message-wrapper {
+  position: sticky;
+  bottom: 5rem;
+  z-index: 2;
+}
+
+/* ---- Quick add modal: hero gallery products ----
+   Fit the whole stage inside the modal without scrolling: trim the info
+   panel, cap the gallery height and pin the purchase bar to the foot. */
+
+/* Full bleed breaks out to the viewport; inside the modal it must not. */
+quick-add-modal .phg--full-bleed .phg-gallery {
+  width: 100%;
+  margin-inline: 0;
+}
+
+/* Description / shipping / care rows are page-level reading material, and the
+   corner mini widget duplicates the bar that is always on show here. */
+quick-add-modal .phg-accordion,
+quick-add-modal .phg-mini {
+  display: none !important;
+}
+
+quick-add-modal .phg {
+  --phg-gallery-max-height: 40vh;
+}
+
+quick-add-modal .phg-info__inner {
+  padding-block: 1.6rem 0;
+}
+
+quick-add-modal .phg-info__price {
+  margin-block-end: 1.6rem;
+}
+
+/* Stack the stage so the bar can hold the foot of the modal. */
+quick-add-modal .phg__stage {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+  The bar is hidden below 990px on the page, but inside the modal it is the
+  only purchase surface, so it shows and sticks at every width.
+*/
+quick-add-modal .phg-bar {
+  display: block;
+  position: sticky;
+  inset-block-end: 1.6rem;
+  z-index: 4;
+  margin-top: auto;
+  padding-inline: 1.6rem;
+}
+
+quick-add-modal .phg-bar__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 2.4rem;
+  box-sizing: border-box;
+  padding: 1.2rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+  border-radius: 0.8rem;
+  background-color: rgb(var(--color-background));
+  box-shadow: 0 0.6rem 2.4rem rgba(0, 0, 0, 0.12);
+}
+
+/*
+  Phone layout: phones keep the page's own purchase panel — price, variant
+  pills and quantity stacked — and the floating bar stands down, the way it
+  does on the page itself below 990px.
+*/
+@media screen and (max-width: 749px) {
+  quick-add-modal .phg-bar {
+    display: none;
+  }
+
+  quick-add-modal .phg-info {
+    padding-inline: 0;
+  }
+
+  quick-add-modal .phg {
+    padding-block: 0;
+  }
+
+  quick-add-modal .phg-gallery__dots {
+    margin-top: 0.8rem;
+  }
 }
