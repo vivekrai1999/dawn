@@ -1,0 +1,409 @@
+{%- comment -%}
+  Floating buttons section.
+  Renders a fixed-position stack of generic buttons outside document flow.
+  Each block is a button with an icon, a label and a URL.
+  Settings control position, stack direction, offsets, appearance, visibility.
+{%- endcomment -%}
+
+{{ 'component-floating-action-buttons.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign pos = section.settings.position
+  assign stack = section.settings.stack_direction
+
+  assign vertical_anchor = false
+  assign horizontal_anchor = false
+  assign reverse_needed = false
+
+  case pos
+    when 'bottom_left'
+      assign vertical_anchor = 'bottom'
+      assign horizontal_anchor = 'left'
+      if stack == 'vertical'
+        assign reverse_needed = true
+      endif
+    when 'bottom_center'
+      assign vertical_anchor = 'bottom'
+      assign horizontal_anchor = 'center'
+      if stack == 'vertical'
+        assign reverse_needed = true
+      endif
+    when 'bottom_right'
+      assign vertical_anchor = 'bottom'
+      assign horizontal_anchor = 'right'
+      if stack == 'vertical'
+        assign reverse_needed = true
+      elsif stack == 'horizontal'
+        assign reverse_needed = true
+      endif
+    when 'middle_left'
+      assign vertical_anchor = 'middle'
+      assign horizontal_anchor = 'left'
+    when 'middle_right'
+      assign vertical_anchor = 'middle'
+      assign horizontal_anchor = 'right'
+      if stack == 'horizontal'
+        assign reverse_needed = true
+      endif
+    when 'top_left'
+      assign vertical_anchor = 'top'
+      assign horizontal_anchor = 'left'
+    when 'top_right'
+      assign vertical_anchor = 'top'
+      assign horizontal_anchor = 'right'
+      if stack == 'horizontal'
+        assign reverse_needed = true
+      endif
+  endcase
+
+  assign radius_class = ''
+  case section.settings.border_radius
+    when 'circle'
+      assign radius_class = 'floating-actions--radius-circle'
+    when 'rounded'
+      assign radius_class = 'floating-actions--radius-rounded'
+    when 'square'
+      assign radius_class = 'floating-actions--radius-square'
+  endcase
+
+  assign visibility_class = ''
+  if section.settings.show_on_mobile == false
+    assign visibility_class = visibility_class | append: ' floating-actions--mobile-hidden'
+  endif
+  if section.settings.show_on_desktop == false
+    assign visibility_class = visibility_class | append: ' floating-actions--desktop-hidden'
+  endif
+
+  assign stack_class = ''
+  if stack == 'vertical'
+    if reverse_needed
+      assign stack_class = 'floating-actions--vertical-reverse'
+    else
+      assign stack_class = 'floating-actions--vertical'
+    endif
+  else
+    if reverse_needed
+      assign stack_class = 'floating-actions--horizontal-reverse'
+    else
+      assign stack_class = 'floating-actions--horizontal'
+    endif
+  endif
+
+  assign pos_class = ''
+  case vertical_anchor
+    when 'bottom'
+      assign pos_class = pos_class | append: ' floating-actions--pos-bottom'
+    when 'top'
+      assign pos_class = pos_class | append: ' floating-actions--pos-top'
+    when 'middle'
+      assign pos_class = pos_class | append: ' floating-actions--pos-middle'
+  endcase
+
+  case horizontal_anchor
+    when 'left'
+      assign pos_class = pos_class | append: ' floating-actions--align-left'
+    when 'center'
+      assign pos_class = pos_class | append: ' floating-actions--align-center'
+    when 'right'
+      assign pos_class = pos_class | append: ' floating-actions--align-right'
+  endcase
+-%}
+
+{%- style -%}
+  #FloatingButtons-{{ section.id }} {
+    --fab-gap: {{ section.settings.gap }}px;
+    --fab-size: {{ section.settings.button_size }}px;
+    --fab-icon-size: {{ section.settings.icon_size }}px;
+    --fab-z: {{ section.settings.z_index }};
+    --fab-offset-x: {{ section.settings.offset_x }}px;
+    --fab-offset-y: {{ section.settings.offset_y }}px;
+    {%- if section.settings.bg_color != blank -%}
+      --fab-bg: {{ section.settings.bg_color }};
+    {%- endif -%}
+    {%- if section.settings.text_color != blank -%}
+      --fab-fg: {{ section.settings.text_color }};
+    {%- endif -%}
+    {%- if section.settings.show_shadow == false -%}
+      --fab-shadow: none;
+      --fab-shadow-hover: none;
+    {%- endif -%}
+    {%- if section.settings.border_width > 0 and section.settings.border_color != blank -%}
+      --fab-border-width: {{ section.settings.border_width }}px;
+      --fab-border-color: {{ section.settings.border_color }};
+    {%- endif -%}
+  }
+{%- endstyle -%}
+
+{%- if section.settings.enabled -%}
+<ul
+  id="FloatingButtons-{{ section.id }}"
+  class="floating-actions color-{{ section.settings.color_scheme }} gradient {{ stack_class }} {{ pos_class }} {{ radius_class }} {{ visibility_class }}"
+  role="list"
+  aria-label="{{ section.settings.aria_label | default: 'Floating buttons' | escape }}"
+>
+  {%- for block in section.blocks -%}
+    {%- if block.settings.enabled == false -%}
+      {%- continue -%}
+    {%- endif -%}
+
+    {%- render 'floating-action-button', block: block -%}
+  {%- endfor -%}
+</ul>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Floating buttons",
+  "tag": "section",
+  "class": "section section--floating-actions",
+  "max_blocks": 12,
+  "blocks": [
+    {
+      "type": "button",
+      "name": "Button",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "enabled",
+          "label": "Enable this button",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "info": "Shown as a tooltip on hover and read by screen readers.",
+          "default": "Get in touch"
+        },
+        {
+          "type": "text",
+          "id": "accessible_label",
+          "label": "Accessible label (ARIA)",
+          "info": "Optional override for screen readers. If blank, falls back to Label."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_label",
+          "label": "Show label text",
+          "info": "Displays the label text next to the icon.",
+          "default": false
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL",
+          "info": "Relative or absolute. Use /pages/contact for internal pages, tel: to call, mailto: to email."
+        },
+        {
+          "type": "checkbox",
+          "id": "new_tab",
+          "label": "Open in new tab",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "link",
+          "options": [
+            { "value": "link", "label": "Link" },
+            { "value": "chat-bubble", "label": "Chat" },
+            { "value": "whatsapp", "label": "WhatsApp" },
+            { "value": "phone", "label": "Phone" },
+            { "value": "mail", "label": "Mail" },
+            { "value": "instagram", "label": "Instagram" },
+            { "value": "facebook", "label": "Facebook" },
+            { "value": "pinterest", "label": "Pinterest" },
+            { "value": "tiktok", "label": "TikTok" },
+            { "value": "youtube", "label": "YouTube" },
+            { "value": "arrow-up", "label": "Arrow up" },
+            { "value": "arrow-diagonal", "label": "External" },
+            { "value": "store", "label": "Store" },
+            { "value": "bag", "label": "Bag" },
+            { "value": "gift", "label": "Gift" },
+            { "value": "heart", "label": "Heart" }
+          ]
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "General"
+    },
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Enable floating buttons",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "aria_label",
+      "label": "ARIA label",
+      "default": "Floating buttons"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_desktop",
+      "label": "Show on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_mobile",
+      "label": "Show on mobile",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Position"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Position",
+      "default": "bottom_right",
+      "options": [
+        { "value": "bottom_left", "label": "Bottom left" },
+        { "value": "bottom_center", "label": "Bottom center" },
+        { "value": "bottom_right", "label": "Bottom right" },
+        { "value": "middle_left", "label": "Middle left" },
+        { "value": "middle_right", "label": "Middle right" },
+        { "value": "top_left", "label": "Top left" },
+        { "value": "top_right", "label": "Top right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "stack_direction",
+      "label": "Stack direction",
+      "default": "vertical",
+      "options": [
+        { "value": "vertical", "label": "Vertical (stack up/down)" },
+        { "value": "horizontal", "label": "Horizontal (stack left/right)" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "offset_x",
+      "label": "Horizontal offset",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "offset_y",
+      "label": "Vertical offset",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between buttons",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "z_index",
+      "label": "Z-index",
+      "min": 10,
+      "max": 100,
+      "step": 1,
+      "default": 40,
+      "info": "Higher values appear above other fixed elements (header is 30, modals are 50+)."
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "button_size",
+      "label": "Button size",
+      "min": 44,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 52,
+      "info": "Minimum 44px for touch accessibility."
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "select",
+      "id": "border_radius",
+      "label": "Border radius",
+      "default": "circle",
+      "options": [
+        { "value": "circle", "label": "Circle" },
+        { "value": "rounded", "label": "Rounded" },
+        { "value": "square", "label": "Square" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shadow",
+      "label": "Show shadow",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color (optional)",
+      "info": "Leave blank to use the selected color scheme's background."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Icon color (optional)",
+      "info": "Leave blank to use the selected color scheme's foreground."
+    },
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "label": "Border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color"
+    }
+  ]
+}
+{% endschema %}

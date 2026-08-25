@@ -1,0 +1,26 @@
+{%- liquid
+  assign btn_id = 'fab-' | append: section.id | append: '-' | append: block.id
+  assign a11y_label = block.settings.accessible_label | default: block.settings.label | default: 'Floating button'
+  assign tooltip_label = block.settings.label | escape
+  assign icon_name = block.settings.icon | default: 'link'
+-%}
+<li class="floating-actions__item" {{ block.shopify_attributes }}>
+  <a
+    id="{{ btn_id }}"
+    class="floating-actions__button{% if block.settings.show_label %} floating-actions__button--labelled{% endif %}"
+    href="{{ block.settings.url | default: '#' }}"
+    aria-label="{{ a11y_label | escape }}"
+    data-fab-tooltip="{{ tooltip_label }}"
+    {%- if block.settings.new_tab %} target="_blank" rel="noopener noreferrer"{% endif %}
+  >
+    {%- liquid
+      assign icon_asset = 'icon-' | append: icon_name | append: '.svg'
+    -%}
+    <span class="svg-wrapper floating-actions__icon-wrapper">
+      {{- icon_asset | inline_asset_content -}}
+    </span>
+    {%- if block.settings.show_label and block.settings.label != blank -%}
+      <span class="floating-actions__label">{{ block.settings.label | escape }}</span>
+    {%- endif -%}
+  </a>
+</li>
