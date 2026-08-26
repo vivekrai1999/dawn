@@ -223,17 +223,16 @@
     color: var(--ffm-accent-fg);
     border: none;
     border-radius: 10px;
+    font-family: var(--font-body-family, inherit);
     font-size: 1.4rem;
     font-weight: 400;
     letter-spacing: 0.02em;
     cursor: pointer;
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--ffm-accent) 40%, transparent);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease;
   }
 
   #FloatingFormModal-{{ section.id }} .floating-form__submit:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 22px color-mix(in srgb, var(--ffm-accent) 50%, transparent);
   }
 
   #FloatingFormModal-{{ section.id }} .floating-form__submit:active {
