@@ -202,11 +202,20 @@
     assign group_end = next_anchor | minus: 1
   endif
 
-  assign variant_count = 0
-  if group_start > 0
-    assign variant_count = group_end | minus: group_start | plus: 1
+  comment
+    Edge case: the selected variant has no attached image (no anchor) — show
+    ALL media, in upload order. Anchored variants get their sequence first
+    with common media last.
+  endcomment
+  assign show_all_media = false
+  if group_start == 0
+    assign show_all_media = true
+    assign group_start = 1
+    assign group_end = total_images
+    assign source_count = total_images
+  else
+    assign source_count = group_end | minus: group_start | plus: 1 | plus: common_count
   endif
-  assign source_count = variant_count | plus: common_count
 
   comment
     Slick needs more slides than it shows before infinite mode can loop without
@@ -298,26 +307,24 @@
                 {%- assign is_original = true -%}
               {%- endif -%}
 
-              {%- comment -%} Selected variant's own sequence {%- endcomment -%}
-              {%- if group_start > 0 -%}
-                {%- for media in gallery_media -%}
-                  {%- assign idx = forloop.index -%}
-                  {%- if idx >= group_start and idx <= group_end -%}
-                    {%- render 'product-hero-gallery-slide',
-                      media: media,
-                      slide_index: slide_index,
-                      per_view: per_view,
-                      gallery_sizes: gallery_sizes,
-                      featured_media_id: variant.featured_media.id,
-                      is_original: is_original
-                    -%}
-                    {%- assign slide_index = slide_index | plus: 1 -%}
-                  {%- endif -%}
-                {%- endfor -%}
-              {%- endif -%}
+              {%- comment -%} Selected variant's own sequence (or all media) {%- endcomment -%}
+              {%- for media in gallery_media -%}
+                {%- assign idx = forloop.index -%}
+                {%- if idx >= group_start and idx <= group_end -%}
+                  {%- render 'product-hero-gallery-slide',
+                    media: media,
+                    slide_index: slide_index,
+                    per_view: per_view,
+                    gallery_sizes: gallery_sizes,
+                    featured_media_id: variant.featured_media.id,
+                    is_original: is_original
+                  -%}
+                  {%- assign slide_index = slide_index | plus: 1 -%}
+                {%- endif -%}
+              {%- endfor -%}
 
-              {%- comment -%} Common media, always last {%- endcomment -%}
-              {%- if common_count > 0 -%}
+              {%- comment -%} Common media, always last (skipped in show-all mode) {%- endcomment -%}
+              {%- if common_count > 0 and show_all_media == false -%}
                 {%- for media in gallery_media -%}
                   {%- assign idx = forloop.index -%}
                   {%- if idx <= common_count -%}
