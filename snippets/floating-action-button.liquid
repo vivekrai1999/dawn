@@ -1,7 +1,6 @@
 {%- liquid
   assign btn_id = 'fab-' | append: section.id | append: '-' | append: block.id
   assign a11y_label = block.settings.accessible_label | default: block.settings.label | default: 'Floating button'
-  assign tooltip_label = block.settings.label | escape
   assign icon_name = block.settings.icon | default: 'link'
 -%}
 <li class="floating-actions__item" {{ block.shopify_attributes }}>

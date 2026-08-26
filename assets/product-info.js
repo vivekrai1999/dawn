@@ -147,7 +147,7 @@ if (!customElements.get('product-info')) {
       }
 
       getVariantSelects(queryRoot) {
-        return queryRoot?.querySelector('variant-selects');
+        return queryRoot?.querySelector('variant-picker, variant-selects');
       }
 
       getSelectedVariant(productInfoNode) {
@@ -167,7 +167,7 @@ if (!customElements.get('product-info')) {
       }
 
       updateOptionValues(html) {
-        const variantSelects = html.querySelector('variant-selects');
+        const variantSelects = html.querySelector('variant-picker, variant-selects');
         if (variantSelects) {
           HTMLUpdateUtility.viewTransition(this.variantSelectors, variantSelects, this.preProcessHtmlCallbacks);
         }
@@ -418,7 +418,7 @@ if (!customElements.get('product-info')) {
       }
 
       get variantSelectors() {
-        return this.querySelector('variant-selects');
+        return this.querySelector('variant-picker, variant-selects');
       }
 
       get relatedProducts() {

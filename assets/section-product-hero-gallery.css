@@ -383,6 +383,11 @@
   opacity: 0.4;
 }
 
+/* Neutral fill for color values the resolver could not map. */
+.phg-options__swatch--fallback {
+  background: rgba(var(--color-foreground), 0.08) !important;
+}
+
 .phg-options__pill {
   display: inline-flex;
   align-items: center;

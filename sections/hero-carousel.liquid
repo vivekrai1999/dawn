@@ -45,8 +45,8 @@
 {%- if renderable > 0 -%}
   {%- style -%}
     #HeroCarousel-{{ section.id }} {
-      --hero-height: {{ section.settings.height_desktop }}svh;
-      --hero-height-mobile: {{ section.settings.height_mobile }}svh;
+      --hero-height: {{ section.settings.height_desktop }}px;
+      --hero-height-mobile: {{ section.settings.height_mobile }}px;
       --hero-content-width: {{ section.settings.content_width }}px;
       --hero-heading-size: {{ section.settings.heading_size }}px;
       --hero-eyebrow-size: {{ section.settings.eyebrow_size }}px;
@@ -505,24 +505,24 @@
     {
       "type": "range",
       "id": "height_desktop",
-      "min": 40,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
+      "min": 400,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
       "label": "Desktop height",
-      "info": "Percentage of the viewport height.",
-      "default": 85
+      "info": "Fixed height on desktop.",
+      "default": 700
     },
     {
       "type": "range",
       "id": "height_mobile",
-      "min": 30,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
+      "min": 300,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
       "label": "Mobile height",
-      "info": "Percentage of the viewport height.",
-      "default": 55
+      "info": "Fixed height on mobile.",
+      "default": 580
     },
     {
       "type": "range",

@@ -1,0 +1,80 @@
+{% comment %}
+  Renders the modular variant picker (replaces product-variant-picker).
+
+  Accepts:
+  - product: {Object} product object
+  - block: {Object} block carrying picker settings
+  - product_form_id: {String} id of the associated product form
+
+  Usage:
+  {% render 'variant-picker', product: product, block: block, product_form_id: product_form_id %}
+
+  Option rendering rules:
+  - Color-detected options -> swatches (when enabled)
+  - Everything else follows block.settings.picker_type ("button" | "dropdown")
+{% endcomment %}
+
+{%- unless product.has_only_default_variant -%}
+  {%- liquid
+    assign enable_swatches = block.settings.enable_color_swatches
+    assign swatch_shape = block.settings.swatch_shape
+    assign color_names_setting = block.settings.color_option_names | default: 'Color,Colour,Colors,Colours,Shade,Tone'
+    assign color_option_names = color_names_setting | downcase | split: ','
+  -%}
+
+  <variant-picker
+    id="variant-picker-{{ section.id }}"
+    class="variant-picker"
+    data-section="{{ section.id }}"
+    data-product-handle="{{ product.handle }}"
+    data-product-title="{{ product.title | escape }}"
+    data-product-id="{{ product.id }}"
+    data-currency-code="{{ cart.currency.iso_code }}"
+    {% # theme-check-disable %}
+    data-selected-price-amount="{{ product.selected_or_first_available_variant.price | default: 0 | money_amount | escape }}"
+    {% # theme-check-enable %}
+    {{ block.shopify_attributes }}
+  >
+    {%- for option in product.options_with_values -%}
+      {%- liquid
+        assign option_name_down = option.name | downcase | strip
+        assign is_color_option = false
+        if enable_swatches and swatch_shape != 'none'
+          for color_name in color_option_names
+            assign color_name_trimmed = color_name | strip
+            if option_name_down == color_name_trimmed
+              assign is_color_option = true
+              break
+            endif
+          endfor
+        endif
+
+        assign option_type = 'button'
+        if block.settings.picker_type == 'dropdown'
+          assign option_type = 'dropdown'
+        endif
+        if is_color_option
+          assign option_type = 'swatch'
+        endif
+      -%}
+
+      {%
+        render 'variant-picker-option',
+        product: product,
+        option: option,
+        block: block,
+        product_form_id: product_form_id,
+        option_type: option_type,
+        is_color_option: is_color_option
+      %}
+    {%- endfor -%}
+
+    <script type="application/json" data-variant-data>
+      {"variants":[{%- for variant in product.variants -%}{"id":{{ variant.id }},"available":{{ variant.available }},"options":{{ variant.options | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}
+    </script>
+
+    <script type="application/json" data-selected-variant>
+      {{ product.selected_or_first_available_variant | json }}
+    </script>
+  </variant-picker>
+{%- endunless -%}

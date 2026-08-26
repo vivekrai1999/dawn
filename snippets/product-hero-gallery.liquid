@@ -350,13 +350,25 @@
               {%- for option in product.options_with_values -%}
                 {%- liquid
                   comment
-                    A colour circle only means something when Shopify has a
-                    swatch for every value; otherwise the option is drawn as
-                    labelled pills, which carries the same information.
+                    Colour-named options render as circles using the shared
+                    variant-picker-color resolver, so plain value names like
+                    "Cream" resolve without merchant metafields. Any other
+                    option still needs a swatch on every value to become
+                    circles; otherwise it is drawn as labelled pills.
                   endcomment
+                  assign option_name_down = option.name | downcase | strip
+                  assign is_color_option = false
+                  assign phg_color_names = 'color,colour,colors,colours,shade,tone' | split: ','
+                  for phg_color_name in phg_color_names
+                    if option_name_down == phg_color_name
+                      assign is_color_option = true
+                      break
+                    endif
+                  endfor
+
                   assign swatch_count = option.values | map: 'swatch' | compact | size
                   assign use_swatches = false
-                  if swatch_count == option.values.size
+                  if is_color_option or swatch_count == option.values.size
                     assign use_swatches = true
                   endif
                 -%}
@@ -379,14 +391,10 @@
                       {%- liquid
                         assign input_id = 'PhgOption-' | append: section.id | append: '-' | append: option.position | append: '-' | append: forloop.index0
                         assign input_name = option.name | append: '-' | append: option.position
-
-                        assign swatch_style = ''
-                        if value.swatch.image
-                          assign swatch_image = value.swatch.image | image_url: width: 100
-                          assign swatch_style = 'background-image:url(' | append: swatch_image | append: ')'
-                        elsif value.swatch.color
-                          assign swatch_style = 'background-color:rgb(' | append: value.swatch.color.rgb | append: ')'
-                        endif
+                        capture phg_swatch_css
+                          render 'variant-picker-color', swatch: value.swatch, title: value
+                        endcapture
+                        assign phg_swatch_css = phg_swatch_css | strip
                       -%}
                       <input
                         type="radio"
@@ -403,10 +411,10 @@
                         data-option-name="{{ option.name | escape }}"
                       >
                       <label
-                        class="phg-options__swatch{% unless use_swatches %} phg-options__pill{% endunless %}"
+                        class="phg-options__swatch{% unless use_swatches %} phg-options__pill{% endunless %}{% if use_swatches and phg_swatch_css == blank %} phg-options__swatch--fallback{% endif %}"
                         for="{{ input_id }}"
-                        {% if use_swatches and swatch_style != blank %}
-                          style="{{ swatch_style }}"
+                        {% if use_swatches and phg_swatch_css != blank %}
+                          style="background: {{ phg_swatch_css }};"
                         {% endif %}
                       >
                         {%- if use_swatches -%}

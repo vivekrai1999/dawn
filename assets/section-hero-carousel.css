@@ -30,10 +30,8 @@
   height but the text on top of it — and a slide with its text hidden would
   collapse to nothing.
 
-  svh is the unit, so the box tracks the mobile URL bar without the jumpiness of
-  vh. The value comes straight from the section's own token; a custom property
-  cannot be multiplied by a unit, which is what silently voided this rule
-  before.
+  Mobile and desktop both use fixed pixel heights so the crop is identical on
+  every device regardless of URL-bar/viewport differences.
 */
 .hero-carousel.hero-carousel--height-protected .hero-carousel__slide {
   position: relative;
@@ -412,17 +410,26 @@
 }
 
 .hero-carousel__dots .slick-dots li button {
-  width: 1rem;
-  height: 1rem;
+  position: relative;
+  width: 2.4rem;
+  height: 0.4rem;
   padding: 0;
-  border: 0.1rem solid rgb(var(--color-foreground));
-  border-radius: 50%;
-  background-color: transparent;
+  border: none;
+  border-radius: 999px;
+  background-color: rgb(var(--color-foreground));
+  opacity: 0.35;
   /* Hides Slick's numeric label without removing it from the accessible name. */
   font-size: 0;
   line-height: 0;
   cursor: pointer;
-  transition: background-color var(--duration-short, 100ms) ease;
+  transition: opacity var(--duration-short, 100ms) ease, width var(--duration-short, 100ms) ease;
+}
+
+/* The pill itself is only 4px tall; this restores a comfortable tap target. */
+.hero-carousel__dots .slick-dots li button::after {
+  content: '';
+  position: absolute;
+  inset: -1rem;
 }
 
 .hero-carousel__dots .slick-dots li button:before {
@@ -430,7 +437,8 @@
 }
 
 .hero-carousel__dots .slick-dots li.slick-active button {
-  background-color: rgb(var(--color-foreground));
+  width: 3.6rem;
+  opacity: 1;
 }
 
 .hero-carousel__dots .slick-dots li button:focus-visible {

@@ -1,0 +1,78 @@
+{% comment %}
+  Central color-value resolver. Outputs a single safe CSS background value
+  (image url(), rgb() or hex) for an option value, or an empty string when no
+  safe value could be derived.
+
+  Resolution order:
+  1. Merchant-defined swatch metafield (color or image) — always wins.
+  2. Hex value in the option title (#rgb / #rrggbb), strictly validated.
+  3. Validated rgb()/rgba()/hsl()/hsla() value from the option title.
+  4. Named-color keyword match on the option title.
+  5. Empty string -> caller renders the neutral fallback swatch.
+
+  Accepts:
+  - swatch: {SwatchDrop} merchant-defined swatch (optional)
+  - title: {String} option value title used for fallback resolution
+
+  Usage:
+  {% capture css_value %}
+    {% render 'variant-picker-color', swatch: value.swatch, title: value.title %}
+  {% endcapture %}
+{% endcomment %}
+
+{%- liquid
+  assign color_value = ''
+
+  if swatch.image
+    assign swatch_image = swatch.image | image_url: width: 64
+    assign color_value = 'url(' | append: swatch_image | append: ')'
+  elsif swatch.color
+    assign color_value = 'rgb(' | append: swatch.color.rgb | append: ')'
+  else
+    assign v = title | downcase | strip
+
+    comment
+      Hex validation: #rgb or #rrggbb, remaining chars must all be hex digits.
+    endcomment
+    assign v_length = v | size
+    if v_length == 4 or v_length == 7
+      assign first_char = v | slice: 0, 1
+      if first_char == '#'
+        assign hex_body = v | slice: 1, 6
+        assign hex_test = hex_body | remove: '0' | remove: '1' | remove: '2' | remove: '3' | remove: '4' | remove: '5' | remove: '6' | remove: '7' | remove: '8' | remove: '9' | remove: 'a' | remove: 'b' | remove: 'c' | remove: 'd' | remove: 'e' | remove: 'f'
+        if hex_test == ''
+          assign color_value = v
+        endif
+      endif
+    endif
+
+    comment
+      Functional color validation: only digits and rgb/hsl syntax survive the
+      remove-chain, so arbitrary CSS can never leak into the style attribute.
+    endcomment
+    if color_value == ''
+      assign functional_test = v | remove: 'rgb' | remove: 'hsl' | remove: 'a' | remove: '(' | remove: ')' | remove: ',' | remove: '0' | remove: '1' | remove: '2' | remove: '3' | remove: '4' | remove: '5' | remove: '6' | remove: '7' | remove: '8' | remove: '9' | remove: '.' | remove: '%' | remove: ' ' | remove: '/'
+      if functional_test == '' and v contains '(' and v contains ')'
+        assign color_value = v
+      endif
+    endif
+
+    comment
+      Named colors, ordered specific -> generic so multi-word names win.
+      Keys and values are index-aligned.
+    endcomment
+    if color_value == ''
+      assign named_keys = 'off-white,off white,ivory,cream,charcoal,chocolate,caramel,honey brown,camel,natural,terracotta,navy,denim,burgundy,maroon,turquoise,lavender,lilac,magenta,indigo,violet,azure,cyan,teal,mint,sage,olive,emerald,mustard,gold,amber,rust,bronze,copper,coral,salmon,peach,apricot,blush,rose,pink,purple,sky blue,lime,green,khaki,sand,champagne,tan,beige,brown,gold,gray,grey,silver,blue,orange,yellow,red,black,white'
+      assign named_values = '#f8f6f0,#f8f6f0,#fffff0,#fffdd0,#36454f,#d2691e,#c68e5a,#c68e5a,#c19a6b,#e8dcc8,#e2725b,#001f3f,#1560bd,#800020,#800000,#40e0d0,#e6e6fa,#c8a2c8,#ff00ff,#4b0082,#7f00ff,#007fff,#00ffff,#008080,#98ff98,#9caf88,#808000,#50c878,#ffdb58,#d4af37,#ffbf00,#b7410e,#cd7f32,#b87333,#ff7f50,#fa8072,#ffdab9,#fbceb1,#de5d83,#ff007f,#ffc0cb,#800080,#87ceeb,#32cd32,#008000,#c3b091,#e6d5b8,#f7e7ce,#d2b48c,#f5f5dc,#a52a2a,#d4af37,#808080,#808080,#c0c0c0,#2e5aac,#ffa500,#f7d117,#d62828,#1a1a1a,#ffffff'
+      assign keys = named_keys | split: ','
+      assign values = named_values | split: ','
+      for key in keys
+        if v contains key
+          assign color_value = values[forloop.index0]
+          break
+        endif
+      endfor
+    endif
+  endif
+-%}
+{{- color_value -}}

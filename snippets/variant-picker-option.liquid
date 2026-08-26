@@ -1,0 +1,167 @@
+{% comment %}
+  Renders one variant-picker option group (swatches, buttons or dropdown).
+
+  Accepts:
+  - product: {Object} product object
+  - option: {Object} product_option object
+  - block: {Object} block object
+  - product_form_id: {String} id of the associated product form
+  - option_type: {String} 'swatch' | 'button' | 'dropdown'
+  - is_color_option: {Boolean}
+
+  Usage:
+  {% render 'variant-picker-option',
+    product: product,
+    option: option,
+    block: block,
+    product_form_id: product_form_id,
+    option_type: option_type,
+    is_color_option: is_color_option
+  %}
+{% endcomment %}
+
+{%- liquid
+  assign shape = block.settings.swatch_shape
+  assign input_name = 'variant-' | append: section.id | append: '-' | append: option.position
+-%}
+
+{%- if option_type == 'swatch' -%}
+  <fieldset class="variant-picker__group" data-option-position="{{ option.position }}">
+    <legend class="variant-picker__legend">
+      {{ option.name }}:
+      <span class="variant-picker__selected-value" data-selected-value>{{ option.selected_value }}</span>
+    </legend>
+
+    <div class="variant-picker__values">
+      {%- for value in option.values -%}
+        {%- liquid
+          assign input_id = 'vp-' | append: section.id | append: '-' | append: option.position | append: '-' | append: forloop.index0
+          assign unavailable_text = 'products.product.variant_sold_out_or_unavailable' | t
+        -%}
+        {%- capture swatch_css -%}
+          {%- render 'variant-picker-color', swatch: value.swatch, title: value -%}
+        {%- endcapture -%}
+        {%- assign swatch_css = swatch_css | strip -%}
+
+        <input
+          type="radio"
+          class="variant-picker__input"
+          id="{{ input_id }}"
+          name="{{ input_name }}"
+          value="{{ value | escape }}"
+          form="{{ product_form_id }}"
+          {% if value.selected %}checked{% endif %}
+          data-option-value-id="{{ value.id }}"
+          data-option-name="{{ option.name | escape }}"
+          data-product-url="{{ value.product_url }}"
+          {% unless value.available %}data-unavailable{% endunless %}
+        >
+        <label
+          class="variant-picker__value variant-picker__value--swatch variant-picker__value--{{ shape }}"
+          for="{{ input_id }}"
+          title="{{ value | escape }}"
+        >
+          <span
+            class="variant-picker__swatch{% if swatch_css == blank %} variant-picker__swatch--fallback{% endif %}"
+            {% if swatch_css != blank %}style="--vp-swatch-background: {{ swatch_css }};"{% endif %}
+            aria-hidden="true"
+          ></span>
+          <span class="visually-hidden">
+            {{- value | escape -}}
+            {%- unless value.available %}, {{ unavailable_text }}{% endunless -%}
+          </span>
+        </label>
+      {%- endfor -%}
+    </div>
+  </fieldset>
+
+{%- elsif option_type == 'button' -%}
+  <fieldset class="variant-picker__group" data-option-position="{{ option.position }}">
+    <legend class="variant-picker__legend">{{ option.name }}</legend>
+
+    <div class="variant-picker__values">
+      {%- for value in option.values -%}
+        {%- liquid
+          assign input_id = 'vp-' | append: section.id | append: '-' | append: option.position | append: '-' | append: forloop.index0
+          assign unavailable_text = 'products.product.variant_sold_out_or_unavailable' | t
+        -%}
+        <input
+          type="radio"
+          class="variant-picker__input"
+          id="{{ input_id }}"
+          name="{{ input_name }}"
+          value="{{ value | escape }}"
+          form="{{ product_form_id }}"
+          {% if value.selected %}checked{% endif %}
+          data-option-value-id="{{ value.id }}"
+          data-option-name="{{ option.name | escape }}"
+          data-product-url="{{ value.product_url }}"
+          {% unless value.available %}data-unavailable{% endunless %}
+        >
+        <label class="variant-picker__value variant-picker__value--button" for="{{ input_id }}">
+          {{- value -}}
+          <span class="visually-hidden" data-unavailable-text>
+            {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+          </span>
+        </label>
+      {%- endfor -%}
+    </div>
+  </fieldset>
+
+{%- else -%}
+  <div class="variant-picker__group variant-picker__group--dropdown" data-option-position="{{ option.position }}">
+    <label class="variant-picker__legend" for="vp-select-{{ section.id }}-{{ option.position }}">{{ option.name }}</label>
+
+    <div class="select variant-picker__select">
+      {%- if is_color_option and shape != 'none' -%}
+        {%- capture selected_swatch_css -%}
+          {%- render 'variant-picker-color', swatch: option.selected_value.swatch, title: option.selected_value -%}
+        {%- endcapture -%}
+        {%- assign selected_swatch_css = selected_swatch_css | strip -%}
+        <span
+          class="variant-picker__swatch variant-picker__swatch--dot{% if selected_swatch_css == blank %} variant-picker__swatch--fallback{% endif %}"
+          data-selected-swatch
+          {% if selected_swatch_css != blank %}style="--vp-swatch-background: {{ selected_swatch_css }};"{% endif %}
+          aria-hidden="true"
+        ></span>
+      {%- endif -%}
+
+      <select
+        id="vp-select-{{ section.id }}-{{ option.position }}"
+        class="select__select"
+        name="options[{{ option.name | escape }}]"
+        form="{{ product_form_id }}"
+      >
+        {%- for value in option.values -%}
+          {%- liquid
+            assign input_id = 'vp-' | append: section.id | append: '-' | append: option.position | append: '-' | append: forloop.index0
+            capture value_swatch_css
+              render 'variant-picker-color', swatch: value.swatch, title: value
+            endcapture
+            assign value_swatch_css = value_swatch_css | strip
+          -%}
+          <option
+            id="{{ input_id }}"
+            value="{{ value | escape }}"
+            data-option-value-id="{{ value.id }}"
+            data-option-name="{{ option.name | escape }}"
+            data-product-url="{{ value.product_url }}"
+            {% if value.selected %}selected="selected"{% endif %}
+            {% if value_swatch_css != blank %}
+              data-swatch-value="{{ value_swatch_css }}"
+            {% endif %}
+          >
+            {%- if value.available -%}
+              {{- value -}}
+            {%- else -%}
+              {{- 'products.product.value_unavailable' | t: option_value: value -}}
+            {%- endif -%}
+          </option>
+        {%- endfor -%}
+      </select>
+      <span class="svg-wrapper">
+        {{- 'icon-caret.svg' | inline_asset_content -}}
+      </span>
+    </div>
+  </div>
+{%- endif -%}

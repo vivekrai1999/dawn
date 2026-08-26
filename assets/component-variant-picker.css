@@ -1,0 +1,169 @@
+/* <variant-picker> component styles — scoped under .variant-picker */
+
+variant-picker {
+  display: block;
+}
+
+.variant-picker__group {
+  border: none;
+  margin: 0 0 2rem;
+  padding: 0;
+  min-width: 0;
+}
+
+.variant-picker__group:last-child {
+  margin-bottom: 0;
+}
+
+.variant-picker__legend {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+  line-height: calc(1 + 0.2 / var(--font-body-scale));
+  color: rgb(var(--color-foreground));
+}
+
+.variant-picker__selected-value {
+  font-weight: 600;
+}
+
+.variant-picker__values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: 100%;
+}
+
+/* Hidden-but-focusable radio inputs keep native keyboard semantics */
+.variant-picker__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.variant-picker__value {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.1s ease;
+}
+
+.variant-picker__input:focus-visible + .variant-picker__value {
+  outline: 2px solid rgb(var(--color-foreground));
+  outline-offset: 2px;
+}
+
+.variant-picker__input:checked + .variant-picker__value {
+  box-shadow: 0 0 0 2px rgb(var(--color-background)), 0 0 0 3.5px rgb(var(--color-foreground));
+}
+
+/* Unavailable values stay clickable so shoppers can discover combinations */
+.variant-picker__input[data-unavailable] + .variant-picker__value {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.variant-picker__input[data-unavailable] + .variant-picker__value::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 130%;
+  min-width: 3rem;
+  border-top: 1px solid rgb(var(--color-foreground));
+  transform: translate(-50%, -50%) rotate(-45deg);
+  pointer-events: none;
+}
+
+/* Swatch values */
+.variant-picker__value--swatch {
+  padding: 0;
+}
+
+.variant-picker__swatch {
+  display: block;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--vp-swatch-background, transparent);
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 1px rgba(var(--color-foreground), 0.15);
+}
+
+.variant-picker__value--rounded .variant-picker__swatch,
+.variant-picker__value--square .variant-picker__swatch {
+  border-radius: 0;
+}
+
+.variant-picker__value--rounded .variant-picker__swatch {
+  border-radius: 0.8rem;
+}
+
+.variant-picker__swatch--fallback {
+  background: rgba(var(--color-foreground), 0.08);
+}
+
+.variant-picker__swatch--dot {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+/* Button values */
+.variant-picker__value--button {
+  min-height: 4.4rem;
+  max-width: 100%;
+  padding: 1rem 2rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.55);
+  border-radius: 999px;
+  font-size: 1.4rem;
+  text-align: center;
+  word-break: break-word;
+}
+
+.variant-picker__input:checked + .variant-picker__value--button {
+  color: rgb(var(--color-button-text));
+  background: rgb(var(--color-button));
+  border-color: rgb(var(--color-button));
+}
+
+/* Dropdown values */
+.variant-picker__group--dropdown .variant-picker__legend {
+  display: block;
+}
+
+.variant-picker__select {
+  max-width: 36rem;
+}
+
+.variant-picker__select .select__select {
+  padding-left: 0;
+}
+
+.variant-picker__select:has(.variant-picker__swatch--dot) .select__select {
+  padding-left: 2.4rem;
+}
+
+@media screen and (max-width: 749px) {
+  .variant-picker__swatch {
+    width: 3.6rem;
+    height: 3.6rem;
+  }
+
+  .variant-picker__value--button {
+    flex: 1 1 auto;
+  }
+
+  .variant-picker__select {
+    max-width: 100%;
+  }
+}

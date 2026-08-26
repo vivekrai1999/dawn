@@ -22,9 +22,7 @@
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
   {% unless section.settings.product.has_only_default_variant %}
-    {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
-    {{ 'component-swatch.css' | asset_url | stylesheet_tag }}
-    {{ 'component-swatch-input.css' | asset_url | stylesheet_tag }}
+    {{ 'component-variant-picker.css' | asset_url | stylesheet_tag }}
   {% endunless %}
 
   {%- style -%}
@@ -42,6 +40,9 @@
   {%- endstyle -%}
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
+  {%- unless section.settings.product.has_only_default_variant -%}
+    <script src="{{ 'variant-picker.js' | asset_url }}" defer="defer"></script>
+  {%- endunless -%}
   <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
 
@@ -406,7 +407,7 @@
                     surface: 'product_page'
                   -%}
                 {%- when 'variant_picker' -%}
-                  {% render 'product-variant-picker',
+                  {% render 'variant-picker',
                     product: product,
                     block: block,
                     product_form_id: product_form_id
@@ -646,6 +647,20 @@
           "label": "t:sections.featured-product.blocks.variant_picker.settings.picker_type.label"
         },
         {
+          "type": "checkbox",
+          "id": "enable_color_swatches",
+          "label": "Enable color swatches",
+          "info": "Options named Color, Colour, Colors, Colours, Shade or Tone render as swatches.",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "color_option_names",
+          "label": "Color option names",
+          "info": "Comma-separated list, case-insensitive.",
+          "default": "Color, Colour, Colors, Colours, Shade, Tone"
+        },
+        {
           "id": "swatch_shape",
           "label": "t:sections.featured-product.blocks.variant_picker.settings.swatch_shape.label",
           "type": "select",
@@ -654,6 +669,10 @@
             {
               "value": "circle",
               "label": "t:sections.featured-product.blocks.variant_picker.settings.swatch_shape.options__1.label"
+            },
+            {
+              "value": "rounded",
+              "label": "Rounded"
             },
             {
               "value": "square",
