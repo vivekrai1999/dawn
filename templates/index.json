@@ -417,6 +417,15 @@
             "row": "auto"
           }
         },
+        "review_WzK3Ej": {
+          "type": "review",
+          "settings": {
+            "quote": "",
+            "name": "",
+            "role": "",
+            "row": "auto"
+          }
+        },
         "review_gx6aAN": {
           "type": "review",
           "settings": {
@@ -465,6 +474,7 @@
       },
       "block_order": [
         "review_zGL9Ff",
+        "review_WzK3Ej",
         "review_gx6aAN",
         "review_V8jCeC",
         "review_QrtAfH",
@@ -484,16 +494,16 @@
         "top_speed": 40,
         "bottom_direction": "right",
         "bottom_speed": 45,
-        "easing": "linear",
+        "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
         "full_width": true,
         "card_width": 320,
         "card_min_height": 0,
         "card_gap": 20,
         "row_gap": 20,
-        "edge_fade": 0,
+        "edge_fade": 30,
         "padding_top": 64,
         "padding_bottom": 64,
-        "card_radius": 16,
+        "card_radius": 32,
         "card_padding": 24,
         "card_content_gap": 24,
         "card_surface_opacity": 4,
