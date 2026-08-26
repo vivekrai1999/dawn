@@ -12,7 +12,15 @@
   takes the palette of whichever `color-scheme-*` class wraps it.
 */
 
-.review-card {
+/*
+  Defaults live on :root rather than on .review-card: a custom property
+  declared on an element beats anything inherited from an ancestor, so declaring
+  them on the card would silence every token a section emits on its wrapper.
+  On :root they are pure fallbacks — any ancestor's declaration wins — and the
+  colour defaults still resolve per card, because var() substitution happens
+  where the token is used, inside whichever scheme class wraps the card.
+*/
+:root {
   --review-card-width: 320px;
   --review-card-min-height: 0px;
   --review-card-radius: var(--media-radius, 16px);
@@ -39,7 +47,9 @@
   --review-card-name-weight: 600;
   --review-card-role-size: 1.3rem;
   --review-card-quote-clamp: 6;
+}
 
+.review-card {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
