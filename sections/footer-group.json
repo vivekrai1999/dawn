@@ -76,6 +76,7 @@
         "marquee_animate": true,
         "marquee_speed": 5,
         "marquee_direction": "left",
+        "logo": "shopify://shop_images/original-61a3f5d01f323ab43a1204fa1583649b-removebg-preview.png",
         "logo_width": 240,
         "brand_text": "",
         "brand_description": "<p>Tell customers what your store is about in a sentence or two.</p>",
