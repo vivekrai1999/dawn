@@ -80,7 +80,7 @@
   assign panel_text = section.settings.panel_text_color | default: '#1a1a1a'
   assign panel_accent = section.settings.panel_accent_color | default: '#1a1a1a'
   assign panel_accent_text = section.settings.panel_accent_text_color | default: '#ffffff'
-  assign mobile_header_bg = section.settings.mobile_header_background | default: '#ffffff'
+  assign mobile_header_bg = section.settings.mobile_header_background | default: 'transparent'
   assign mobile_brand_color = section.settings.mobile_brand_color | default: '#1a1a1a'
   assign mobile_icon_color = section.settings.mobile_icon_color | default: mobile_brand_color
   assign mobile_menu_bg = section.settings.mobile_menu_background | default: '#ffffff'
@@ -1051,6 +1051,7 @@
       "type": "color",
       "id": "mobile_header_background",
       "label": "Mobile header background",
+      "info": "Clear to let the section's color scheme show through.",
       "default": "#ffffff"
     },
     {

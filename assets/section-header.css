@@ -520,6 +520,13 @@ header-drawer {
 
   .header {
     display: grid;
+    /*
+      Areas rather than bare grid-column numbers: the DOM order is brand,
+      drawer, pill, and sparse auto-placement pushes any item whose column sits
+      before the previous item's onto a new row — which stacked the logo above
+      the icons. Named areas pin all three to row 1.
+    */
+    grid-template-areas: 'drawer brand icons';
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 0.8rem;
@@ -529,17 +536,17 @@ header-drawer {
 
   /* Menu toggle, centred logo, actions. */
   .header > header-drawer {
-    grid-column: 1;
+    grid-area: drawer;
     justify-self: start;
   }
 
   .header__brand {
-    grid-column: 2;
+    grid-area: brand;
     justify-self: center;
   }
 
   .header__pill {
-    grid-column: 3;
+    grid-area: icons;
     justify-self: end;
   }
 

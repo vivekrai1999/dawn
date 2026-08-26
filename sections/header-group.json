@@ -131,7 +131,7 @@
         "enable_country_selector": true,
         "enable_language_selector": true,
         "mobile_header_position": "normal",
-        "mobile_header_background": "#ffffff",
+        "mobile_header_background": "",
         "mobile_brand_color": "#4E3B34",
         "mobile_icon_color": "",
         "mobile_menu_background": "#ffffff",
