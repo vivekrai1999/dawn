@@ -690,29 +690,34 @@ if (!customElements.get('product-hero-gallery')) {
 
     /*
       Dawn re-renders the price / buy buttons on variant change, so the bar's
-      own markup is already current. All that is left is to move the gallery to
-      the variant's featured image when it has one.
+      own markup is already current. The variant-media swap module replaces
+      the slides and then calls syncBarThumbs() itself — listening here would
+      read the previous variant's featured image, because the raw `change`
+      event fires before that swap lands.
     */
     handleVariantChange(event) {
       if (!this.$track) return;
       const select = event.target.closest('variant-selects');
       if (!select) return;
+    }
 
-      window.requestAnimationFrame(() => {
-        const active = this.querySelector('[data-gallery-slide][data-variant-featured="true"]');
-        if (!active) return;
+    /*
+      Copies the featured slide's image into the sticky-bar and mini-widget
+      thumbnails so all three views agree. Called after the variant-media
+      swap has installed the correct slides.
+    */
+    syncBarThumbs() {
+      if (!this.$track || !this.$track.hasClass('slick-initialized')) return;
 
-        const index = parseInt(active.dataset.galleryIndex, 10);
-        if (Number.isFinite(index)) this.$track.slick('slickGoTo', index);
+      const active = this.querySelector('[data-gallery-slide][data-variant-featured="true"]');
+      if (!active) return;
 
-        // Both thumbnails follow the gallery, so all three views agree.
-        const image = active.querySelector('img');
-        if (!image) return;
+      const image = active.querySelector('img');
+      if (!image) return;
 
-        this.querySelectorAll('[data-phg-bar-thumb], [data-phg-mini-thumb]').forEach((thumb) => {
-          thumb.srcset = image.srcset || '';
-          thumb.src = image.currentSrc || image.src;
-        });
+      this.querySelectorAll('[data-phg-bar-thumb], [data-phg-mini-thumb]').forEach((thumb) => {
+        thumb.srcset = image.srcset || '';
+        thumb.src = image.currentSrc || image.src;
       });
     }
 

@@ -51,6 +51,10 @@
 
     if (liveTrack.classList.contains('slick-initialized')) {
       $(liveTrack).slick('slickGoTo', 0, true);
+
+      // The bar/mini thumbnails mirror the featured slide — refresh them now
+      // that the new variant's slides are installed.
+      if (typeof root.syncBarThumbs === 'function') root.syncBarThumbs();
     }
   }
 
