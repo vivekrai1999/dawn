@@ -43,6 +43,16 @@
     overflow: hidden;
   }
 
+  #FloatingFormModal-{{ section.id }} .floating-form-modal__layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    min-height: 480px;
+    max-height: inherit;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   #FloatingFormModal-{{ section.id }}::backdrop {
     background: rgba(0, 0, 0, 0.55);
   }
@@ -78,12 +88,6 @@
     width: 100%;
     height: 100%;
     fill: currentColor;
-  }
-
-  #FloatingFormModal-{{ section.id }} .floating-form-modal__layout {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    min-height: 480px;
   }
 
   /* Intro panel */
@@ -209,19 +213,41 @@
   #FloatingFormModal-{{ section.id }} .floating-form__submit {
     justify-self: start;
     margin-top: 30px;
-    padding: 12px 36px;
-    background: var(--ffm-accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 34px;
+    background: linear-gradient(135deg, var(--ffm-accent) 0%, color-mix(in srgb, var(--ffm-accent) 78%, var(--ffm-fg)) 100%);
     color: var(--ffm-accent-fg);
     border: none;
     border-radius: 10px;
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 400;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--ffm-accent) 40%, transparent);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  #FloatingFormModal-{{ section.id }} .floating-form__submit::after {
+    content: '→';
+    font-size: 1.5rem;
+    line-height: 1;
+    transition: transform 0.2s ease;
   }
 
   #FloatingFormModal-{{ section.id }} .floating-form__submit:hover {
-    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--ffm-accent) 50%, transparent);
+  }
+
+  #FloatingFormModal-{{ section.id }} .floating-form__submit:hover::after {
+    transform: translateX(3px);
+  }
+
+  #FloatingFormModal-{{ section.id }} .floating-form__submit:active {
+    transform: translateY(0);
   }
 
   #FloatingFormModal-{{ section.id }} .floating-form__status {
@@ -254,28 +280,56 @@
   }
 
   @media screen and (max-width: 749px) {
+    #FloatingFormModal-{{ section.id }} {
+      width: min(920px, calc(100vw - 16px));
+    }
+
+    #FloatingFormModal-{{ section.id }} .floating-form-modal__close {
+      top: 10px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+    }
+
     #FloatingFormModal-{{ section.id }} .floating-form-modal__layout {
       grid-template-columns: 1fr;
       min-height: 0;
     }
 
     #FloatingFormModal-{{ section.id }} .floating-form-modal__intro {
-      padding: 40px 28px 8px;
-      gap: 14px;
+      padding: 32px 22px 4px;
+      gap: 12px;
     }
 
     #FloatingFormModal-{{ section.id }} .floating-form-modal__heading {
-      font-size: 2.8rem;
+      font-size: 2.6rem;
+      padding-right: 36px;
     }
 
     #FloatingFormModal-{{ section.id }} .floating-form-modal__panel {
-      margin: 8px 16px 16px;
-      padding: 28px 22px;
+      margin: 8px 8px 8px;
+      padding: 24px 18px;
+    }
+
+    #FloatingFormModal-{{ section.id }} .floating-form-modal__panel-title {
+      margin-bottom: 20px;
     }
 
     #FloatingFormModal-{{ section.id }} .floating-form__fields {
-      grid-template-columns: 1fr;
-      gap: 22px;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 14px;
+    }
+
+    #FloatingFormModal-{{ section.id }} textarea.floating-form__input {
+      min-height: 50px;
+    }
+
+    #FloatingFormModal-{{ section.id }} .floating-form__submit {
+      grid-column: 1 / -1;
+      justify-self: stretch;
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px 24px;
     }
   }
 </style>
