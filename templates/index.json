@@ -16,7 +16,7 @@
           "type": "slide",
           "settings": {
             "image": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_05_35_PM.png",
-            "image_mobile": "shopify://shop_images/ChatGPT_Image_Aug_24_2026_03_06_33_PM.png",
+            "image_mobile": "shopify://shop_images/ChatGPT_Image_Aug_26_2026_09_04_46_AM.png",
             "image_position": "center",
             "eyebrow": "Handmade in India",
             "heading": "Crochet made with care",
@@ -93,7 +93,7 @@
         "first_slide_is_h1": true,
         "accessibility_info": "Crochet collection highlights",
         "height_desktop": 85,
-        "height_mobile": 55,
+        "height_mobile": 60,
         "content_width": 600,
         "content_gutter": 72,
         "mobile_media_only": true,
