@@ -85,12 +85,12 @@
       return data.mediaIds.slice(start, Math.min(start + count, available));
     }
 
+    // Merchant convention: variant media first, common media last.
     return {
       getVariantMedia: function (variantId) {
-        var ids = slice(0, commonCount);
         var range = ranges[variantId];
-        if (range) ids = ids.concat(slice(range.start, range.count));
-        return ids;
+        var ids = range ? slice(range.start, range.count) : [];
+        return ids.concat(slice(0, commonCount));
       },
       isExplicit: true,
     };
@@ -142,12 +142,12 @@
       return data.mediaIds.slice(start, Math.min(start + count, data.mediaIds.length));
     }
 
+    // Merchant convention: variant media first, common media last.
     return {
       getVariantMedia: function (variantId) {
-        var ids = slice(0, commonCount);
         var range = ranges[variantId];
-        if (range) ids = ids.concat(slice(range.start, range.count));
-        return ids;
+        var ids = range ? slice(range.start, range.count) : [];
+        return ids.concat(slice(0, commonCount));
       },
       isExplicit: false,
     };
@@ -176,15 +176,6 @@
       console.warn('[variant-media] invalid JSON payload', error);
       return null;
     }
-  }
-
-  function getFeaturedMediaId(data, variantId) {
-    for (var i = 0; i < data.variants.length; i++) {
-      if (String(data.variants[i].id) === String(variantId)) {
-        return data.variants[i].featuredMediaId;
-      }
-    }
-    return null;
   }
 
   function getController(root) {
@@ -226,7 +217,7 @@
   }
 
   /* Dawn <media-gallery>: toggle list items and thumbnails via [hidden]. */
-  function applyToMediaGallery(root, controller, allowedSet, targetMediaId) {
+  function applyToMediaGallery(root, controller, allowedSet, targetMediaId, forceActive) {
     var viewerItems = root.querySelectorAll('.product__media-list > li[data-media-id]');
     var thumbnails = root.querySelectorAll('[data-target]');
     if (!viewerItems.length) return false;
@@ -251,7 +242,7 @@
     pauseVideos();
 
     var gallery = root.matches('media-gallery') ? root : root.querySelector('media-gallery');
-    if (gallery && typeof gallery.setActiveMedia === 'function' && (!activeItem || activeHidden)) {
+    if (gallery && typeof gallery.setActiveMedia === 'function' && (forceActive || !activeItem || activeHidden)) {
       gallery.setActiveMedia(fullId, false);
     }
     return true;
@@ -364,14 +355,15 @@
 
     controller.lastVariantId = variantId;
 
+    // Merchant convention: always land on the first image of the sequence.
+    var target = mediaIds[0];
     var allowedSet = new Set(mediaIds);
-    var featured = getFeaturedMediaId(controller.data, variantId);
-    var target = featured && allowedSet.has(String(featured)) ? String(featured) : mediaIds[0];
-    debug('active target media:', target, '(featured:', featured + ')');
 
     if (root.matches('media-gallery')) {
       debug('branch: media-gallery');
-      applyToMediaGallery(root, controller, allowedSet, target);
+      var changed = controller.lastTarget !== target;
+      controller.lastTarget = target;
+      applyToMediaGallery(root, controller, allowedSet, target, changed);
     } else {
       debug('branch: hero gallery');
       applyToHeroGallery(root, controller, mediaIds, target);
