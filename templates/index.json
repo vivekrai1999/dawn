@@ -92,8 +92,8 @@
         "full_width": true,
         "first_slide_is_h1": true,
         "accessibility_info": "Crochet collection highlights",
-        "height_desktop": 85,
-        "height_mobile": 70,
+        "height_desktop": 700,
+        "height_mobile": 580,
         "content_width": 600,
         "content_gutter": 72,
         "mobile_media_only": true,
@@ -125,7 +125,7 @@
         "description_size": 15,
         "description_width": 760,
         "product_source": "collection",
-        "collection": "",
+        "collection": "amigurumi",
         "products_limit": 8,
         "columns_desktop": 4,
         "columns_tablet": 3,
@@ -242,7 +242,7 @@
         "card_kndUaY": {
           "type": "card",
           "settings": {
-            "image": "shopify://shop_images/crochet-baby-bonnet.jpg",
+            "image": "shopify://shop_images/crochet-baby-star-blanket.jpg",
             "focal_point": "center",
             "eyebrow": "Baby blankets",
             "title": "Warmth for the little ones",
@@ -371,13 +371,13 @@
       "type": "product-showcase",
       "name": "Product showcase",
       "settings": {
-        "heading": "Collection",
+        "heading": "New Arrivals",
         "description": "<p>This guide explores the latest trends in tote bags, helping you choose the perfect one to enhance your everyday wardrobe.</p>",
         "heading_size": 40,
         "description_size": 15,
         "description_width": 760,
         "product_source": "collection",
-        "collection": "",
+        "collection": "new-arrivals",
         "products_limit": 8,
         "columns_desktop": 4,
         "columns_tablet": 3,
@@ -414,6 +414,7 @@
             "quote": "The baby blanket arrived softer than I expected and has survived a dozen washes without pilling. My sister has already asked where I ordered it from.",
             "name": "Ananya Iyer",
             "role": "Bengaluru",
+            "avatar": "shopify://shop_images/fashion-model-in-pink.jpg",
             "row": "auto"
           }
         },
@@ -423,6 +424,7 @@
             "quote": "I ordered three amigurumi for my nephew's birthday and they were packed beautifully, each one with a little tag naming the artisan who made it.",
             "name": "Rohan Mehta",
             "role": "Mumbai",
+            "avatar": "shopify://shop_images/woman-poses-in-dark-room.jpg",
             "row": "auto"
           }
         },
@@ -432,6 +434,7 @@
             "quote": "The cotton yarn is genuinely good quality and the colours match the photos, which is rare when buying craft supplies online.",
             "name": "Priya Nair",
             "role": "Kochi",
+            "avatar": "shopify://shop_images/model-with-leather-jacket-over-shoulders.jpg",
             "row": "auto"
           }
         },
@@ -441,6 +444,7 @@
             "quote": "Delivery to a small town in Rajasthan took four days and everything arrived intact. The handwritten note was a lovely touch.",
             "name": "Vikram Singh",
             "role": "Udaipur",
+            "avatar": "shopify://shop_images/model-laughs-barefoot.jpg",
             "row": "auto"
           }
         },
@@ -450,6 +454,7 @@
             "quote": "I asked for a custom colour for a table runner and they sent swatch photos before starting. That kind of care is why I keep ordering.",
             "name": "Meera Krishnan",
             "role": "Chennai",
+            "avatar": "shopify://shop_images/model-in-neutral-colors-by-window.jpg",
             "row": "auto"
           }
         },
@@ -459,6 +464,7 @@
             "quote": "Prices are clear, no surprises at checkout, and the crochet hooks are far better made than the ones I had been using.",
             "name": "Aditi Sharma",
             "role": "Jaipur",
+            "avatar": "shopify://shop_images/woman-infront-of-tree-with-berries.jpeg",
             "row": "auto"
           }
         }
@@ -484,16 +490,16 @@
         "top_speed": 40,
         "bottom_direction": "right",
         "bottom_speed": 45,
-        "easing": "linear",
+        "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
         "full_width": true,
         "card_width": 320,
         "card_min_height": 0,
         "card_gap": 20,
         "row_gap": 20,
-        "edge_fade": 0,
+        "edge_fade": 30,
         "padding_top": 64,
         "padding_bottom": 64,
-        "card_radius": 16,
+        "card_radius": 32,
         "card_padding": 24,
         "card_content_gap": 24,
         "card_surface_opacity": 4,
@@ -623,7 +629,7 @@
         "label_gap": 8,
         "border_radius": "pill",
         "show_shadow": true,
-        "bg_color": "#FFFFFF",
+        "bg_color": "#ffffff",
         "text_color": "",
         "border_width": 0,
         "border_color": ""
