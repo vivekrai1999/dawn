@@ -558,6 +558,7 @@ header-drawer {
   /* On mobile the actions sit on the bar itself, not in a floating pill. */
   .header__pill {
     flex: 0 0 auto;
+    gap: 0;
     padding: 0;
     border: 0;
     border-radius: 0;
@@ -569,11 +570,19 @@ header-drawer {
     content: none;
   }
 
+  .header__icons {
+    gap: 0.4rem;
+  }
+
   .header__icon,
   .header__icon--summary {
     color: var(--mobile-icon-color);
-    /* Touch target stays >= 44px even when --icon-size is small. */
-    width: max(4.4rem, calc(var(--icon-size) + 1.6rem));
+    /*
+      Narrower than the desktop box: the 4.4rem width around a 2rem glyph read
+      as a large gap between icons on a phone. Height keeps the 4.4rem touch
+      row; width drops to 4rem so the icons sit closer together.
+    */
+    width: max(4rem, calc(var(--icon-size) + 1.4rem));
     height: max(4.4rem, calc(var(--icon-size) + 1.6rem));
   }
 
