@@ -1,0 +1,45 @@
+{% comment %}
+  Renders one slide for the hero gallery.
+  Accepts:
+  - media: {Object} image media object
+  - slide_index: {Number} position across the whole track (drives lazy loading)
+  - per_view: {Number} slides visible at once (slides before it are eager)
+  - gallery_sizes: {String} sizes attribute value
+  - featured_media_id: {Number|Nil} currently selected variant's featured media
+  - is_original: {Boolean} false for infinite-loop repeats
+{% endcomment %}
+{%- liquid
+  assign is_variant_featured = false
+  if is_original and featured_media_id != blank and media.id == featured_media_id
+    assign is_variant_featured = true
+  endif
+  assign loading_attr = 'lazy'
+  if slide_index < per_view
+    assign loading_attr = 'eager'
+  endif
+-%}
+<div
+  class="phg-gallery__slide"
+  data-gallery-slide
+  data-gallery-index="{{ slide_index }}"
+  data-media-id="{{ media.id }}"
+  {% if is_variant_featured %}
+    data-variant-featured="true"
+  {% endif %}
+  {% unless is_original %}
+    data-gallery-repeat="true"
+    aria-hidden="true"
+  {% endunless %}
+>
+  {{
+    media.preview_image
+    | image_url: width: 1946
+    | image_tag:
+      loading: loading_attr,
+      fetchpriority: 'auto',
+      class: 'phg-gallery__image',
+      widths: '375, 550, 750, 1100, 1500, 1780, 2000',
+      sizes: gallery_sizes,
+      alt: media.alt
+  }}
+</div>

@@ -135,7 +135,78 @@
     a placeholder, so the layout never collapses.
   endcomment
   assign gallery_media = product.media | where: 'media_type', 'image'
-  assign source_count = gallery_media.size
+  assign total_images = gallery_media.size
+
+  comment
+    Variant media convention: the FIRST photo of every variant's sequence is
+    attached to that variant in admin; photos before the first anchor are
+    shared ("common"). The selected variant's sequence is resolved here on
+    the server so the gallery renders in final order — variant shots first,
+    common shots last — and no client-side patching is needed.
+  endcomment
+  assign anchor_positions_str = ''
+  for v in product.variants
+    unless v.featured_media and v.featured_media.media_type == 'image'
+      continue
+    endunless
+    assign pos = 0
+    for m in gallery_media
+      if m.id == v.featured_media.id
+        assign pos = forloop.index
+        break
+      endif
+    endfor
+    if pos > 0
+      assign anchor_positions_str = anchor_positions_str | append: pos | append: ','
+    endif
+  endfor
+
+  comment
+    Deduplicate + sort anchors ascending (a position could anchor two variants).
+  endcomment
+  assign ordered_anchors_str = ''
+  assign anchor_candidates = anchor_positions_str | split: ','
+  for p in (1..total_images)
+    assign p_str = p | append: ''
+    for ap in anchor_candidates
+      if ap == p_str
+        assign ordered_anchors_str = ordered_anchors_str | append: p | append: ','
+      endif
+    endfor
+  endfor
+  assign anchors = ordered_anchors_str | split: ','
+
+  assign common_count = 0
+  if anchors.size > 0
+    assign common_count = anchors.first | plus: 0 | minus: 1
+  endif
+
+  assign group_start = 0
+  assign group_end = 0
+  if variant.featured_media and variant.featured_media.media_type == 'image'
+    for m in gallery_media
+      if m.id == variant.featured_media.id
+        assign group_start = forloop.index
+        break
+      endif
+    endfor
+  endif
+  if group_start > 0
+    assign next_anchor = total_images | plus: 1
+    for ap in anchors
+      assign api = ap | plus: 0
+      if api > group_start and api < next_anchor
+        assign next_anchor = api
+      endif
+    endfor
+    assign group_end = next_anchor | minus: 1
+  endif
+
+  assign variant_count = 0
+  if group_start > 0
+    assign variant_count = group_end | minus: group_start | plus: 1
+  endif
+  assign source_count = variant_count | plus: common_count
 
   comment
     Slick needs more slides than it shows before infinite mode can loop without
@@ -162,7 +233,6 @@
     assign repeat_count = 1
   endif
 
-  assign featured_media_id = variant.featured_media.id
 -%}
 
 {%- capture gallery_sizes -%}
@@ -223,55 +293,46 @@
           {%- if source_count > 0 -%}
             {%- assign slide_index = 0 -%}
             {%- for repeat in (1..repeat_count) -%}
-              {%- for media in gallery_media -%}
-                {%- liquid
-                  assign is_original = false
-                  if repeat == 1
-                    assign is_original = true
-                  endif
+              {%- assign is_original = false -%}
+              {%- if repeat == 1 -%}
+                {%- assign is_original = true -%}
+              {%- endif -%}
 
-                  comment
-                    Only the first pass carries the variant flag, so the
-                    gallery always jumps to a real image rather than one of
-                    its repeats.
-                  endcomment
-                  assign is_variant_featured = false
-                  if is_original and featured_media_id != blank and media.id == featured_media_id
-                    assign is_variant_featured = true
-                  endif
+              {%- comment -%} Selected variant's own sequence {%- endcomment -%}
+              {%- if group_start > 0 -%}
+                {%- for media in gallery_media -%}
+                  {%- assign idx = forloop.index -%}
+                  {%- if idx >= group_start and idx <= group_end -%}
+                    {%- render 'product-hero-gallery-slide',
+                      media: media,
+                      slide_index: slide_index,
+                      per_view: per_view,
+                      gallery_sizes: gallery_sizes,
+                      featured_media_id: variant.featured_media.id,
+                      is_original: is_original
+                    -%}
+                    {%- assign slide_index = slide_index | plus: 1 -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
 
-                  assign loading_attr = 'lazy'
-                  if slide_index < per_view
-                    assign loading_attr = 'eager'
-                  endif
-                -%}
-                <div
-                  class="phg-gallery__slide"
-                  data-gallery-slide
-                  data-gallery-index="{{ slide_index }}"
-                  data-media-id="{{ media.id }}"
-                  {% if is_variant_featured %}
-                    data-variant-featured="true"
-                  {% endif %}
-                  {% unless is_original %}
-                    data-gallery-repeat="true"
-                    aria-hidden="true"
-                  {% endunless %}
-                >
-                  {{
-                    media.preview_image
-                    | image_url: width: 1946
-                    | image_tag:
-                      loading: loading_attr,
-                      fetchpriority: 'auto',
-                      class: 'phg-gallery__image',
-                      widths: '375, 550, 750, 1100, 1500, 1780, 2000',
-                      sizes: gallery_sizes,
-                      alt: media.alt
-                  }}
-                </div>
-                {%- assign slide_index = slide_index | plus: 1 -%}
-              {%- endfor -%}
+              {%- comment -%} Common media, always last {%- endcomment -%}
+              {%- if common_count > 0 -%}
+                {%- for media in gallery_media -%}
+                  {%- assign idx = forloop.index -%}
+                  {%- if idx <= common_count -%}
+                    {%- render 'product-hero-gallery-slide',
+                      media: media,
+                      slide_index: slide_index,
+                      per_view: per_view,
+                      gallery_sizes: gallery_sizes,
+                      featured_media_id: variant.featured_media.id,
+                      is_original: is_original
+                    -%}
+                    {%- assign slide_index = slide_index | plus: 1 -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
             {%- endfor -%}
           {%- else -%}
             {%- comment -%}
@@ -438,12 +499,6 @@
                 {{ variant | json }}
               </script>
             </variant-selects>
-            {%- render 'variant-media-data',
-              product: product,
-              section: section,
-              vm_media_list: gallery_media,
-              vm_repeat_count: repeat_count
-            -%}
           {%- endunless -%}
 
           {%- comment -%}
@@ -771,3 +826,4 @@
     </product-hero-gallery>
   </product-component>
 </div>
+
