@@ -211,7 +211,7 @@
         "color_scheme": "",
         "logo_height": 28,
         "gap": 64,
-        "grayscale": false,
+        "grayscale": true,
         "logo_opacity": 95,
         "speed": 40,
         "direction": "left",
