@@ -414,15 +414,7 @@
             "quote": "The baby blanket arrived softer than I expected and has survived a dozen washes without pilling. My sister has already asked where I ordered it from.",
             "name": "Ananya Iyer",
             "role": "Bengaluru",
-            "row": "auto"
-          }
-        },
-        "review_WzK3Ej": {
-          "type": "review",
-          "settings": {
-            "quote": "",
-            "name": "",
-            "role": "",
+            "avatar": "shopify://shop_images/fashion-model-in-pink.jpg",
             "row": "auto"
           }
         },
@@ -432,6 +424,7 @@
             "quote": "I ordered three amigurumi for my nephew's birthday and they were packed beautifully, each one with a little tag naming the artisan who made it.",
             "name": "Rohan Mehta",
             "role": "Mumbai",
+            "avatar": "shopify://shop_images/woman-poses-in-dark-room.jpg",
             "row": "auto"
           }
         },
@@ -441,6 +434,7 @@
             "quote": "The cotton yarn is genuinely good quality and the colours match the photos, which is rare when buying craft supplies online.",
             "name": "Priya Nair",
             "role": "Kochi",
+            "avatar": "shopify://shop_images/model-with-leather-jacket-over-shoulders.jpg",
             "row": "auto"
           }
         },
@@ -450,6 +444,7 @@
             "quote": "Delivery to a small town in Rajasthan took four days and everything arrived intact. The handwritten note was a lovely touch.",
             "name": "Vikram Singh",
             "role": "Udaipur",
+            "avatar": "shopify://shop_images/model-laughs-barefoot.jpg",
             "row": "auto"
           }
         },
@@ -459,6 +454,7 @@
             "quote": "I asked for a custom colour for a table runner and they sent swatch photos before starting. That kind of care is why I keep ordering.",
             "name": "Meera Krishnan",
             "role": "Chennai",
+            "avatar": "shopify://shop_images/model-in-neutral-colors-by-window.jpg",
             "row": "auto"
           }
         },
@@ -468,13 +464,13 @@
             "quote": "Prices are clear, no surprises at checkout, and the crochet hooks are far better made than the ones I had been using.",
             "name": "Aditi Sharma",
             "role": "Jaipur",
+            "avatar": "shopify://shop_images/woman-infront-of-tree-with-berries.jpeg",
             "row": "auto"
           }
         }
       },
       "block_order": [
         "review_zGL9Ff",
-        "review_WzK3Ej",
         "review_gx6aAN",
         "review_V8jCeC",
         "review_QrtAfH",
