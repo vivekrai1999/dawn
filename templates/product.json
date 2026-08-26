@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
@@ -11,20 +20,25 @@
           }
         },
         "title": {
-          "type": "title"
+          "type": "title",
+          "settings": {}
         },
         "price": {
-          "type": "price"
+          "type": "price",
+          "settings": {}
         },
         "variant_picker": {
           "type": "variant_picker",
           "settings": {
             "picker_type": "button",
+            "enable_color_swatches": true,
+            "color_option_names": "Color, Colour, Colors, Colours, Shade, Tone",
             "swatch_shape": "circle"
           }
         },
         "quantity_selector": {
-          "type": "quantity_selector"
+          "type": "quantity_selector",
+          "settings": {}
         },
         "buy_buttons": {
           "type": "buy_buttons",
@@ -34,7 +48,8 @@
           }
         },
         "description": {
-          "type": "description"
+          "type": "description",
+          "settings": {}
         },
         "share": {
           "type": "share",
@@ -54,25 +69,41 @@
         "share"
       ],
       "settings": {
+        "product_layout": "hero_gallery",
         "enable_sticky_info": true,
         "color_scheme": "scheme-1",
-        "media_position": "left",
-        "gallery_layout": "stacked",
         "media_size": "large",
         "constrain_to_viewport": true,
         "media_fit": "contain",
-        "image_zoom": "lightbox",
+        "gallery_layout": "stacked",
         "mobile_thumbnails": "hide",
+        "media_position": "left",
+        "image_zoom": "lightbox",
         "hide_variants": true,
         "enable_video_looping": false,
+        "hero_slides_desktop": 3,
+        "hero_slides_tablet": 2,
+        "hero_slides_mobile": 1,
+        "hero_gallery_ratio": "4 / 5",
+        "hero_slide_gap": 4,
+        "hero_autoplay": true,
+        "hero_sticky_bar": true,
+        "hero_show_description": true,
+        "hero_shipping_title": "International Shipping Available",
+        "hero_shipping_content": "<p>We ship worldwide. Delivery estimates and any duties or taxes are shown at checkout.</p>",
+        "hero_care_title": "Customer Care",
+        "hero_care_content": "<p>Questions about an order or a product? Get in touch and we'll come back to you within two working days.</p>",
         "padding_top": 0,
-        "padding_bottom": 24,
-        "product_layout": "hero_gallery"
+        "padding_bottom": 24
       }
     },
     "disclosures": {
       "type": "disclosures",
       "settings": {
+        "heading": "Disclosures",
+        "heading_size": "h2",
+        "open_by_default": false,
+        "color_scheme": "",
         "padding_top": 36,
         "padding_bottom": 0
       }
@@ -82,15 +113,33 @@
       "settings": {
         "heading": "You may also like",
         "heading_size": "h2",
+        "description": "",
+        "description_size": 15,
+        "description_width": 760,
         "products_to_show": 4,
-        "columns_desktop": 4,
         "color_scheme": "scheme-1",
+        "columns_desktop": 4,
+        "columns_tablet": 3,
+        "columns_mobile": "2",
+        "grid_gap": 24,
+        "content_width": 1800,
+        "enable_carousel": true,
+        "show_navigation": true,
         "image_ratio": "square",
-        "image_shape": "default",
+        "card_media_radius": 12,
         "show_secondary_image": true,
         "show_vendor": false,
+        "enable_quick_add": true,
         "show_rating": false,
-        "columns_mobile": "2",
+        "card_title_size": 15,
+        "card_price_size": 15,
+        "button_size": 44,
+        "heading_color": "",
+        "text_color": "",
+        "card_title_color": "",
+        "card_price_color": "",
+        "button_background_color": "",
+        "button_icon_color": "",
         "padding_top": 36,
         "padding_bottom": 28
       }

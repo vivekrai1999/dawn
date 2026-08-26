@@ -104,7 +104,7 @@
         "eyebrow_size": 13,
         "text_size": 16,
         "transition": "slide",
-        "transition_speed": 600,
+        "transition_speed": 400,
         "infinite": true,
         "autoplay": true,
         "autoplay_speed": 4,
