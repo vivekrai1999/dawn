@@ -54,6 +54,7 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'variant-media.js' | asset_url }}" defer="defer"></script>
   {%- unless product.has_only_default_variant -%}
     <script src="{{ 'variant-picker.js' | asset_url }}" defer="defer"></script>
   {%- endunless -%}

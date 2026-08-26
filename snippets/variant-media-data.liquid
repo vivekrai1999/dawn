@@ -1,0 +1,50 @@
+{% comment %}
+  Renders the normalized product-media dataset consumed by variant-media.js.
+
+  Accepts:
+  - product: {Object} product object
+  - section: {Object} section object
+  - vm_media_list: {Array} ordered media array the gallery displays
+    (defaults to product.media)
+  - vm_repeat_count: {Number} how many times the gallery repeats the media
+    (hero gallery slick looping; defaults to 1)
+
+  The grouping configuration comes from the product metafield
+  custom.variant_media_config (type JSON), e.g.:
+    {
+      "commonMediaCount": 2,
+      "variantMediaCounts": { "123456789": 2, "123456790": 4 }
+    }
+
+  When the metafield is absent or invalid, variant-media.js stays inert and
+  the theme's native gallery behaviour is used unchanged.
+
+  Usage:
+  {% render 'variant-media-data', product: product, section: section %}
+{% endcomment %}
+
+{%- liquid
+  assign vm_media = product.media
+  if vm_media_list != blank
+    assign vm_media = vm_media_list
+  endif
+  assign vm_repeat = vm_repeat_count | default: 1
+-%}
+
+<script type="application/json" data-variant-media-data>
+  {
+    "sectionId": {{ section.id | json }},
+    "repeatCount": {{ vm_repeat }},
+    "mediaIds": [{% for m in vm_media %}{{ m.id }}{%- unless forloop.last -%},{%- endunless -%}{% endfor %}],
+    "variants": [
+      {%- for v in product.variants -%}
+        {
+          "id": {{ v.id }},
+          "featuredMediaId": {{ v.featured_media.id | json }}
+        }
+        {%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ],
+    "config": {{ product.metafields.custom.variant_media_config.value | json }}
+  }
+</script>

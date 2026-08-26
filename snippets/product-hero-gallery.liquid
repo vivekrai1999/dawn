@@ -119,6 +119,7 @@
 <script src="{{ 'jquery.min.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'slick.min.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'product-hero-gallery.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'variant-media.js' | asset_url }}" defer="defer"></script>
 {%- if request.design_mode -%}
   <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
@@ -437,6 +438,12 @@
                 {{ variant | json }}
               </script>
             </variant-selects>
+            {%- render 'variant-media-data',
+              product: product,
+              section: section,
+              vm_media_list: gallery_media,
+              vm_repeat_count: repeat_count
+            -%}
           {%- endunless -%}
 
           {%- comment -%}
