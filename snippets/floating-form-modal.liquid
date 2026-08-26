@@ -36,6 +36,7 @@
     padding: 0;
     background: var(--ffm-bg);
     color: var(--ffm-fg);
+    font-family: var(--font-body--family, inherit);
     border-radius: 24px;
     width: min(920px, calc(100vw - 32px));
     max-height: min(90vh, 720px);
@@ -230,20 +231,9 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  #FloatingFormModal-{{ section.id }} .floating-form__submit::after {
-    content: '→';
-    font-size: 1.5rem;
-    line-height: 1;
-    transition: transform 0.2s ease;
-  }
-
   #FloatingFormModal-{{ section.id }} .floating-form__submit:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 22px color-mix(in srgb, var(--ffm-accent) 50%, transparent);
-  }
-
-  #FloatingFormModal-{{ section.id }} .floating-form__submit:hover::after {
-    transform: translateX(3px);
   }
 
   #FloatingFormModal-{{ section.id }} .floating-form__submit:active {

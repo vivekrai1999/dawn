@@ -8,6 +8,8 @@
   list-style: none;
   pointer-events: none;
   background: transparent;
+  font-family: var(--font-body--family, inherit);
+  font-weight: 400;
 }
 
 .floating-actions__item {
