@@ -56,6 +56,7 @@ class HeroGalleryDropdown {
         value: input.value,
         label: input.value,
         disabled: false,
+        swatch: input.nextElementSibling?.style?.background || '',
       }));
     }
 
@@ -100,7 +101,11 @@ class HeroGalleryDropdown {
     this.valueEl = document.createElement('span');
     this.valueEl.className = 'hg-dropdown__value';
 
-    this.trigger.append(this.labelEl, this.valueEl);
+    this.triggerSwatch = document.createElement('span');
+    this.triggerSwatch.className = 'hg-dropdown__swatch';
+    this.triggerSwatch.hidden = true;
+
+    this.trigger.append(this.labelEl, this.triggerSwatch, this.valueEl);
     this.trigger.insertAdjacentHTML('beforeend', HeroGalleryDropdown.CARET);
 
     this.panel = document.createElement('ul');
@@ -125,14 +130,22 @@ class HeroGalleryDropdown {
 
   renderOptions() {
     this.panel.textContent = '';
+    this.cachedOptions = this.readOptions();
 
-    this.readOptions().forEach((opt) => {
+    this.cachedOptions.forEach((opt) => {
       const li = document.createElement('li');
       li.className = 'hg-dropdown__option';
       li.setAttribute('role', 'option');
       li.dataset.value = opt.value;
       li.tabIndex = -1;
-      li.textContent = opt.label;
+      if (opt.swatch) {
+        const dot = document.createElement('span');
+        dot.className = 'hg-dropdown__swatch';
+        dot.style.background = opt.swatch;
+        dot.setAttribute('aria-hidden', 'true');
+        li.appendChild(dot);
+      }
+      li.appendChild(document.createTextNode(opt.label));
       if (opt.disabled) {
         li.setAttribute('aria-disabled', 'true');
         li.classList.add('is-disabled');
@@ -155,6 +168,12 @@ class HeroGalleryDropdown {
   syncValue() {
     const value = this.currentValue;
     this.valueEl.textContent = value;
+
+    if (this.triggerSwatch) {
+      const current = (this.cachedOptions || []).find((opt) => opt.value === value);
+      this.triggerSwatch.style.background = current?.swatch || '';
+      this.triggerSwatch.hidden = !current?.swatch;
+    }
 
     this.panel.querySelectorAll('.hg-dropdown__option').forEach((li) => {
       const match = li.dataset.value === value;
