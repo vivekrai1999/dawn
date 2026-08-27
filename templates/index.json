@@ -634,6 +634,33 @@
         "border_width": 0,
         "border_color": ""
       }
+    },
+    "bouquet_builder_6zkPmg": {
+      "type": "bouquet-builder",
+      "name": "Bouquet builder",
+      "settings": {
+        "collection": "bouquet-builder",
+        "metafield_namespace": "custom",
+        "require_photo": true,
+        "heading": "Build your own bouquet",
+        "description": "<p>Pick your flowers one stem at a time and watch them gather into a bouquet made for the person you have in mind.</p>",
+        "enable_shuffle": false,
+        "shuffle_label": "Shuffle bouquet",
+        "button_label": "Add bouquet to cart",
+        "min_flowers": 6,
+        "max_flowers": 10,
+        "max_accessories": 4,
+        "max_per_item": 6,
+        "canvas_ratio": 0.9,
+        "enable_drag": true,
+        "enable_rotate": true,
+        "enable_scale": true,
+        "content_width": 1800,
+        "color_scheme": "",
+        "corner_radius": 20,
+        "padding_top": 56,
+        "padding_bottom": 56
+      }
     }
   },
   "order": [
@@ -644,6 +671,7 @@
     "product_showcase_TDakeE",
     "reviews_marquee_kWRrBF",
     "process_XrVAUC",
-    "floating_action_buttons_VWJjtg"
+    "floating_action_buttons_VWJjtg",
+    "bouquet_builder_6zkPmg"
   ]
 }
