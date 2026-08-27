@@ -1,0 +1,45 @@
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "eyebrow": "Made to order",
+        "heading": "",
+        "intro": "<p>Choose your stems one at a time and watch them gather into a bouquet that exists nowhere else. Every flower, leaf and ribbon is crocheted by hand, so it keeps for years rather than days.</p>",
+        "alignment": "left",
+        "color_scheme": "scheme-1",
+        "heading_size": 44,
+        "body_size": 16,
+        "text_width": 640,
+        "content_width": 1800,
+        "padding_top": 28,
+        "padding_bottom": 8
+      }
+    },
+    "builder": {
+      "type": "bouquet-builder",
+      "settings": {
+        "collection": "bouquet-builder",
+        "metafield_namespace": "custom",
+        "heading": "Build your bouquet",
+        "description": "<p>Pick the flowers you love. We will arrange them beautifully.</p>",
+        "button_label": "Add bouquet to cart",
+        "max_per_item": 4,
+        "min_flowers": 6,
+        "canvas_ratio": 0.9,
+        "content_width": 1800,
+        "color_scheme": "scheme-1",
+        "corner_radius": 20,
+        "padding_top": 24,
+        "padding_bottom": 56,
+        "max_flowers": 10,
+        "max_accessories": 4,
+        "shuffle_label": "Shuffle bouquet"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "builder"
+  ]
+}

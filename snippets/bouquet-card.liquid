@@ -1,0 +1,190 @@
+{% comment %}
+  One pickable piece in the bouquet builder — a single variant of a single
+  product, which is the unit that actually goes in the cart.
+
+  Rendered by sections/bouquet-builder.liquid once per variant, inside the
+  horizontal row for its category. Server-rendered so the products are real,
+  linked markup that still reads as a product list with JavaScript off;
+  assets/bouquet-builder.js only toggles the add button against the stepper and
+  keeps the count in step with the bouquet.
+
+  Accepts:
+    - product: {Object} the Shopify product
+    - variant: {Object} the variant this card is for
+    - category: {String} the merchant's bouquet_category, may be blank
+    - slide_id: {String} the `Slide-…` id Dawn's <slider-component> looks for
+
+  Usage:
+    {% render 'bouquet-card', product: product, variant: variant, category: category, slide_id: slide_id %}
+{% endcomment %}
+
+{%- liquid
+  assign card_image = variant.featured_media.preview_image | default: product.featured_media.preview_image
+  assign card_name = product.title
+  unless product.has_only_default_variant
+    assign card_name = card_name | append: ' — ' | append: variant.title
+  endunless
+  assign card_id = variant.id | prepend: 'variant-'
+
+  comment
+    Which colour this variant is, so the card can show it.
+
+    The theme already has a resolver for this — snippets/variant-picker-color —
+    and it is asked first, so a merchant-set swatch metafield always wins and
+    anything CSS already knows by name (wheat, ivory) is free.
+
+    It answers with nothing for the rest, because "kraft beige" and "moss green"
+    are yarn names rather than CSS ones, so those are named here. A colour that
+    matches neither simply shows no dot, which is better than showing a wrong
+    one beside the name.
+  endcomment
+  assign swatch_drop = blank
+  for option in product.options_with_values
+    for value in option.values
+      if value.title == variant.title
+        assign swatch_drop = value.swatch
+      endif
+    endfor
+  endfor
+
+  capture swatch_colour
+    render 'variant-picker-color', swatch: swatch_drop, title: variant.title
+  endcapture
+  assign swatch_colour = swatch_colour | strip
+
+  if swatch_colour == blank
+    assign colour_name = variant.title | downcase | strip
+    case colour_name
+      when 'blush pink'
+        assign swatch_colour = '#f2bfc4'
+      when 'blush'
+        assign swatch_colour = '#f3ccc6'
+      when 'pale pink'
+        assign swatch_colour = '#f7dfe4'
+      when 'rose pink'
+        assign swatch_colour = '#e2879d'
+      when 'peach'
+        assign swatch_colour = '#f7c4a0'
+      when 'coral'
+        assign swatch_colour = '#f4867a'
+      when 'scarlet'
+        assign swatch_colour = '#cc2b2b'
+      when 'deep red'
+        assign swatch_colour = '#8c1c26'
+      when 'berry red'
+        assign swatch_colour = '#8e2545'
+      when 'lilac'
+        assign swatch_colour = '#c5b1dd'
+      when 'dusty blue'
+        assign swatch_colour = '#9bb0c4'
+      when 'ivory'
+        assign swatch_colour = '#f2ecdd'
+      when 'cream'
+        assign swatch_colour = '#f2e7d2'
+      when 'white'
+        assign swatch_colour = '#fbfaf6'
+      when 'butter'
+        assign swatch_colour = '#f6e5ab'
+      when 'butter yellow'
+        assign swatch_colour = '#f3dd93'
+      when 'golden yellow'
+        assign swatch_colour = '#e5ae35'
+      when 'wheat'
+        assign swatch_colour = '#e0cb9c'
+      when 'sand beige'
+        assign swatch_colour = '#dbc6a5'
+      when 'kraft beige'
+        assign swatch_colour = '#d0b088'
+      when 'natural jute'
+        assign swatch_colour = '#c3a677'
+      when 'sage'
+        assign swatch_colour = '#aebd9f'
+      when 'moss green'
+        assign swatch_colour = '#6c8049'
+      when 'olive'
+        assign swatch_colour = '#7c7a3b'
+      when 'forest green'
+        assign swatch_colour = '#2e4b36'
+    endcase
+  endif
+-%}
+
+<li
+  class="bouquet-card slider__slide{% unless variant.available %} bouquet-card--sold-out{% endunless %}"
+  {% if slide_id != blank %}
+    id="{{ slide_id }}"
+  {% endif %}
+  data-bouquet-card="{{ card_id }}"
+  data-bouquet-category="{{ category | escape }}"
+  data-bouquet-search-text="{{ card_name | downcase | escape }}"
+>
+  <div class="bouquet-card__media">
+    {%- if card_image != blank -%}
+      {{
+        card_image
+        | image_url: width: 480
+        | image_tag:
+          loading: 'lazy',
+          widths: '160,220,320,480',
+          sizes: '15rem',
+          alt: card_name,
+          class: 'bouquet-card__image'
+      }}
+    {%- else -%}
+      <span class="bouquet-card__placeholder" aria-hidden="true">
+        {{- 'icon-plant.svg' | inline_asset_content -}}
+      </span>
+    {%- endif -%}
+  </div>
+
+  <div class="bouquet-card__body">
+    <p class="bouquet-card__title">
+      <a class="bouquet-card__link" href="{{ variant.url | default: product.url }}">{{- product.title -}}</a>
+    </p>
+    <p class="bouquet-card__price">
+      {%- if variant.available -%}
+        {{ variant.price | money }}
+      {%- else -%}
+        <span class="bouquet-card__unavailable">Sold out</span>
+      {%- endif -%}
+    </p>
+
+    {%- comment -%}
+      The colour, under the price: the dot to recognise it by and the name for
+      anyone who cannot tell two pale yarns apart on a small thumbnail.
+    {%- endcomment -%}
+    {%- unless product.has_only_default_variant -%}
+      <p class="bouquet-card__variant">
+        {%- if swatch_colour != blank -%}
+          <span
+            class="bouquet-card__swatch"
+            style="--bouquet-swatch: {{ swatch_colour }}"
+            aria-hidden="true"
+          ></span>
+        {%- endif -%}
+        {{- variant.title -}}
+      </p>
+    {%- endunless -%}
+  </div>
+
+  {%- if variant.available -%}
+    <div class="bouquet-card__actions">
+      <button class="bouquet-card__add" type="button" data-bouquet-add="{{ card_id }}">
+        <span class="bouquet__icon" aria-hidden="true">{{- 'icon-plus.svg' | inline_asset_content -}}</span>
+        <span>Add<span class="visually-hidden"> {{ card_name }} to your bouquet</span></span>
+      </button>
+
+      <div class="bouquet-card__stepper" data-bouquet-stepper hidden>
+        <button class="bouquet-card__step" type="button" data-bouquet-decrease="{{ card_id }}">
+          <span class="bouquet__icon" aria-hidden="true">{{- 'icon-minus.svg' | inline_asset_content -}}</span>
+          <span class="visually-hidden">Remove one {{ card_name }}</span>
+        </button>
+        <span class="bouquet-card__count" data-bouquet-quantity aria-hidden="true">0</span>
+        <button class="bouquet-card__step" type="button" data-bouquet-increase="{{ card_id }}">
+          <span class="bouquet__icon" aria-hidden="true">{{- 'icon-plus.svg' | inline_asset_content -}}</span>
+          <span class="visually-hidden">Add another {{ card_name }}</span>
+        </button>
+      </div>
+    </div>
+  {%- endif -%}
+</li>

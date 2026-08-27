@@ -1,0 +1,869 @@
+{% comment %}
+  Build Your Own Crochet Bouquet — an interactive Canvas bouquet composer.
+
+  The governing boundary: Shopify defines what can be purchased, this section
+  defines how those purchasable items are arranged. The merchant's collection is
+  the only source of truth for what is buyable — there are no hard-coded
+  products, prices or IDs anywhere in this feature.
+
+  What this template does, and nothing more:
+
+  1. Emits the collection as a normalised JSON catalog in a script tag. Every
+     price is formatted here with `money`, so no currency is ever formatted in
+     JavaScript.
+  2. Renders the picker cards server-side, so the products are real, linked
+     markup that still reads as a product list with JavaScript off.
+  3. Renders the Canvas, the accessible bouquet list and the cart button as
+     inert markup for assets/bouquet-builder.js to bring to life.
+
+  The customer chooses which flowers and how many. The arrangement — position,
+  scale, rotation, layering, spacing — is produced by BouquetLayoutEngine in
+  assets/bouquet-builder.js and is never anyone's manual work.
+
+  Category, role and visual behaviour come from product metafields (the
+  namespace is a setting, `custom` by default) — never from the product title:
+
+    <ns>.bouquet_category  single line text   flower | filler | leaf | wrapper | ribbon | charm
+    <ns>.bouquet_role      single line text   focal | secondary | filler | greenery | accent
+    <ns>.bouquet_visual    file reference     the drawing of this piece
+    <ns>.bouquet_scale     number decimal     optional
+    <ns>.bouquet_layer     number integer     optional
+
+  Every one of them is optional. Without a role, one is inferred from the
+  category; without a category the product joins a single "All" group; without
+  a drawing the builder renders a simple shape from the category. A missing
+  metafield must never break the builder.
+
+  `role` is what the composition engine actually reasons about, and it decides
+  two things: where a piece sits in the arrangement, and whether it counts
+  towards the bouquet at all. Anything with role `accent` is an accessory — a
+  wrap, a ribbon, a charm — and is deliberately excluded from the flower count.
+
+  What bouquet_visual should hold:
+
+    - SVG for preference: line art scales crisply at any Canvas size and weighs
+      almost nothing. Transparent PNG or WebP around 600 x 900 also work.
+    - Portrait, stem running down to the bottom edge, bloom at the top.
+    - Trimmed tight to the drawing. The art is drawn whole and uncropped, so any
+      surrounding padding becomes a gap in the bouquet.
+    - Drawn to a consistent scale across the set. Use bouquet_scale for the
+      exceptions rather than redrawing.
+
+  The product photo is never drawn on the Canvas — a photograph carries its own
+  background and its own light, and a dozen layered together read as a collage.
+  It stays on the picker card where it belongs.
+
+  Reused from the theme: the colour-scheme system, `.store-width` for the page
+  gutter, Dawn's `.button` / `.field` recipes, `assets/pubsub.js` for the cart
+  handoff and whichever of <cart-drawer> / <cart-notification> the merchant has
+  configured. No cart logic is reimplemented.
+
+  The 50-product ceiling: `collection.products` returns at most 50 products in
+  Liquid. That is documented in the collection setting's info text, and a
+  merchant who exceeds it sees a notice in the Theme Editor rather than silently
+  losing products.
+{% endcomment %}
+
+{%- comment -%}
+  Components first, this section's own stylesheet last — the same order
+  sections/product-showcase.liquid uses, and it matters.
+
+  The picker cards carry Dawn's `.slider__slide`, which sets `padding-bottom: 0`.
+  That is the same specificity as `.bouquet-card`, so whichever file loads later
+  wins: with the section stylesheet first, Dawn silently flattened the bottom
+  padding off every card and no amount of adjusting the card's own rules could
+  bring it back.
+
+  `.store-width` is here for a different reason: it is only pulled in by the
+  sections that use it, so without this line the container would have no rules
+  at all on a page with no collection section, and the builder would run edge to
+  edge.
+{%- endcomment -%}
+{{ 'component-store-width.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{{ 'section-bouquet-builder.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'bouquet-builder.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign ns = section.settings.metafield_namespace | strip | default: 'custom'
+  assign bouquet_collection = section.settings.collection
+  assign products = bouquet_collection.products
+  assign product_count = products | size
+  assign total_in_collection = bouquet_collection.all_products_count | default: product_count
+
+  comment
+    A piece with no photograph has nothing to draw on the Canvas, so it is held
+    back rather than shown as a gap the customer can add. Nothing needs
+    switching on later: the moment a photograph lands on the product, the piece
+    appears in the picker of its own accord.
+
+    The merchant can turn the gate off to see everything.
+  endcomment
+  assign require_photo = section.settings.require_photo
+
+  comment
+    The categories in use, the ones with nothing to show, and how many pieces
+    are actually pickable — all decided in one pass. Never a hard-coded list.
+  endcomment
+  assign category_keys = ''
+  assign shown_count = 0
+  assign uncategorised_count = 0
+
+  for product in products
+    assign category = product.metafields[ns]['bouquet_category'].value | strip
+
+    if require_photo and product.featured_media == blank
+      continue
+    endif
+
+    assign shown_count = shown_count | plus: 1
+    if category == blank
+      assign uncategorised_count = uncategorised_count | plus: 1
+    else
+      assign category_keys = category_keys | append: category | append: '|'
+    endif
+  endfor
+
+  assign categories = category_keys | split: '|' | uniq | sort
+  assign category_count = categories | size
+-%}
+
+{%- if bouquet_collection == blank -%}
+  {%- if request.design_mode -%}
+    <div class="bouquet bouquet--notice color-{{ section.settings.color_scheme }} gradient">
+      <div class="bouquet__inner store-width">
+        <p class="bouquet__notice">
+          Choose a bouquet collection in this section's settings. Its products become the flowers,
+          leaves and wrappers customers can build with.
+        </p>
+      </div>
+    </div>
+  {%- endif -%}
+{%- elsif shown_count == 0 -%}
+  {%- if request.design_mode -%}
+    <div class="bouquet bouquet--notice color-{{ section.settings.color_scheme }} gradient">
+      <div class="bouquet__inner store-width">
+        <p class="bouquet__notice">
+          <strong>{{ bouquet_collection.title }}</strong> has no products yet, so there is nothing to
+          build a bouquet from. Add products to that collection and this section will fill itself in.
+        </p>
+      </div>
+    </div>
+  {%- endif -%}
+{%- else -%}
+  {%- style -%}
+    #BouquetBuilder-{{ section.id }} {
+      /*
+        The measure every other section on this store uses. `.store-width`
+        defaults to 180rem, which is only 1800px while the merchant's body
+        scale is exactly 1 — stating it in px keeps this section lined up with
+        the rest of the page whatever that setting is.
+      */
+      --store-width: {{ section.settings.content_width }}px;
+      --bouquet-padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      --bouquet-padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+      --bouquet-stage-ratio: {{ section.settings.canvas_ratio }};
+      --bouquet-radius: {{ section.settings.corner_radius }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      #BouquetBuilder-{{ section.id }} {
+        --bouquet-padding-top: {{ section.settings.padding_top }}px;
+        --bouquet-padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div id="BouquetBuilder-{{ section.id }}" class="bouquet color-{{ section.settings.color_scheme }} gradient">
+    <bouquet-builder
+      class="bouquet__inner store-width"
+      data-section-id="{{ section.id }}"
+      data-min-flowers="{{ section.settings.min_flowers }}"
+      data-max-flowers="{{ section.settings.max_flowers }}"
+      data-max-accessories="{{ section.settings.max_accessories }}"
+      data-max-per-item="{{ section.settings.max_per_item }}"
+      data-enable-drag="{{ section.settings.enable_drag }}"
+      data-enable-rotate="{{ section.settings.enable_rotate }}"
+      data-enable-scale="{{ section.settings.enable_scale }}"
+      {% if section.settings.background_image != blank %}
+        data-background="{{ section.settings.background_image | image_url: width: 1600 }}"
+      {% endif %}
+    >
+      {%- capture catalog_json -%}
+        {
+          "moneyFormat": {{ shop.money_format | json }},
+          "items": [
+            {%- assign first_entry = true -%}
+            {%- for product in products -%}
+              {%- liquid
+                assign category = product.metafields[ns]['bouquet_category'].value | strip
+                assign role = product.metafields[ns]['bouquet_role'].value | strip
+                assign visual_scale = product.metafields[ns]['bouquet_scale'].value
+                assign visual_layer = product.metafields[ns]['bouquet_layer'].value
+              -%}
+              {%- for variant in product.variants -%}
+                {%- liquid
+                  comment
+                    The variant's own photograph, falling back to the product's.
+                    This is what the Canvas draws — the actual product, at a size
+                    worth zooming into, not a drawing of it. A variant with no
+                    photograph draws nothing on the Canvas, and the picker card
+                    says so.
+                  endcomment
+                  assign card_image = variant.featured_media.preview_image | default: product.featured_media.preview_image
+                  assign thumb_url = ''
+                  assign canvas_url = ''
+                  if card_image != blank
+                    assign thumb_url = card_image | image_url: width: 400
+                    assign canvas_url = card_image | image_url: width: 900
+                  endif
+
+                  comment
+                    A wrap is drawn in two halves. The variant's own picture is
+                    the backing sheet; the front flap is the product image whose
+                    alt names this variant and says 'front'. Matched on alt
+                    rather than on position, because the two are the same size
+                    and colour and Shopify does not promise an order — a
+                    position rule here would swap them at random.
+                  endcomment
+                  assign front_url = ''
+                  assign front_alt = product.title | append: ' — ' | append: variant.title | append: ' (front)'
+                  for media in product.media
+                    if media.alt == front_alt
+                      assign front_url = media.preview_image | image_url: width: 900
+                      break
+                    endif
+                  endfor
+                -%}
+                {%- unless first_entry %},{% endunless -%}
+                {%- assign first_entry = false -%}
+                {
+                  "id": {{ variant.id | prepend: 'variant-' | json }},
+                  "variantId": {{ variant.id }},
+                  "productId": {{ product.id }},
+                  "title": {{ product.title | json }},
+                  "variantTitle": {% if product.has_only_default_variant %}""{% else %}{{ variant.title | json }}{% endif %},
+                  "price": {{ variant.price }},
+                  "priceFormatted": {{ variant.price | money | strip_html | json }},
+                  "available": {{ variant.available | json }},
+                  "url": {{ variant.url | default: product.url | json }},
+                  "image": {{ thumb_url | json }},
+                  "category": {{ category | default: '' | json }},
+                  "role": {{ role | default: '' | json }},
+                  "visual": {
+                    "asset": {{ canvas_url | default: '' | json }},
+                    "front": {{ front_url | default: '' | json }},
+                    "scale": {% if visual_scale != blank %}{{ visual_scale }}{% else %}null{% endif %},
+                    "layer": {% if visual_layer != blank %}{{ visual_layer | round: 0 }}{% else %}null{% endif %}
+                  }
+                }
+              {%- endfor -%}
+            {%- endfor -%}
+          ]
+        }
+      {%- endcapture -%}
+      <script type="application/json" data-bouquet-catalog>{{ catalog_json }}</script>
+
+      {%- if section.settings.heading != blank or section.settings.description != blank -%}
+        <header class="bouquet__header">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="bouquet__heading">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.description != blank -%}
+            <div class="bouquet__description rte">{{ section.settings.description }}</div>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      {%- if request.design_mode and total_in_collection > 50 -%}
+        <p class="bouquet__notice bouquet__notice--inline">
+          <strong>{{ bouquet_collection.title }}</strong> holds {{ total_in_collection }} products, and
+          a theme can only read the first 50 of a collection. The
+          {{ total_in_collection | minus: 50 }} beyond that will not appear in the builder.
+        </p>
+      {%- endif -%}
+
+      <div class="bouquet__layout">
+        <div class="bouquet__stage">
+          <div class="bouquet__canvas-wrap" data-bouquet-stage>
+            <canvas
+              class="bouquet__canvas"
+              data-bouquet-canvas
+              role="img"
+              aria-label="A preview of the bouquet you are building. The list of items below describes what it contains, and can be changed there."
+            ></canvas>
+
+            {%- comment -%}
+              The controls sit on the Canvas, at the top, because that is what
+              they act on — reaching away to a bar underneath to send a flower
+              behind another breaks the loop between doing and seeing.
+
+              The bar itself takes no pointer events, only its buttons do, so
+              the Canvas underneath stays fully draggable right up to the edge.
+
+              Depth needs real buttons: the Canvas offers no way to reach behind
+              a flower to the one underneath, and by keyboard there is no way at
+              all. Those two are disabled until something is selected, so they
+              never look available when they would do nothing.
+            {%- endcomment -%}
+            <div class="bouquet__toolbar">
+              <div class="bouquet__toolgroup bouquet__toolgroup--layers">
+                <button
+                  class="bouquet__tool"
+                  type="button"
+                  data-bouquet-backward
+                  title="Send the selected flower behind the one in front of it"
+                  disabled
+                >
+                  <span class="bouquet__icon bouquet__icon--back" aria-hidden="true">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                  <span class="visually-hidden">Send the selected flower one layer towards the back</span>
+                </button>
+                <button
+                  class="bouquet__tool"
+                  type="button"
+                  data-bouquet-forward
+                  title="Bring the selected flower in front of the one behind it"
+                  disabled
+                >
+                  <span class="bouquet__icon bouquet__icon--front" aria-hidden="true">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                  <span class="visually-hidden">Bring the selected flower one layer towards the front</span>
+                </button>
+              </div>
+
+              <div class="bouquet__toolgroup">
+                {%- comment -%}
+                  Off by default. Re-arranging is the one tool that moves a
+                  bouquet somebody has already placed by hand, so it stays
+                  behind a switch until it is wanted rather than being a button
+                  people press once and regret.
+                {%- endcomment -%}
+                {%- if section.settings.enable_shuffle -%}
+                  <button
+                    class="bouquet__tool"
+                    type="button"
+                    data-bouquet-shuffle
+                    title="Re-arrange the same flowers"
+                    disabled
+                  >
+                    <span class="bouquet__icon" aria-hidden="true">
+                      {{- 'icon-shuffle.svg' | inline_asset_content -}}
+                    </span>
+                    <span class="visually-hidden">
+                      {{- section.settings.shuffle_label | default: 'Shuffle' -}}
+                    </span>
+                  </button>
+                {%- endif -%}
+                <button class="bouquet__tool" type="button" data-bouquet-undo title="Undo the last change" disabled>
+                  <span class="bouquet__icon" aria-hidden="true">
+                    {{- 'icon-undo.svg' | inline_asset_content -}}
+                  </span>
+                  <span class="visually-hidden">Undo the last change</span>
+                </button>
+                <button class="bouquet__tool" type="button" data-bouquet-reset title="Empty the bouquet and start again" disabled>
+                  <span class="bouquet__icon" aria-hidden="true">{{- 'icon-remove.svg' | inline_asset_content -}}</span>
+                  <span class="visually-hidden">Empty the bouquet and start again</span>
+                </button>
+              </div>
+            </div>
+
+            <p class="bouquet__canvas-note" data-bouquet-canvas-note hidden>Tap a flower to select it, then drag, turn or resize it.</p>
+          </div>
+
+          {%- comment -%}
+            Progress, not validation. The customer is told how close the bouquet
+            is to being complete and then that it is complete — never that they
+            have made an error. Everything here is written by the script; the
+            markup only reserves the space and the wording of the empty state.
+          {%- endcomment -%}
+          <div class="bouquet__progress">
+            <div class="bouquet__progress-text">
+              <p class="bouquet__progress-headline" data-bouquet-progress-headline></p>
+              <p class="bouquet__progress-meta">
+                <span class="bouquet__progress-count" data-bouquet-progress-count hidden></span>
+                <span class="bouquet__progress-total" data-bouquet-progress-total hidden></span>
+              </p>
+              <p class="bouquet__progress-detail" data-bouquet-progress-detail hidden></p>
+            </div>
+
+            <div class="bouquet__progress-bar" data-bouquet-progress-bar hidden aria-hidden="true">
+              <span class="bouquet__progress-fill"></span>
+            </div>
+          </div>
+        </div>
+
+        {%- comment -%}
+          The picker: a kind is chosen from the tabs, and its products scroll
+          horizontally in one row.
+
+          Every row is rendered, and with JavaScript off they all simply show —
+          so the products stay readable as a plain list. The script then hides
+          all but the chosen one, which is what keeps the section short: six
+          stacked rows made the panel twice the height of the bouquet beside it
+          and left the customer scrolling away from the very thing they were
+          building.
+
+          The tabs are the categories the merchant actually used — never a
+          hard-coded list. Products with no category at all get one tab of their
+          own so nothing can go missing.
+        {%- endcomment -%}
+        <div class="bouquet__panel">
+          {%- if shown_count > 8 -%}
+            <div class="bouquet__search field">
+              <input
+                class="field__input"
+                type="search"
+                id="BouquetSearch-{{ section.id }}"
+                data-bouquet-search
+                placeholder=" "
+                autocomplete="off"
+              >
+              <label class="field__label" for="BouquetSearch-{{ section.id }}">Search the flowers</label>
+            </div>
+          {%- endif -%}
+
+          {%- comment -%}
+            The kind being browsed. These are plain toggle buttons rather than a
+            full ARIA tab widget: they filter what is on show, they are reachable
+            with Tab and Enter like any button, and nothing here needs the arrow
+            key contract a real tablist would owe the customer.
+          {%- endcomment -%}
+          {%- if category_count > 1 or uncategorised_count > 0 -%}
+            <div class="bouquet__tabs" role="group" aria-label="Choose what to browse">
+              {%- assign tab_index = 0 -%}
+              {%- for category in categories -%}
+                {%- liquid
+                  case category
+                    when 'flower'
+                      assign tab_title = 'Flowers'
+                    when 'filler'
+                      assign tab_title = 'Fillers'
+                    when 'leaf'
+                      assign tab_title = 'Greenery'
+                    when 'wrapper'
+                      assign tab_title = 'Wraps'
+                    when 'ribbon'
+                      assign tab_title = 'Ribbons'
+                    when 'charm'
+                      assign tab_title = 'Charms'
+                    else
+                      assign tab_title = category | replace: '-', ' ' | replace: '_', ' ' | capitalize
+                  endcase
+                -%}
+                <button
+                  class="bouquet__tab"
+                  type="button"
+                  data-bouquet-tab="{{ category | escape }}"
+                  aria-pressed="{% if tab_index == 0 %}true{% else %}false{% endif %}"
+                >
+                  {{ tab_title }}
+                </button>
+                {%- assign tab_index = tab_index | plus: 1 -%}
+              {%- endfor -%}
+
+              {%- if uncategorised_count > 0 -%}
+                <button
+                  class="bouquet__tab"
+                  type="button"
+                  data-bouquet-tab=""
+                  aria-pressed="{% if tab_index == 0 %}true{% else %}false{% endif %}"
+                >
+                  {%- if category_count > 0 -%}More{%- else -%}Everything{%- endif -%}
+                </button>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+              {%- comment -%}
+            Each kind is a real slider, not a bare scroll box: Dawn's own
+            <slider-component> from assets/global.js, exactly as
+            sections/product-showcase.liquid uses it. It brings arrows that
+            disable themselves at either end, page maths that re-runs on resize,
+            smooth stepped scrolling and scroll-snap — so no slider code is
+            written here and no library is added.
+
+            The ids matter: <slider-component> finds its track by `Slider-` and
+            its slides by `Slide-`, so both are namespaced by section and row to
+            keep several sliders on one page independent.
+          {%- endcomment -%}
+          {%- for category in categories -%}
+            {%- liquid
+              case category
+                when 'flower'
+                  assign row_title = 'Flowers'
+                when 'filler'
+                  assign row_title = 'Fillers'
+                when 'leaf'
+                  assign row_title = 'Greenery'
+                when 'wrapper'
+                  assign row_title = 'Wraps'
+                when 'ribbon'
+                  assign row_title = 'Ribbons'
+                when 'charm'
+                  assign row_title = 'Charms'
+                else
+                  assign row_title = category | replace: '-', ' ' | replace: '_', ' ' | capitalize
+              endcase
+              assign slider_id = 'Slider-' | append: section.id | append: '-' | append: forloop.index
+            -%}
+            <section class="bouquet-row" data-bouquet-row="{{ category | escape }}">
+              <h3 class="bouquet-row__title">{{ row_title }}</h3>
+
+              <slider-component class="bouquet-row__slider">
+                <ul class="bouquet-row__track slider slider--everywhere list-unstyled" id="{{ slider_id }}" role="list">
+                  {%- assign slide_index = 0 -%}
+                  {%- for product in products -%}
+                    {%- if require_photo and product.featured_media == blank -%}{%- continue -%}{%- endif -%}
+                    {%- assign product_category = product.metafields[ns]['bouquet_category'].value | strip -%}
+                    {%- if product_category == category -%}
+                      {%- for variant in product.variants -%}
+                        {%- assign slide_index = slide_index | plus: 1 -%}
+                        {%- comment -%}
+                          Derived from the row's own slider id, so slides can never
+                          collide across rows. forloop.parentloop.index here is
+                          the product's position, not the row's, and two rows
+                          holding a third product would have produced the same id.
+                        {%- endcomment -%}
+                        {%- capture slide_id -%}{{ slider_id | replace: 'Slider-', 'Slide-' }}-{{ slide_index }}{%- endcapture -%}
+                        {%- render 'bouquet-card',
+                          product: product,
+                          variant: variant,
+                          category: category,
+                          slide_id: slide_id
+                        -%}
+                      {%- endfor -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+
+                <div class="bouquet-row__controls">
+                  <button
+                    class="bouquet-row__arrow bouquet-row__arrow--prev"
+                    type="button"
+                    name="previous"
+                    aria-label="{{ 'general.slider.previous_slide' | t }}"
+                    aria-controls="{{ slider_id }}"
+                  >
+                    <span class="svg-wrapper" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+                  </button>
+                  <button
+                    class="bouquet-row__arrow bouquet-row__arrow--next"
+                    type="button"
+                    name="next"
+                    aria-label="{{ 'general.slider.next_slide' | t }}"
+                    aria-controls="{{ slider_id }}"
+                  >
+                    <span class="svg-wrapper" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+                  </button>
+                </div>
+              </slider-component>
+            </section>
+          {%- endfor -%}
+
+          {%- if uncategorised_count > 0 -%}
+            {%- assign loose_slider_id = 'Slider-' | append: section.id | append: '-loose' -%}
+            <section class="bouquet-row" data-bouquet-row="">
+              <h3 class="bouquet-row__title">
+                {%- if category_count > 0 -%}More to add{%- else -%}Everything{%- endif -%}
+              </h3>
+
+              <slider-component class="bouquet-row__slider">
+                <ul
+                  class="bouquet-row__track slider slider--everywhere list-unstyled"
+                  id="{{ loose_slider_id }}"
+                  role="list"
+                >
+                  {%- assign slide_index = 0 -%}
+                  {%- for product in products -%}
+                    {%- if require_photo and product.featured_media == blank -%}{%- continue -%}{%- endif -%}
+                    {%- assign product_category = product.metafields[ns]['bouquet_category'].value | strip -%}
+                    {%- if product_category == blank -%}
+                      {%- for variant in product.variants -%}
+                        {%- assign slide_index = slide_index | plus: 1 -%}
+                        {%- capture slide_id -%}{{ loose_slider_id | replace: 'Slider-', 'Slide-' }}-{{ slide_index }}{%- endcapture -%}
+                        {%- render 'bouquet-card',
+                          product: product,
+                          variant: variant,
+                          category: '',
+                          slide_id: slide_id
+                        -%}
+                      {%- endfor -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+
+                <div class="bouquet-row__controls">
+                  <button
+                    class="bouquet-row__arrow bouquet-row__arrow--prev"
+                    type="button"
+                    name="previous"
+                    aria-label="{{ 'general.slider.previous_slide' | t }}"
+                    aria-controls="{{ loose_slider_id }}"
+                  >
+                    <span class="svg-wrapper" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+                  </button>
+                  <button
+                    class="bouquet-row__arrow bouquet-row__arrow--next"
+                    type="button"
+                    name="next"
+                    aria-label="{{ 'general.slider.next_slide' | t }}"
+                    aria-controls="{{ loose_slider_id }}"
+                  >
+                    <span class="svg-wrapper" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+                  </button>
+                </div>
+              </slider-component>
+            </section>
+          {%- endif -%}
+
+          <p class="bouquet__no-results" data-bouquet-no-results hidden>
+            Nothing here matches that. Try another word.
+          </p>
+        </div>
+
+        <div class="bouquet__summary" data-bouquet-summary>
+          <div class="bouquet__summary-head">
+            <h3 class="bouquet__summary-title">Your bouquet</h3>
+          </div>
+
+          {%- comment -%}
+            The bouquet's contents as compact chips rather than a list of rows.
+            A row per item grows into a wall of text as the bouquet fills, which
+            is the opposite of what a summary is for. Each chip is still a real
+            button, so removing a piece without the Canvas stays possible for
+            anyone using a keyboard or a screen reader — and the quantity
+            steppers live on the picker cards, where the choosing happens.
+          {%- endcomment -%}
+          <ul class="bouquet__lines list-unstyled" data-bouquet-lines role="list"></ul>
+
+          <div class="bouquet__summary-bar">
+            <div class="bouquet__total">
+              <span class="bouquet__total-label">Total</span>
+              <span class="bouquet__total-value" data-bouquet-total>{{ 0 | money }}</span>
+            </div>
+
+            {%- comment -%}
+              The same `.button` + `.loading__spinner` pairing Dawn's own buy
+              button uses, so the busy state is the theme's, not a second one.
+            {%- endcomment -%}
+            <button class="button bouquet__submit" type="button" data-bouquet-submit disabled>
+              <span>{{ section.settings.button_label | default: 'Add bouquet to cart' }}</span>
+              {%- render 'loading-spinner' -%}
+            </button>
+          </div>
+
+          <p class="bouquet__message" data-bouquet-message role="status"></p>
+          <p class="bouquet__error" data-bouquet-error role="alert" hidden></p>
+          <p class="bouquet__disclaimer">Prices and totals are confirmed at checkout.</p>
+        </div>
+      </div>
+    </bouquet-builder>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Bouquet builder",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Bouquet collection",
+      "info": "The flowers, leaves, fillers and wrappers customers can build with. A theme can only read the first 50 products of a collection — keep this one at or below 50."
+    },
+    {
+      "type": "text",
+      "id": "metafield_namespace",
+      "label": "Metafield namespace",
+      "default": "custom",
+      "info": "Where bouquet_category, bouquet_visual, bouquet_scale and bouquet_layer live on the product. All four are optional."
+    },
+    {
+      "type": "checkbox",
+      "id": "require_photo",
+      "label": "Only offer pieces that have a photograph",
+      "info": "A piece with no photograph has nothing to draw on the canvas. Leave this on and each one appears by itself once its photograph is added.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Build your own bouquet"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Pick your flowers one stem at a time and watch them gather into a bouquet made for the person you have in mind.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shuffle",
+      "label": "Show the shuffle button",
+      "info": "Re-arranges the same flowers into a new composition. Off until the arrangements are worth re-rolling.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "shuffle_label",
+      "label": "Shuffle button label",
+      "default": "Shuffle bouquet"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Cart button label",
+      "default": "Add bouquet to cart"
+    },
+    {
+      "type": "header",
+      "content": "Rules"
+    },
+    {
+      "type": "range",
+      "id": "min_flowers",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Flowers needed to complete a bouquet",
+      "info": "The bouquet can be added to the cart once it holds this many. Accessories are not counted.",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "max_flowers",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "label": "Most flowers a bouquet can hold",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "max_accessories",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "label": "Most accessories a bouquet can hold",
+      "info": "Wraps, ribbons and charms. Counted separately from flowers.",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "max_per_item",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "label": "Most of any one piece",
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "Canvas"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Canvas background",
+      "info": "The wrapping paper or surface the bouquet is arranged on."
+    },
+    {
+      "type": "range",
+      "id": "canvas_ratio",
+      "min": 0.6,
+      "max": 1.4,
+      "step": 0.1,
+      "label": "Canvas shape",
+      "info": "Width divided by height. Below 1 is portrait.",
+      "default": 0.9
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_drag",
+      "label": "Let customers move flowers",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_rotate",
+      "label": "Let customers turn flowers",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_scale",
+      "label": "Let customers resize flowers",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1800
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Corner radius",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 56
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bouquet builder"
+    }
+  ]
+}
+{% endschema %}
