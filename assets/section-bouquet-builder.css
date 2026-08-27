@@ -214,11 +214,7 @@
       rgba(var(--color-foreground), 0.11),
       rgba(var(--color-foreground), 0) 72%
     ),
-    linear-gradient(
-      to bottom,
-      rgba(var(--color-background), 0.7),
-      rgba(var(--color-foreground), 0.05)
-    );
+    linear-gradient(to bottom, rgba(var(--color-background), 0.7), rgba(var(--color-foreground), 0.05));
   box-shadow: inset 0 0 6rem rgba(var(--color-foreground), 0.07);
 }
 
@@ -235,10 +231,44 @@
   gestures are left alone and the page scrolls over it as normal. The cursor is
   set from script, and only while a flower is under the pointer.
 */
+/*
+  Who owns a finger drag on the canvas.
+
+  Left alone, the browser owns it: a swipe that starts on the canvas scrolls the
+  page, the pointer events stop arriving as pointercancel, and nothing on the
+  bouquet can be moved at all. That was the whole of "can't move elements on
+  mobile" — there was no touch-action anywhere in this file.
+
+  Taking every gesture with `touch-action: none` would fix dragging and break
+  the page: the canvas is full width on a phone, so a screen-height slab of it
+  would refuse to scroll and the customer would be stuck at the top of the
+  section. So it is split by state, which happens to be exactly how the canvas
+  already asks to be used — tap to select, then move:
+
+  - nothing selected: `pan-y` keeps vertical scrolling with the browser, and a
+    tap is not a pan, so choosing a flower still works while the page scrolls
+    through the canvas normally;
+  - something selected: the gesture is ours outright, so it can be dragged in
+    any direction, turned and resized without the page moving underneath.
+
+  A pointer that is not coarse never had this problem, and `none` costs a mouse
+  nothing, so the desktop simply takes it.
+*/
 .bouquet__canvas {
   display: block;
   width: 100%;
   height: 100%;
+  touch-action: none;
+}
+
+@media (pointer: coarse) {
+  .bouquet__canvas {
+    touch-action: pan-y;
+  }
+
+  .bouquet--has-selection .bouquet__canvas {
+    touch-action: none;
+  }
 }
 
 /* Canvas unsupported: the stage steps aside and the rest of the builder works. */
@@ -260,7 +290,6 @@
 .bouquet__canvas-note[hidden] {
   display: none;
 }
-
 
 /* ------------------------------------------------------------------ Toolbar */
 
@@ -336,7 +365,6 @@
 .bouquet__icon--front {
   transform: rotate(180deg);
 }
-
 
 /*
   The layer controls are only meaningful while something is selected. They stay
@@ -1001,13 +1029,20 @@
 */
 @media screen and (max-width: 989px) {
   /*
-    A different layout, not a squeezed desktop one. The order is the order the
-    customer works in: see the bouquet, see how close it is, re-arrange it,
-    then browse — with the cart bar always within a thumb's reach.
+    Built for a phone, not folded down from the desktop.
 
-    The stage is sticky so the bouquet stays on screen while flowers are being
-    browsed. Capping it at 42vh leaves room for the picker underneath, which is
-    the whole point of keeping it visible.
+    What was wrong with the old one: the stage was pinned to the top of the
+    screen and the whole summary — chips and all — to the bottom, so the picker
+    lived in whatever gap was left between them. Every chip added took another
+    line off that gap, because the chips wrapped, so the more of a bouquet the
+    customer built the less of the shop they could reach. Two pinned boxes
+    growing towards each other is not a layout.
+
+    What it is now: one column that scrolls like any other page. Nothing is
+    pinned except the buying bar at the bottom, and that bar cannot change
+    height, because the one thing inside it that used to grow now scrolls
+    sideways instead of downwards. The bouquet is at the top where it is looked
+    at, and the picker has the rest of the screen to itself.
   */
   .bouquet__tabs {
     flex-wrap: nowrap;
@@ -1025,12 +1060,15 @@
     flex: 0 0 auto;
   }
 
+  /*
+    In the flow. Keeping the bouquet on screen while browsing sounds generous
+    and is not: it costs half the screen for the whole visit, and the picker —
+    the part that actually has to be used — pays for it. The bouquet is a scroll
+    away, and the pinned bar at the bottom keeps the running total and the
+    button in reach the whole time.
+  */
   .bouquet__stage {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    padding-block-end: 0.8rem;
-    background: rgb(var(--color-background));
+    padding-block-end: 0.4rem;
   }
 
   /*
@@ -1044,7 +1082,7 @@
   */
   .bouquet__canvas-wrap {
     width: 100%;
-    max-height: 62vh;
+    max-height: 56vh;
     aspect-ratio: var(--bouquet-stage-ratio, 0.9);
   }
 
@@ -1101,10 +1139,17 @@
     display: none;
   }
 
+  /*
+    The one pinned thing, and the same height whether the bouquet holds one
+    flower or ten: a single sideways-scrolling line of chips, then the total and
+    the button.
+  */
   .bouquet__summary {
     position: sticky;
     bottom: 0;
     z-index: 2;
+    gap: 0.8rem;
+    padding: 1rem 1.6rem calc(1rem + env(safe-area-inset-bottom, 0px));
     margin-inline: calc(var(--header-gutter, clamp(1.6rem, 4vw, 8rem)) * -1);
     border-inline: 0;
     border-block-end: 0;
@@ -1114,6 +1159,43 @@
     border-end-end-radius: 0;
     background: rgb(var(--color-background));
     box-shadow: 0 -0.4rem 2.4rem rgba(var(--color-foreground), 0.1);
+  }
+
+  /*
+    The heading is what the pinned bar is obviously for, so it goes; the chips
+    take the line it was using.
+  */
+  .bouquet__summary-head {
+    display: none;
+  }
+
+  /*
+    One line, scrolled sideways.
+
+    Wrapping is what made the bar grow: eight chips became four rows and the bar
+    ate the screen. Sideways they cost one line however many there are, and the
+    same gesture that browses the flower rows browses them.
+  */
+  .bouquet__lines {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -1.6rem;
+    padding-inline: 1.6rem;
+    scroll-padding-inline: 1.6rem;
+    overscroll-behavior-x: contain;
+  }
+
+  .bouquet__lines::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bouquet-line__chip {
+    flex: 0 0 auto;
+  }
+
+  .bouquet__summary-bar {
+    padding-block-start: 0.8rem;
   }
 
   .bouquet__disclaimer {
@@ -1126,4 +1208,3 @@
 }
 
 /* --------------------------------------------------------------- Motion */
-

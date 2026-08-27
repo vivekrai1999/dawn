@@ -138,8 +138,7 @@
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-  const prefersReducedMotion = () =>
-    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ================================================================ Catalog */
 
@@ -268,16 +267,14 @@
       case 'restack': {
         const current = state.items.find((item) => item.instanceId === action.instanceId);
         if (!current) return state;
-        const from = current.override && Number.isFinite(current.override.layer)
-          ? current.override.layer
-          : action.baseLayer;
+        const from =
+          current.override && Number.isFinite(current.override.layer) ? current.override.layer : action.baseLayer;
         return amend(action.instanceId, { layer: clamp(from + action.by, -50, 200) });
       }
 
       case 'select': {
         if (state.selectedId === action.instanceId) return state;
-        const exists =
-          action.instanceId === null || state.items.some((item) => item.instanceId === action.instanceId);
+        const exists = action.instanceId === null || state.items.some((item) => item.instanceId === action.instanceId);
         return exists ? { ...keep, items: state.items, selectedId: action.instanceId } : state;
       }
 
@@ -711,9 +708,8 @@
         pairs.forEach(({ slot, unit, role }) => {
           const item = catalog.get(unit.catalogId);
           const range = ROLE_SCALE[role] || ROLE_SCALE.secondary;
-          const declared = Number.isFinite(item.visual && item.visual.scale) && item.visual.scale > 0
-            ? item.visual.scale
-            : 1;
+          const declared =
+            Number.isFinite(item.visual && item.visual.scale) && item.visual.scale > 0 ? item.visual.scale : 1;
 
           /*
             Rotation follows how far the stem sits from the middle, so the
@@ -723,30 +719,34 @@
           const fan = (slot.x - this.centre.x) * 46;
           const jitter = (random() - 0.5) * 9;
 
-          transforms.push(BouquetLayoutEngine.withOverride({
-            instanceId: unit.instanceId,
-            catalogId: unit.catalogId,
-            /* What the engine chose, before any hand edit — restacking counts from here. */
-            baseLayer: Number.isFinite(item.visual && item.visual.layer)
-              ? item.visual.layer
-              : ROLE_LAYER[role] + slot.ring,
-            x: slot.x,
-            y: slot.y,
-            scale: declared * lerp(range[0], range[1], random()),
-            rotation: clamp(fan + jitter, -16, 16),
-            layer: Number.isFinite(item.visual && item.visual.layer)
-              ? item.visual.layer
-              : ROLE_LAYER[role] + slot.ring,
-          }, unit));
+          transforms.push(
+            BouquetLayoutEngine.withOverride(
+              {
+                instanceId: unit.instanceId,
+                catalogId: unit.catalogId,
+                /* What the engine chose, before any hand edit — restacking counts from here. */
+                baseLayer: Number.isFinite(item.visual && item.visual.layer)
+                  ? item.visual.layer
+                  : ROLE_LAYER[role] + slot.ring,
+                x: slot.x,
+                y: slot.y,
+                scale: declared * lerp(range[0], range[1], random()),
+                rotation: clamp(fan + jitter, -16, 16),
+                layer: Number.isFinite(item.visual && item.visual.layer)
+                  ? item.visual.layer
+                  : ROLE_LAYER[role] + slot.ring,
+              },
+              unit,
+            ),
+          );
         });
       }
 
       /* --- The dressing ------------------------------------------------- */
       accessories.forEach((instance, index) => {
         const item = catalog.get(instance.catalogId);
-        const declared = Number.isFinite(item.visual && item.visual.scale) && item.visual.scale > 0
-          ? item.visual.scale
-          : 1;
+        const declared =
+          Number.isFinite(item.visual && item.visual.scale) && item.visual.scale > 0 ? item.visual.scale : 1;
         const placement = this.accessoryPlacement(item, index, random);
 
         const accessoryLayer = Number.isFinite(item.visual && item.visual.layer)
@@ -772,7 +772,7 @@
             rotation: placement.rotation,
             layer: accessoryLayer,
           },
-          instance
+          instance,
         );
 
         /*
@@ -784,12 +784,13 @@
           It stays one instance throughout: one thing to add, one cart line, one
           thing to remove.
         */
-        const parts = item.visual && item.visual.front
-          ? [
-              { part: 'back', layer: WRAP_BACK_LAYER, drop: 0 },
-              { part: 'front', layer: WRAP_FRONT_LAYER, drop: WRAP_FRONT_DROP },
-            ]
-          : [{ part: 'whole', layer: anchor.layer, drop: 0 }];
+        const parts =
+          item.visual && item.visual.front
+            ? [
+                { part: 'back', layer: WRAP_BACK_LAYER, drop: 0 },
+                { part: 'front', layer: WRAP_FRONT_LAYER, drop: WRAP_FRONT_DROP },
+              ]
+            : [{ part: 'whole', layer: anchor.layer, drop: 0 }];
 
         parts.forEach((piece) => {
           transforms.push(
@@ -802,11 +803,12 @@
               */
               y: anchor.y + piece.drop,
               /* A hand-set layer moves the pair; the parts keep their spacing. */
-              layer: instance.override && Number.isFinite(instance.override.layer)
-                ? instance.override.layer + (piece.layer - anchor.baseLayer)
-                : piece.layer,
+              layer:
+                instance.override && Number.isFinite(instance.override.layer)
+                  ? instance.override.layer + (piece.layer - anchor.baseLayer)
+                  : piece.layer,
               baseLayer: piece.layer,
-            })
+            }),
           );
         });
       });
@@ -938,7 +940,11 @@
 
       bitmapPath
         .then((bitmap) => settle(bitmap, bitmap.width, bitmap.height))
-        .catch(() => viaImage(true).then(settleImage).catch(() => viaImage(false).then(settleImage).catch(fail)));
+        .catch(() =>
+          viaImage(true)
+            .then(settleImage)
+            .catch(() => viaImage(false).then(settleImage).catch(fail)),
+        );
     }
 
     /*
@@ -979,8 +985,23 @@
 
   const ITEM_BASE_FRACTION = 0.3;
   const ADD_MS = 340;
-  const HANDLE_RADIUS = 13;
-  const HANDLE_HIT_RADIUS = 22; /* a 44px touch target */
+  /*
+    A fingertip is not a mouse pointer.
+
+    Thirteen pixels of circle is a comfortable target under a cursor the user
+    can see and place exactly; under a finger, which covers roughly a centimetre
+    and hides what it is aiming at, it is a guess. On a touch screen the handles
+    are drawn larger and given a wider catchment, and the turn handle is held
+    further off the bloom so the hand holding the phone is not covering the
+    thing it is turning.
+
+    Read once, at load: a device does not usually change what it is halfway
+    through a visit, and re-reading it per frame would cost more than it saves.
+  */
+  const COARSE_POINTER = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+  const HANDLE_RADIUS = COARSE_POINTER ? 17 : 13;
+  const HANDLE_HIT_RADIUS = COARSE_POINTER ? 30 : 22; /* at least a 44px touch target */
+  const ROTATE_HANDLE_OFFSET = COARSE_POINTER ? 38 : 28;
   const SHUFFLE_MS = 460;
 
   /*
@@ -1340,7 +1361,7 @@
         Math.min(this.width, this.height) * 0.05,
         this.width / 2,
         this.height * 0.42,
-        Math.max(this.width, this.height) * 0.72
+        Math.max(this.width, this.height) * 0.72,
       );
       gradient.addColorStop(0, 'rgba(255, 255, 255, 0.55)');
       gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -1503,7 +1524,7 @@
         centre,
         box,
         corners: [corner(-half.x, -half.y), corner(half.x, -half.y), corner(half.x, half.y), corner(-half.x, half.y)],
-        rotate: corner(0, -half.y - 28),
+        rotate: corner(0, -half.y - ROTATE_HANDLE_OFFSET),
         scale: corner(half.x, half.y),
         remove: corner(half.x, -half.y),
       };
@@ -2035,9 +2056,7 @@
       this.errorNode = this.querySelector('[data-bouquet-error]');
 
       /* Each row's own cards, gathered once rather than re-queried per filter. */
-      this.rowCards = new Map(
-        this.rows.map((row) => [row, Array.from(row.querySelectorAll('[data-bouquet-card]'))])
-      );
+      this.rowCards = new Map(this.rows.map((row) => [row, Array.from(row.querySelectorAll('[data-bouquet-card]'))]));
 
       this.cardIndex = new Map();
       this.cards.forEach((card) => this.cardIndex.set(card.dataset.bouquetCard, card));
@@ -2045,7 +2064,11 @@
       this.searchTerm = '';
       /* Whichever tab the markup marked as pressed, so the two agree from the start. */
       const pressed = this.tabs.find((tab) => tab.getAttribute('aria-pressed') === 'true');
-      this.activeCategory = pressed ? pressed.dataset.bouquetTab : this.rows.length ? this.rows[0].dataset.bouquetRow : '';
+      this.activeCategory = pressed
+        ? pressed.dataset.bouquetTab
+        : this.rows.length
+          ? this.rows[0].dataset.bouquetRow
+          : '';
     }
 
     mountRenderer() {
@@ -2210,7 +2233,7 @@
         this.renderer.setArrangement(
           this.engine.arrange(state.items, this.catalog, state.seed),
           reason,
-          state.selectedId
+          state.selectedId,
         );
       }
 
@@ -2275,9 +2298,10 @@
         const increase = card.querySelector('[data-bouquet-increase]');
         if (increase) {
           const item = this.catalog.get(catalogId);
-          const full = item && isAccessory(item)
-            ? tally.accessories >= this.limits.maxAccessories
-            : tally.flowers >= this.limits.maxFlowers;
+          const full =
+            item && isAccessory(item)
+              ? tally.accessories >= this.limits.maxAccessories
+              : tally.flowers >= this.limits.maxFlowers;
           increase.disabled = quantity >= this.limits.maxPerItem || full;
         }
       });
@@ -2353,9 +2377,7 @@
 
       const name = document.createElement('span');
       name.className = 'bouquet-line__name';
-      name.textContent = line.item.variantTitle
-        ? `${line.item.title} · ${line.item.variantTitle}`
-        : line.item.title;
+      name.textContent = line.item.variantTitle ? `${line.item.title} · ${line.item.variantTitle}` : line.item.title;
       button.appendChild(name);
 
       if (line.quantity > 1) {
@@ -2371,10 +2393,7 @@
       cross.textContent = '×';
       button.appendChild(cross);
 
-      button.setAttribute(
-        'aria-label',
-        `Remove ${line.quantity} ${line.item.title} from your bouquet`
-      );
+      button.setAttribute('aria-label', `Remove ${line.quantity} ${line.item.title} from your bouquet`);
 
       li.appendChild(button);
       return li;
@@ -2427,7 +2446,7 @@
         this.announce('Your bouquet is in the cart.', { flash: true });
       } catch (error) {
         this.showError(
-          error && error.message ? error.message : 'Your bouquet could not be added just now. Please try again.'
+          error && error.message ? error.message : 'Your bouquet could not be added just now. Please try again.',
         );
       } finally {
         this.submitting = false;
