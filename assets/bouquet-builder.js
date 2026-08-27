@@ -502,6 +502,33 @@
     };
   }
 
+  /*
+    A random stream belonging to one thing rather than to a position in a queue.
+
+    Everything the engine varies — how big a bloom is drawn, how far it is
+    turned, how much a slot wobbles off its ideal point — used to be drawn from
+    a single sequential stream shared by the whole bouquet. That made every
+    value depend on how many draws had been taken before it, and the number of
+    draws taken before the sizing pass is the number of stems. So adding one
+    flower slid the entire remainder of the stream along by one, and every
+    flower already on the canvas was re-sized by up to eight per cent and turned
+    by up to six degrees — same seed, different bouquet, for no reason the
+    customer could see beyond "I added a daisy and everything moved".
+
+    Keying the stream to the thing's own name instead makes each stem's look its
+    own business. Adding, removing or re-ordering cannot reach it, and a shuffle
+    still changes everything because the seed is mixed in.
+  */
+  function streamFor(seed, name) {
+    let hash = 0x811c9dc5;
+    const text = String(name);
+    for (let i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    return mulberry32((hash ^ Math.imul(seed >>> 0, 0x9e3779b1)) >>> 0);
+  }
+
   const lerp = (a, b, t) => a + (b - a) * t;
 
   class BouquetLayoutEngine {
@@ -560,8 +587,9 @@
       which is exactly the order the role bands want — so the focal blooms take
       the middle and the greenery ends up at the rim without any sorting.
     */
-    slotsFor(n, random) {
+    slotsFor(n, random, seed) {
       const [focalSlots, secondarySlots] = BouquetLayoutEngine.ringPlan(n);
+      /* One draw, and always the first one, so the rings turn only on a shuffle. */
       const phase = random() * Math.PI * 2;
 
       /*
@@ -578,8 +606,12 @@
       for (let i = 0; i < n; i += 1) {
         const radius = Math.sqrt((i + 0.5) / n);
         const angle = phase + i * GOLDEN_ANGLE;
-        /* Just enough wobble that it never reads as a computed pattern. */
-        const wobble = 1 + (random() - 0.5) * 0.14;
+        /*
+          Just enough wobble that it never reads as a computed pattern — drawn
+          against the slot's own number, so slot four wobbles the same way in a
+          bouquet of five as in a bouquet of ten.
+        */
+        const wobble = 1 + (streamFor(seed, 'slot' + i)() - 0.5) * 0.14;
 
         let x = this.centre.x + Math.cos(angle) * radius * rx * wobble;
         const y = this.centre.y + Math.sin(angle) * radius * ry * wobble;
@@ -702,11 +734,13 @@
 
       /* --- The bouquet itself ------------------------------------------- */
       if (stems.length) {
-        const slots = this.slotsFor(stems.length, random);
+        const slots = this.slotsFor(stems.length, random, seed || 1);
         const pairs = BouquetLayoutEngine.assign(BouquetLayoutEngine.distribute(stems), slots, catalog);
 
         pairs.forEach(({ slot, unit, role }) => {
           const item = catalog.get(unit.catalogId);
+          /* This stem's own stream, so nothing else being added can disturb it. */
+          const own = streamFor(seed || 1, unit.instanceId);
           const range = ROLE_SCALE[role] || ROLE_SCALE.secondary;
           const declared =
             Number.isFinite(item.visual && item.visual.scale) && item.visual.scale > 0 ? item.visual.scale : 1;
@@ -717,7 +751,7 @@
             of degrees of variation so no two repeats look stamped.
           */
           const fan = (slot.x - this.centre.x) * 46;
-          const jitter = (random() - 0.5) * 9;
+          const jitter = (own() - 0.5) * 9;
 
           transforms.push(
             BouquetLayoutEngine.withOverride(
@@ -730,7 +764,7 @@
                   : ROLE_LAYER[role] + slot.ring,
                 x: slot.x,
                 y: slot.y,
-                scale: declared * lerp(range[0], range[1], random()),
+                scale: declared * lerp(range[0], range[1], own()),
                 rotation: clamp(fan + jitter, -16, 16),
                 layer: Number.isFinite(item.visual && item.visual.layer)
                   ? item.visual.layer
@@ -747,7 +781,12 @@
         const item = catalog.get(instance.catalogId);
         const declared =
           Number.isFinite(item.visual && item.visual.scale) && item.visual.scale > 0 ? item.visual.scale : 1;
-        const placement = this.accessoryPlacement(item, index, random);
+        /*
+          Its own stream too. The dressing is placed after the stems, so on the
+          shared stream every flower added shifted the wrap a little further
+          along — the one piece on the canvas that should never move on its own.
+        */
+        const placement = this.accessoryPlacement(item, index, streamFor(seed || 1, instance.instanceId));
 
         const accessoryLayer = Number.isFinite(item.visual && item.visual.layer)
           ? item.visual.layer
