@@ -607,6 +607,7 @@
       "block_order": [
         "button_j6DMni"
       ],
+      "disabled": true,
       "name": "Floating buttons",
       "settings": {
         "enabled": true,
@@ -631,7 +632,7 @@
         "show_shadow": true,
         "bg_color": "#ffffff",
         "text_color": "",
-        "border_width": 0,
+        "border_width": 4,
         "border_color": ""
       }
     },
