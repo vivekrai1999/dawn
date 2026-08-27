@@ -12,7 +12,7 @@
     "hero": {
       "type": "page-hero",
       "settings": {
-        "eyebrow": "FAQs",
+        "eyebrow": "",
         "heading": "",
         "intro": "<p>The questions we are asked most. If yours is not here, write to us — we would rather answer twice than leave you guessing.</p>",
         "alignment": "left",
@@ -21,7 +21,7 @@
         "body_size": 16,
         "text_width": 640,
         "content_width": 1800,
-        "padding_top": 64,
+        "padding_top": 28,
         "padding_bottom": 32
       }
     },

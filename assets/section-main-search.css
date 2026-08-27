@@ -1,0 +1,273 @@
+/*
+  Search results — sections/main-search.liquid.
+
+  The grid, the container and the gutter are the ones product-showcase uses, so
+  a result sits on the same margins and at the same rhythm as a product row on
+  the homepage. The cards themselves are the shared showcase card
+  (assets/component-card-showcase.css) and are not restyled here.
+
+  Tokens (--search-*) are emitted per instance by the section.
+*/
+
+.search-page {
+  padding-block: var(--search-padding-top) var(--search-padding-bottom);
+}
+
+.search-page__inner {
+  box-sizing: border-box;
+  max-width: var(--search-width);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
+/* Nothing found: keep the page from collapsing to a header on a tall screen. */
+.search-page--empty .search-page__inner {
+  min-height: 40vh;
+}
+
+/* ------------------------------------------------------------------ Header */
+
+.search-page__header {
+  margin-block-end: clamp(2.4rem, 4vw, 4rem);
+}
+
+.search-page__heading {
+  margin: 0 0 1.6rem;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(2.4rem, 3.5vw, var(--search-heading-size));
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-align: start;
+  color: rgb(var(--color-foreground));
+}
+
+/*
+  The field is capped at a readable width and sits at the start of the
+  container, matching the left-aligned content pages rather than Dawn's centred
+  search template.
+*/
+.search-page__form {
+  max-width: 60rem;
+  margin: 0 0 1.6rem;
+}
+
+/*
+  The field is the one from the header's search panel, rebuilt here: the same
+  pill, the same 6rem height, the same circular accent submit sitting inside it.
+  It reads against the page's own colour scheme rather than the panel's, so the
+  text and border come from --color-foreground while the submit keeps the
+  --panel-accent the nav uses — with fallbacks, since a store may not have the
+  header's tokens on a given page.
+*/
+.search-page__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/*
+  Dawn draws a field's visible box with `.field:before` and `.field:after`, both
+  squared off by --inputs-radius. Over a pill-shaped input they trace a
+  rectangle around it, so they are switched off and the input's own border and
+  focus ring carry the styling — the same fix the header search applies.
+*/
+.search-page__field:before,
+.search-page__field:after {
+  content: none;
+}
+
+.search-page__field .search__input.field__input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 6rem;
+  padding: 0 7rem 0 2.4rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.2);
+  border-radius: 999px;
+  background-color: transparent;
+  box-shadow: none;
+  font-size: 1.6rem;
+  color: rgb(var(--color-foreground));
+}
+
+.search-page__field .search__input.field__input::placeholder {
+  color: rgba(var(--color-foreground), 0.5);
+  opacity: 1;
+}
+
+.search-page__field .search__input.field__input:focus,
+.search-page__field .search__input.field__input:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+  box-shadow: none;
+}
+
+/* Dark circular submit, sitting inside the pill. */
+.search-page__field .search__button.field__button {
+  position: absolute;
+  inset-inline-end: 0.8rem;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background-color: var(--panel-accent, rgb(var(--color-foreground)));
+  color: var(--panel-accent-text, rgb(var(--color-background)));
+}
+
+.search-page__field .search__button.field__button:hover {
+  background-color: var(--panel-accent, rgb(var(--color-foreground)));
+  opacity: 0.9;
+}
+
+.search-page__field .search__button .svg-wrapper,
+.search-page__field .search__button svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.search-page__field .reset__button.field__button {
+  position: absolute;
+  inset-inline-end: 6rem;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  height: 4.4rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+/* Dawn draws an underline under the reset control; the pill has no room for it. */
+.search-page__field .reset__button:not(:focus-visible)::after,
+.search-page__field .reset__button:not(:focus)::after {
+  border: 0;
+}
+
+/*
+  The suggestions panel. Dawn hangs it off the input's bottom edge with only its
+  lower corners rounded, which suited a square field — under a pill it needs to
+  be a card in its own right, sitting clear of the input.
+*/
+.search-page__field .predictive-search--search-template {
+  inset-block-start: calc(100% + 0.8rem);
+  inset-inline: 0;
+  width: 100%;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  border-radius: 1.2rem;
+  background-color: rgb(var(--color-background));
+  box-shadow: 0 0.8rem 3rem rgba(0, 0, 0, 0.14);
+  overflow: hidden auto;
+}
+
+.search-page__count {
+  margin: 0;
+  font-size: 1.4rem;
+  color: rgba(var(--color-foreground), 0.7);
+}
+
+/* ------------------------------------------------------------------- Body */
+
+/*
+  The vertical filter layout puts the facets in a column beside the results.
+  component-facets.css already lays `.facets-vertical` out; this only stops the
+  results column from overflowing when a card is wider than its track.
+*/
+.search-page__body > .product-grid-container {
+  min-width: 0;
+}
+
+.search-page__results {
+  position: relative;
+}
+
+/* --------------------------------------------------------------- The grid */
+
+.search-page__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--search-columns-mobile), minmax(0, 1fr));
+  gap: var(--search-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .search-page__grid {
+    grid-template-columns: repeat(var(--search-columns-tablet), minmax(0, 1fr));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .search-page__grid {
+    grid-template-columns: repeat(var(--search-columns), minmax(0, 1fr));
+  }
+}
+
+.search-page__item {
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------ Page results */
+
+/*
+  A page result has no image, so instead of an empty product card it gets a
+  tile of the same proportions — which keeps the rows even.
+*/
+.search-page__page-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 16rem;
+  padding: 2rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.14);
+  border-radius: var(--card-media-radius, 12px);
+  color: rgb(var(--color-foreground));
+  text-decoration: none;
+  transition: border-color var(--duration-short, 100ms) ease;
+}
+
+.search-page__page-card:hover {
+  border-color: rgba(var(--color-foreground), 0.4);
+}
+
+.search-page__page-card:focus-visible {
+  outline: 0.2rem solid rgb(var(--color-foreground));
+  outline-offset: 0.2rem;
+}
+
+.search-page__page-kind {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.55);
+}
+
+.search-page__page-title {
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------ Empty state */
+
+.search-page__empty {
+  margin: 0;
+  padding-block: 4rem;
+  font-size: 1.6rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-page__page-card {
+    transition: none;
+  }
+}

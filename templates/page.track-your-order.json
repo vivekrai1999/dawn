@@ -12,7 +12,7 @@
     "hero": {
       "type": "page-hero",
       "settings": {
-        "eyebrow": "Track your order",
+        "eyebrow": "",
         "heading": "",
         "intro": "<p>Enter the tracking number from your shipping confirmation, and we will take you straight to the carrier.</p>",
         "alignment": "left",
@@ -21,7 +21,7 @@
         "body_size": 16,
         "text_width": 640,
         "content_width": 1800,
-        "padding_top": 64,
+        "padding_top": 28,
         "padding_bottom": 32
       }
     },

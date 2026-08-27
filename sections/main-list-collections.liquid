@@ -2,7 +2,13 @@
 {{ 'section-collection-list.css' | asset_url | stylesheet_tag }}
 {{ 'component-collection-card.css' | asset_url | stylesheet_tag }}
 
-<div class="page-width">
+{%- comment -%}
+  The store's own container, not Dawn's `page-width`: that class is capped by
+  the theme's page_width setting (1200px here), which would start this page's
+  content further in than every other template does. Same max-width and same
+  gutter as the search page, so the left edge lines up.
+{%- endcomment -%}
+<div class="collection-list-page">
   <h1 class="title title--primary inline-richtext{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
     {{ section.settings.title }}
   </h1>
@@ -36,6 +42,10 @@
 -%}
 
 {%- style -%}
+  #shopify-section-{{ section.id }} {
+    --collection-list-width: {{ section.settings.content_width }}px;
+  }
+
   #CollectionList-{{ section.id }} {
     --collection-card-ratio: {{ card_ratio }};
     --collection-card-radius: {{ section.settings.card_radius }}px;
@@ -245,6 +255,16 @@
     {
       "type": "header",
       "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "min": 1000,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "label": "Content width",
+      "default": 1800
     },
     {
       "type": "range",

@@ -12,7 +12,7 @@
     "hero": {
       "type": "page-hero",
       "settings": {
-        "eyebrow": "Shipping & delivery",
+        "eyebrow": "",
         "heading": "",
         "intro": "<p>Everything is made by hand, so dispatch takes a little longer than a warehouse would. Here is exactly how long, and what it costs.</p>",
         "alignment": "left",
@@ -21,7 +21,7 @@
         "body_size": 16,
         "text_width": 640,
         "content_width": 1800,
-        "padding_top": 64,
+        "padding_top": 28,
         "padding_bottom": 32
       }
     },

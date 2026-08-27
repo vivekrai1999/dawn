@@ -1,0 +1,20 @@
+/*
+  The store's page container.
+
+  Dawn's own `page-width` is capped by the theme's `page_width` setting, which
+  governs Dawn's stock sections. The sections written for this store use a wider
+  measure and the header's gutter, so that the home page, the product page, the
+  content pages, search and the collection pages all begin their content on the
+  same left margin.
+
+  Anything that would otherwise reach for `page-width` uses this instead. The
+  width is overridable per section through --store-width, so a section can
+  expose it as a merchant setting without redefining the rest of the recipe.
+*/
+
+.store-width {
+  box-sizing: border-box;
+  max-width: var(--store-width, 180rem);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}

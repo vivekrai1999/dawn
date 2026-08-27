@@ -1,3 +1,17 @@
+/*
+  The page container for sections/main-list-collections.liquid.
+
+  Matches the search page and the content templates — the same max-width and
+  the same --header-gutter — rather than Dawn's `page-width`, so /collections
+  starts its content on the same left margin as the rest of the store.
+*/
+.collection-list-page {
+  box-sizing: border-box;
+  max-width: var(--collection-list-width, 180rem);
+  margin-inline: auto;
+  padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
+}
+
 .collection-list {
   margin-top: 0;
   margin-bottom: 0;

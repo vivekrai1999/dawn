@@ -12,7 +12,7 @@
     "hero": {
       "type": "page-hero",
       "settings": {
-        "eyebrow": "Care instructions",
+        "eyebrow": "",
         "heading": "",
         "intro": "<p>Hand-worked cotton, wool and jute last for years when they are looked after. It takes very little.</p>",
         "alignment": "left",
@@ -21,7 +21,7 @@
         "body_size": 16,
         "text_width": 640,
         "content_width": 1800,
-        "padding_top": 64,
+        "padding_top": 28,
         "padding_bottom": 32
       }
     },

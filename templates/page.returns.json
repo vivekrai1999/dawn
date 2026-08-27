@@ -12,7 +12,7 @@
     "hero": {
       "type": "page-hero",
       "settings": {
-        "eyebrow": "Returns & exchanges",
+        "eyebrow": "",
         "heading": "",
         "intro": "<p>If a piece is not right, we will make it right. Here is what you can return, by when, and how to start.</p>",
         "alignment": "left",
@@ -21,7 +21,7 @@
         "body_size": 16,
         "text_width": 640,
         "content_width": 1800,
-        "padding_top": 64,
+        "padding_top": 28,
         "padding_bottom": 32
       }
     },

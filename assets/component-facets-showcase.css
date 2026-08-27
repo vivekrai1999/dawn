@@ -696,6 +696,18 @@
   border-radius: var(--facet-pill-radius);
 }
 
+/*
+  Dawn draws a button's border and shadow with `.button:before` and
+  `.button:after`, both squared off by --buttons-radius. Rounding the button
+  itself leaves those tracing a rectangle around the pill, so they are switched
+  off and the button's own background and focus ring carry the styling — the
+  same fix the search field needs for `.field`.
+*/
+.facets-container .mobile-facets__footer .button:before,
+.facets-container .mobile-facets__footer .button:after {
+  content: none;
+}
+
 .facets-container .mobile-facets__clear {
   font-size: var(--facet-label-size);
   letter-spacing: 0.12em;
@@ -707,6 +719,40 @@
   .facets-container {
     gap: 1rem;
     padding-top: 1.6rem;
+  }
+}
+
+/*
+  Dawn pulls the active-filter row 1.2rem outside its container on both sides
+  and gives every chip 1.2rem of padding to compensate, so the tap targets line
+  up with the edge. These chips carry their own padding on the inner pill
+  instead, so the compensation is gone while the negative margin remains — and
+  the row hangs off the screen. Both halves of that arrangement are undone here.
+*/
+@media screen and (max-width: 989px) {
+  .facets-container .active-facets {
+    margin: 0;
+  }
+
+  .facets-container .active-facets__button,
+  .facets-container .active-facets__button-remove {
+    margin: 0;
+    padding: 0;
+  }
+
+  .facets-container .active-facets__button-wrapper {
+    margin-left: 0;
+    padding-top: 0;
+  }
+
+  /* A long filter value must wrap the row, never widen the page. */
+  .facets-container .active-facets {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .facets-container span.active-facets__button-inner {
+    max-width: 100%;
   }
 }
 

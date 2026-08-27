@@ -163,6 +163,30 @@
     static position — directly under the announcement bar — and the section
     below it slides up beneath the header instead of shifting.
   {%- endcomment -%}
+  {%- liquid
+    comment
+      Overlay works by collapsing the header to zero height so the section below
+      slides up beneath it. That is right when what is underneath is a full
+      bleed image — the home page hero — and wrong everywhere else, where the
+      first thing on the page is a heading that then sits hidden behind the bar.
+
+      So the overlay is scoped: on by default only where a hero is expected, and
+      switchable to every template for a store whose pages all open with one.
+    endcomment
+    assign overlay_allowed = true
+    if section.settings.overlay_scope == 'hero'
+      comment
+        The templates that open with a full-bleed image: the home page hero
+        carousel, and the product page's own hero gallery. Everywhere else the
+        first thing on the page is text, which an overlaid header would hide.
+      endcomment
+      assign overlay_allowed = false
+      if template.name == 'index' or template.name == 'product'
+        assign overlay_allowed = true
+      endif
+    endif
+  -%}
+
   {%- capture overlay_rules -%}
     /*
       Overlay without taking the header out of flow.
@@ -204,13 +228,13 @@
     {%- endif -%}
   {%- endcapture -%}
 
-  {%- if section.settings.header_position == 'overlay' -%}
+  {%- if section.settings.header_position == 'overlay' and overlay_allowed -%}
     @media screen and (min-width: 990px) {
       {{ overlay_rules }}
     }
   {%- endif -%}
 
-  {%- if section.settings.mobile_header_position == 'overlay' -%}
+  {%- if section.settings.mobile_header_position == 'overlay' and overlay_allowed -%}
     @media screen and (max-width: 989px) {
       {{ overlay_rules }}
     }
@@ -610,6 +634,23 @@
         }
       ],
       "default": "overlay"
+    },
+    {
+      "type": "select",
+      "id": "overlay_scope",
+      "label": "Overlay on",
+      "info": "Overlay hides whatever is at the very top of a page, so it suits the home and product pages, which open with a full-width image. Every other template keeps the header in normal flow.",
+      "options": [
+        {
+          "value": "hero",
+          "label": "Home and product pages"
+        },
+        {
+          "value": "all",
+          "label": "Every page"
+        }
+      ],
+      "default": "hero"
     },
     {
       "type": "select",

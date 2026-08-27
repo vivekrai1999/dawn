@@ -17,12 +17,26 @@
   layout/theme.liquid.
 */
 
-.shopify-policy__container {
+/*
+  The same container the page templates use: 180rem, the `content_width`
+  default shared by page-hero, page-content, faq-accordion and the rest, with
+  the store's gutter.
+
+  Not --page-width, which is the theme setting for Dawn's own page-width class
+  and is 1200px here. A narrower centred container puts the text column's left
+  edge somewhere different from every other page, which is what made these
+  pages look both narrower and off-centre next to the others.
+*/
+body .shopify-policy__container {
   box-sizing: border-box;
-  /* Shopify caps this near 822px; the store's own measure is wider. */
-  max-width: var(--page-width, 180rem);
+  max-width: var(--store-width, 180rem);
   margin-inline: auto;
-  padding-block: clamp(4rem, 6vw, 8rem);
+  /*
+    Top space matches the page templates, where page-hero opens a page with
+    28px above its title. The bottom stays generous — nothing follows a policy,
+    so it is the end of the page rather than a gap between two sections.
+  */
+  padding-block: 2.8rem 6.4rem;
   padding-inline: var(--header-gutter, clamp(1.6rem, 4vw, 8rem));
 }
 
@@ -33,7 +47,6 @@
 }
 
 .shopify-policy__title h1 {
-  max-width: 76rem;
   margin: 0;
   font-family: var(--font-heading-family);
   font-style: var(--font-heading-style);
@@ -45,11 +58,14 @@
 }
 
 /*
-  Legal text is read line by line, so the body keeps a short measure — placed at
-  the start of the container rather than centred in it.
+  The body runs the full width of the container, matching the other pages.
+
+  Note the trade-off: at this measure a line of legal text is very long, and
+  long measures are hard to track line to line. --policy-measure is here so that
+  can be pulled back to something like 110rem without touching anything else.
 */
-.shopify-policy__body {
-  max-width: 76rem;
+body .shopify-policy__body {
+  max-width: var(--policy-measure, none);
   margin-inline: 0;
   text-align: start;
   font-size: 1.5rem;
