@@ -276,21 +276,6 @@
   display: none;
 }
 
-.bouquet__canvas-note {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 1.2rem;
-  margin: 0;
-  text-align: center;
-  font-size: 1.2rem;
-  color: rgba(var(--color-foreground), 0.45);
-  pointer-events: none;
-}
-
-.bouquet__canvas-note[hidden] {
-  display: none;
-}
-
 /* ------------------------------------------------------------------ Toolbar */
 
 /*

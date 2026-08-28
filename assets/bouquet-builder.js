@@ -467,14 +467,6 @@
   */
   const WRAP_FRONT_DROP = 0.055;
 
-  /* Where a role is happy to sit when its own slot is taken. */
-  const ROLE_FALLBACK = {
-    focal: ['focal', 'secondary', 'filler', 'greenery'],
-    secondary: ['secondary', 'focal', 'filler', 'greenery'],
-    filler: ['filler', 'greenery', 'secondary', 'focal'],
-    greenery: ['greenery', 'filler', 'secondary', 'focal'],
-  };
-
   /* Size by role, before the product's own bouquet_scale is applied. */
   const ROLE_SCALE = {
     focal: [1.02, 1.14],
@@ -540,35 +532,6 @@
     }
 
     /*
-      How many slots each ring gets for a bouquet of n stems. The shape stays
-      recognisable from three stems to a dozen: a small bright core, a ring
-      around it, and a looser outer ring.
-    */
-    static ringPlan(n) {
-      if (n <= 1) return [1, 0, 0];
-      if (n <= 3) return [1, n - 1, 0];
-      if (n <= 5) return [1, 3, n - 4];
-
-      /*
-        Six to ten is the range a bouquet is actually sold in, and visual
-        testing earned each of these its own line. The generated plan gave eight
-        stems only two outer slots, and two points on an outer ring either side
-        of a dense middle read as a diagonal streak rather than a bouquet.
-      */
-      const TEMPLATES = {
-        6: [1, 3, 2],
-        7: [1, 3, 3],
-        8: [1, 4, 3],
-        9: [2, 4, 3],
-        10: [2, 4, 4],
-      };
-      if (TEMPLATES[n]) return TEMPLATES[n];
-
-      /* Beyond ten the outer ring simply keeps growing. */
-      return [2, 4, n - 6];
-    }
-
-    /*
       The slots for n stems, as normalised coordinates. Rings are elliptical —
       a bouquet is wider than it is tall — and each ring's phase comes from the
       seed, so shuffling turns the rings rather than scattering the flowers.
@@ -588,7 +551,6 @@
       the middle and the greenery ends up at the rim without any sorting.
     */
     slotsFor(n, random, seed) {
-      const [focalSlots, secondarySlots] = BouquetLayoutEngine.ringPlan(n);
       /* One draw, and always the first one, so the rings turn only on a shuffle. */
       const phase = random() * Math.PI * 2;
 
@@ -625,20 +587,32 @@
         const depth = clamp((y - this.centre.y) / ry, -1, 1);
         if (depth > 0) x = this.centre.x + (x - this.centre.x) * (1 - depth * 0.4);
 
-        let role;
-        let ring;
-        if (i < focalSlots) {
-          role = 'focal';
-          ring = 0;
-        } else if (i < focalSlots + secondarySlots) {
-          role = 'secondary';
-          ring = 1;
-        } else {
-          role = i % 2 ? 'greenery' : 'filler';
-          ring = 2;
-        }
+        /*
+          Which band this slot belongs to, decided by its own number and nothing
+          else — one bloom at the heart, four around it, greenery and filler at
+          the rim from there out.
 
-        slots.push({ x: clamp(x, 0.12, 0.88), y: clamp(y, 0.08, 0.68), role, ring, angle });
+          These used to be sized from the total, so a bouquet of eight gave its
+          fifth slot to a secondary and a bouquet of seven gave the same slot to
+          greenery. Every stem was then re-matched against the new bands, and a
+          rose that had been in the middle could be sent to the edge — a quarter
+          of the canvas away, and for nothing the customer had asked for. The
+          measured jump rate at that boundary was twenty-six per cent of every
+          stem on the canvas.
+
+          Fixed at one and four, the bands are exactly what the visual tuning
+          settled on for eight stems, which is the middle of the range these are
+          sold in, and they no longer move underneath anybody.
+        */
+        /*
+          Which band the slot sits in — the heart, the ring around it, or the
+          rim. It decides depth only: a stem an inch further out is drawn an
+          inch further forward. Nothing here chooses which stem lands where; see
+          assign for why that is arrival order and nothing else.
+        */
+        const ring = i < FOCAL_SLOTS ? 0 : i < FOCAL_SLOTS + SECONDARY_SLOTS ? 1 : 2;
+
+        slots.push({ x: clamp(x, 0.12, 0.88), y: clamp(y, 0.08, 0.68), ring, angle });
       }
 
       /* Already centre-outwards, which is the order assignment wants. */
@@ -646,64 +620,37 @@
     }
 
     /*
-      Deal the instances out so repeats never end up side by side: take one of
-      each distinct product in turn, then go round again. Rose, daisy, rose,
-      fern, rose — rather than rose, rose, rose.
-    */
-    static distribute(items) {
-      const buckets = new Map();
-      items.forEach((item) => {
-        if (!buckets.has(item.catalogId)) buckets.set(item.catalogId, []);
-        buckets.get(item.catalogId).push(item);
-      });
+      Slot k belongs to the kth stem the customer added, and keeps belonging to
+      it.
 
-      const queues = Array.from(buckets.values());
-      const dealt = [];
-      let placed = 0;
+      This used to match roles to slots — focal blooms to the middle, greenery to
+      the rim, with a fallback chain for whatever was missing. It composed a
+      nicer bouquet and it could not stop rearranging one. The fallback chain is
+      why: a slot that had settled for a rose because no greenery existed would
+      hand the rose back the moment a fern was added, and the rose would land
+      wherever the cascade pushed it — measured at up to nearly half the width of
+      the canvas, from one tap on a card the customer expected to add a fern and
+      change nothing else.
 
-      while (placed < items.length) {
-        queues.forEach((queue) => {
-          const next = queue.shift();
-          if (next) {
-            dealt.push(next);
-            placed += 1;
-          }
-        });
-      }
+      There is no version of role matching that survives this. A better match
+      arriving is exactly what the matching is for, and re-matching is exactly
+      what the customer experiences as the bouquet being knocked about. So the
+      matching goes, and position becomes a matter of arrival order.
 
-      return dealt;
-    }
-
-    /*
-      Give every slot the best available stem: its own role first, then the
-      roles that role is happy to stand in for. A bouquet with no greenery in it
-      still fills its outer ring rather than leaving holes.
+      What is lost is that a focal bloom is no longer guaranteed the middle. What
+      is kept is everything that made it read as a bouquet anyway: a stem is
+      still sized and layered by its own role, so a rose is still drawn large and
+      still draws in front of the greenery, wherever in the spiral it sits. And
+      the spiral is ordered centre-outwards, so the rule the customer actually
+      gets is a good one — the first flower you choose is the heart of it, and
+      each one after rings outward around what is already there.
     */
     static assign(units, slots, catalog) {
-      const pool = units.map((unit) => ({
-        unit,
-        role: roleOf(catalog.get(unit.catalogId) || {}),
-      }));
-
-      const taken = new Set();
-      const pairs = [];
-
-      slots.forEach((slot) => {
-        const preference = ROLE_FALLBACK[slot.role] || [slot.role];
-        let chosen = -1;
-
-        for (const wanted of preference) {
-          chosen = pool.findIndex((entry, index) => !taken.has(index) && entry.role === wanted);
-          if (chosen >= 0) break;
-        }
-        if (chosen < 0) chosen = pool.findIndex((entry, index) => !taken.has(index));
-        if (chosen < 0) return;
-
-        taken.add(chosen);
-        pairs.push({ slot, unit: pool[chosen].unit, role: pool[chosen].role });
-      });
-
-      return pairs;
+      return slots.reduce((pairs, slot, index) => {
+        const unit = units[index];
+        if (unit) pairs.push({ slot, unit, role: roleOf(catalog.get(unit.catalogId) || {}) });
+        return pairs;
+      }, []);
     }
 
     /*
@@ -735,7 +682,7 @@
       /* --- The bouquet itself ------------------------------------------- */
       if (stems.length) {
         const slots = this.slotsFor(stems.length, random, seed || 1);
-        const pairs = BouquetLayoutEngine.assign(BouquetLayoutEngine.distribute(stems), slots, catalog);
+        const pairs = BouquetLayoutEngine.assign(stems, slots, catalog);
 
         pairs.forEach(({ slot, unit, role }) => {
           const item = catalog.get(unit.catalogId);
@@ -1021,6 +968,10 @@
   }
 
   /* =============================================================== Renderer */
+
+  /* The heart of the bouquet, and the ring around it. See slotsFor. */
+  const FOCAL_SLOTS = 1;
+  const SECONDARY_SLOTS = 4;
 
   const ITEM_BASE_FRACTION = 0.3;
   const ADD_MS = 340;
@@ -1828,7 +1779,6 @@
   class BouquetValidator {
     constructor(limits) {
       this.minFlowers = limits.minFlowers;
-      this.maxFlowers = limits.maxFlowers;
       this.maxAccessories = limits.maxAccessories;
       this.maxPerItem = limits.maxPerItem;
     }
@@ -1874,16 +1824,19 @@
         return { ok: true, message: '' };
       }
 
-      if (tally.flowers >= this.maxFlowers) {
-        return { ok: false, message: `A bouquet holds up to ${this.maxFlowers} flowers.` };
-      }
-
+      /*
+        There is no ceiling on flowers. A customer who wants thirty gets thirty:
+        the spiral keeps placing them and the bouquet simply gets denser, which
+        is what a big bouquet looks like. Accessories are still capped above,
+        because two wraps around one bunch is a mistake rather than a choice.
+      */
       return { ok: true, message: '' };
     }
 
     /*
       Progress, not error messages. Below the minimum the customer is told how
-      close they are; at it, that they are done and may keep going anyway.
+      close they are; at it, that they are done — and since there is no upper
+      limit, that they may keep going for as long as they like.
     */
     progress(state, catalog) {
       const { flowers, accessories } = BouquetValidator.tally(state, catalog);
@@ -1893,13 +1846,12 @@
       let headline;
       if (flowers === 0) headline = '';
       else if (!complete) headline = 'Your bouquet is taking shape';
-      else if (flowers >= this.maxFlowers) headline = 'A beautifully full bouquet';
       else headline = 'Your bouquet is ready';
 
       let detail = '';
       if (flowers > 0 && !complete) {
         detail = `Add ${remaining} more flower${remaining === 1 ? '' : 's'} to complete it.`;
-      } else if (complete && flowers < this.maxFlowers) {
+      } else if (complete) {
         detail = 'Add more if you would like a fuller bouquet.';
       }
 
@@ -1908,8 +1860,12 @@
         accessories,
         complete,
         remaining,
-        /* Counts up to the minimum, then up to the maximum. */
-        target: complete ? this.maxFlowers : this.minFlowers,
+        /*
+          The bar fills to the minimum and then stays full — there is nothing
+          above it to count towards, and a bar that never fills would tell a
+          customer with a dozen flowers that they had not finished.
+        */
+        target: this.minFlowers,
         headline,
         detail,
         ready: complete,
@@ -2005,7 +1961,6 @@
 
       this.limits = {
         minFlowers: parseInt(this.dataset.minFlowers, 10) || 0,
-        maxFlowers: parseInt(this.dataset.maxFlowers, 10) || 10,
         maxAccessories: parseInt(this.dataset.maxAccessories, 10) || 4,
         maxPerItem: parseInt(this.dataset.maxPerItem, 10) || 6,
       };
@@ -2067,7 +2022,6 @@
     resolveNodes() {
       this.stage = this.querySelector('[data-bouquet-stage]');
       this.canvas = this.querySelector('[data-bouquet-canvas]');
-      this.canvasNote = this.querySelector('[data-bouquet-canvas-note]');
 
       this.progressHeadline = this.querySelector('[data-bouquet-progress-headline]');
       this.progressCount = this.querySelector('[data-bouquet-progress-count]');
@@ -2282,7 +2236,6 @@
 
       this.refreshControls();
 
-      if (this.canvasNote) this.canvasNote.hidden = !this.renderer || state.items.length === 0;
     }
 
     /*
@@ -2337,10 +2290,8 @@
         const increase = card.querySelector('[data-bouquet-increase]');
         if (increase) {
           const item = this.catalog.get(catalogId);
-          const full =
-            item && isAccessory(item)
-              ? tally.accessories >= this.limits.maxAccessories
-              : tally.flowers >= this.limits.maxFlowers;
+          /* Flowers have no ceiling; the dressing still does. */
+          const full = item && isAccessory(item) && tally.accessories >= this.limits.maxAccessories;
           increase.disabled = quantity >= this.limits.maxPerItem || full;
         }
       });

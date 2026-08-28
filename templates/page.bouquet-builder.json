@@ -41,7 +41,6 @@
         "corner_radius": 20,
         "padding_top": 24,
         "padding_bottom": 56,
-        "max_flowers": 10,
         "max_accessories": 4,
         "shuffle_label": "Shuffle bouquet"
       }
