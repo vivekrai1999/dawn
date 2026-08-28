@@ -2235,7 +2235,6 @@
       this.syncSummary(state);
 
       this.refreshControls();
-
     }
 
     /*

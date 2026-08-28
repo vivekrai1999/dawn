@@ -956,6 +956,23 @@
   border-block-start: 0.1rem solid rgba(var(--color-foreground), 0.12);
 }
 
+/*
+  A rule that divides nothing is just a line.
+
+  The chips sit directly above this border, and an empty bouquet has no chips —
+  so on a phone, where the heading is hidden too, the line was drawn across the
+  top of the bar with nothing at all above it. It only appears once there is
+  something for it to separate.
+*/
+.bouquet__lines:empty {
+  display: none;
+}
+
+.bouquet__lines:empty + .bouquet__summary-bar {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
 .bouquet__total {
   display: grid;
   flex: 1 1 auto;
@@ -1129,6 +1146,26 @@
     flower or ten: a single sideways-scrolling line of chips, then the total and
     the button.
   */
+  /*
+    The buying bar, pinned to the bottom of the screen.
+
+    It is deliberately not an object. There is no border, no shadow and no edge
+    of its own — it is painted with the section's own ground and bled out to the
+    full width, so what the customer sees is the total and the button, not a
+    panel carrying them. The cards simply stop where it begins.
+
+    That is also why nothing here needs to know whether it is currently stuck.
+    An earlier version watched a marker with an IntersectionObserver so it could
+    drop its shadow once it came to rest at the end of the section; with no
+    shadow and no border to drop, the bar looks the same in both states and the
+    machinery had nothing left to decide.
+
+    The ground is taken from --gradient-background with the same two-line
+    fallback Dawn's own .gradient uses, and fixed to the viewport exactly as
+    .gradient fixes it — so under a gradient scheme the strip behind the bar is
+    the strip that belongs there, rather than a flat panel that only matches
+    when the merchant happens to have chosen no gradient.
+  */
   .bouquet__summary {
     position: sticky;
     bottom: 0;
@@ -1136,14 +1173,11 @@
     gap: 0.8rem;
     padding: 1rem 1.6rem calc(1rem + env(safe-area-inset-bottom, 0px));
     margin-inline: calc(var(--header-gutter, clamp(1.6rem, 4vw, 8rem)) * -1);
-    border-inline: 0;
-    border-block-end: 0;
-    border-start-start-radius: var(--bouquet-radius, 2rem);
-    border-start-end-radius: var(--bouquet-radius, 2rem);
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
+    border: 0;
+    border-radius: 0;
     background: rgb(var(--color-background));
-    box-shadow: 0 -0.4rem 2.4rem rgba(var(--color-foreground), 0.1);
+    background: var(--gradient-background);
+    background-attachment: fixed;
   }
 
   /*
@@ -1165,6 +1199,7 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
+    /* Runs out to the screen edge, so a chip scrolling away is cut by it. */
     margin-inline: -1.6rem;
     padding-inline: 1.6rem;
     scroll-padding-inline: 1.6rem;
